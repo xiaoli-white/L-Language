@@ -235,64 +235,6 @@ public class Memory {
         pte[pteOffset] = null;
     }
 
-    public void setByte(long address, byte value) {
-        getMemoryPage(address).setByte(address & PAGE_OFFSET_MASK, value);
-    }
-
-    public void setShort(long address, short value) {
-        if (((address & PAGE_OFFSET_MASK) + 2) < PAGE_SIZE) {
-            getMemoryPage(address).setShort(address & PAGE_OFFSET_MASK, value);
-        } else {
-            getMemoryPage(address).setByte(address & PAGE_OFFSET_MASK, (byte) (value & 0xff));
-            getMemoryPage(address + 1).setByte(0, (byte) (value >> 8));
-        }
-    }
-
-    public void setInt(long address, int value) {
-        if (((address & PAGE_OFFSET_MASK) + 4) < PAGE_SIZE) {
-            getMemoryPage(address).setInt(address & PAGE_OFFSET_MASK, value);
-        } else {
-            for (int i = 0; i < 4; i++) {
-                getMemoryPage(address).setByte(address & PAGE_OFFSET_MASK, (byte) (value >> (i * 8)));
-                address++;
-            }
-        }
-    }
-
-    public void setLong(long address, long value) {
-        if (((address & PAGE_OFFSET_MASK) + 8) < PAGE_SIZE) {
-            getMemoryPage(address).setLong(address & PAGE_OFFSET_MASK, value);
-        } else {
-            for (int i = 0; i < 8; i++) {
-                getMemoryPage(address).setByte(address & PAGE_OFFSET_MASK, (byte) (value >> (i * 8)));
-                address++;
-            }
-        }
-    }
-
-    public void setFloat(long address, float value) {
-        if (((address & PAGE_OFFSET_MASK) + 4) < PAGE_SIZE) {
-            getMemoryPage(address).setFloat(address & PAGE_OFFSET_MASK, value);
-        } else {
-            int bits = Float.floatToRawIntBits(value);
-            for (int i = 0; i < 4; i++) {
-                getMemoryPage(address).setByte(address & PAGE_OFFSET_MASK, (byte) (bits >> (i * 8)));
-                address++;
-            }
-        }
-    }
-
-    public void setDouble(long address, double value) {
-        if (((address & PAGE_OFFSET_MASK) + 8) < PAGE_SIZE) {
-            getMemoryPage(address).setDouble(address & PAGE_OFFSET_MASK, value);
-        } else {
-            long bits = Double.doubleToRawLongBits(value);
-            for (int i = 0; i < 8; i++) {
-                getMemoryPage(address).setByte(address & PAGE_OFFSET_MASK, (byte) (bits >> (i * 8)));
-            }
-        }
-    }
-
     public byte getByte(long address) {
         return getMemoryPage(address).getByte(address & PAGE_OFFSET_MASK);
     }
@@ -356,4 +298,63 @@ public class Memory {
             return Double.longBitsToDouble(value);
         }
     }
+
+    public void setByte(long address, byte value) {
+        getMemoryPage(address).setByte(address & PAGE_OFFSET_MASK, value);
+    }
+
+    public void setShort(long address, short value) {
+        if (((address & PAGE_OFFSET_MASK) + 2) < PAGE_SIZE) {
+            getMemoryPage(address).setShort(address & PAGE_OFFSET_MASK, value);
+        } else {
+            getMemoryPage(address).setByte(address & PAGE_OFFSET_MASK, (byte) (value & 0xff));
+            getMemoryPage(address + 1).setByte(0, (byte) (value >> 8));
+        }
+    }
+
+    public void setInt(long address, int value) {
+        if (((address & PAGE_OFFSET_MASK) + 4) < PAGE_SIZE) {
+            getMemoryPage(address).setInt(address & PAGE_OFFSET_MASK, value);
+        } else {
+            for (int i = 0; i < 4; i++) {
+                getMemoryPage(address).setByte(address & PAGE_OFFSET_MASK, (byte) (value >> (i * 8)));
+                address++;
+            }
+        }
+    }
+
+    public void setLong(long address, long value) {
+        if (((address & PAGE_OFFSET_MASK) + 8) < PAGE_SIZE) {
+            getMemoryPage(address).setLong(address & PAGE_OFFSET_MASK, value);
+        } else {
+            for (int i = 0; i < 8; i++) {
+                getMemoryPage(address).setByte(address & PAGE_OFFSET_MASK, (byte) (value >> (i * 8)));
+                address++;
+            }
+        }
+    }
+
+    public void setFloat(long address, float value) {
+        if (((address & PAGE_OFFSET_MASK) + 4) < PAGE_SIZE) {
+            getMemoryPage(address).setFloat(address & PAGE_OFFSET_MASK, value);
+        } else {
+            int bits = Float.floatToRawIntBits(value);
+            for (int i = 0; i < 4; i++) {
+                getMemoryPage(address).setByte(address & PAGE_OFFSET_MASK, (byte) (bits >> (i * 8)));
+                address++;
+            }
+        }
+    }
+
+    public void setDouble(long address, double value) {
+        if (((address & PAGE_OFFSET_MASK) + 8) < PAGE_SIZE) {
+            getMemoryPage(address).setDouble(address & PAGE_OFFSET_MASK, value);
+        } else {
+            long bits = Double.doubleToRawLongBits(value);
+            for (int i = 0; i < 8; i++) {
+                getMemoryPage(address).setByte(address & PAGE_OFFSET_MASK, (byte) (bits >> (i * 8)));
+            }
+        }
+    }
+
 }

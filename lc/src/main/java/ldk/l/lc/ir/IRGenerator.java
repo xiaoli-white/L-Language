@@ -1476,7 +1476,7 @@ public class IRGenerator extends LCAstVisitor {
                 addInstruction(new IRCalculate(false, IRCalculate.Operator.Add, IRType.getUnsignedLongType(), new IRVirtualRegister(addressRegister), typeSize, new IRVirtualRegister(addressRegister)));
             }
         } else {
-            initArray(place, typeSize, lcNewArray.dimensions, 0);
+            initArray(place, typeSize, lcNewArray.dimensions, 1);
         }
         operandStack.push(place);
         return null;
@@ -1818,8 +1818,10 @@ public class IRGenerator extends LCAstVisitor {
         int constant16Index = module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 16));
         addInstruction(new IRCalculate(false, IRCalculate.Operator.Add, IRType.getUnsignedLongType(), new IRVirtualRegister(addressRegister), new IRConstant(constant16Index), new IRVirtualRegister(addressRegister)));
         String countRegister = allocateVirtualRegister();
+        int constant8Index = module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 8));
+        addInstruction(new IRStackAllocate(new IRConstant(constant8Index), new IRVirtualRegister(countRegister)));
         int constant0Index = module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 0));
-        addInstruction(new IRSetVirtualRegister(new IRConstant(constant0Index), new IRVirtualRegister(countRegister)));
+        addInstruction(new IRSet(IRType.getUnsignedLongType(), new IRConstant(constant0Index), new IRVirtualRegister(countRegister)));
 
         IRControlFlowGraph.BasicBlock condition = createBasicBlock();
         IRConditionalJump irConditionalJump = new IRConditionalJump(IRType.getUnsignedLongType(), IRCondition.GreaterEqual, new IRVirtualRegister(countRegister), length, "");
@@ -1833,7 +1835,11 @@ public class IRGenerator extends LCAstVisitor {
         addInstruction(new IRSet(IRType.getUnsignedLongType(), new IRVirtualRegister(addressRegister), newPlace));
         addInstruction(new IRCalculate(false, IRCalculate.Operator.Add, IRType.getUnsignedLongType(), new IRVirtualRegister(addressRegister), typeSize, new IRVirtualRegister(addressRegister)));
 
-        addInstruction(new IRIncrease(IRType.getUnsignedLongType(), new IRVirtualRegister(countRegister), new IRVirtualRegister(countRegister)));
+        String temp = allocateVirtualRegister();
+        addInstruction(new IRGet(IRType.getUnsignedLongType(), new IRVirtualRegister(countRegister), new IRVirtualRegister(temp)));
+        String temp2 = allocateVirtualRegister();
+        addInstruction(new IRIncrease(IRType.getUnsignedLongType(), new IRVirtualRegister(temp), new IRVirtualRegister(temp2)));
+        addInstruction(new IRSet(IRType.getUnsignedLongType(), new IRVirtualRegister(temp2), new IRVirtualRegister(countRegister)));
         addInstruction(new IRGoto(condition.name));
 
         IRControlFlowGraph.BasicBlock end = createBasicBlock();

@@ -42,6 +42,42 @@ public final class MemoryPage {
         this.flags &= ~MP_PRESENT;
     }
 
+    public byte getByte(long offset) {
+        if ((this.flags & MP_PRESENT) == 0) initialize();
+        if ((this.flags & MP_READ) == 0) throw new RuntimeException("Page is not readable");
+        return this.data.get(Memory.LAYOUT_BYTE, offset);
+    }
+
+    public short getShort(long offset) {
+        if ((this.flags & MP_PRESENT) == 0) initialize();
+        if ((this.flags & MP_READ) == 0) throw new RuntimeException("Page is not readable");
+        return this.data.get(Memory.LAYOUT_SHORT, offset);
+    }
+
+    public int getInt(long offset) {
+        if ((this.flags & MP_PRESENT) == 0) initialize();
+        if ((this.flags & MP_READ) == 0) throw new RuntimeException("Page is not readable");
+        return this.data.get(Memory.LAYOUT_INT, offset);
+    }
+
+    public long getLong(long offset) {
+        if ((this.flags & MP_PRESENT) == 0) initialize();
+        if ((this.flags & MP_READ) == 0) throw new RuntimeException("Page is not readable");
+        return this.data.get(Memory.LAYOUT_LONG, offset);
+    }
+
+    public float getFloat(long offset) {
+        if ((this.flags & MP_PRESENT) == 0) initialize();
+        if ((this.flags & MP_READ) == 0) throw new RuntimeException("Page is not readable");
+        return this.data.get(Memory.LAYOUT_FLOAT, offset);
+    }
+
+    public double getDouble(long offset) {
+        if ((this.flags & MP_PRESENT) == 0) initialize();
+        if ((this.flags & MP_READ) == 0) throw new RuntimeException("Page is not readable");
+        return this.data.get(Memory.LAYOUT_DOUBLE, offset);
+    }
+
     public void setByte(long offset, byte b) {
         if ((this.flags & MP_PRESENT) == 0) initialize();
         if ((this.flags & MP_WRITE) == 0) throw new RuntimeException("Page is not writable");
@@ -78,41 +114,6 @@ public final class MemoryPage {
         this.data.set(Memory.LAYOUT_DOUBLE, offset, d);
     }
 
-    public byte getByte(long offset) {
-        if ((this.flags & MP_PRESENT) == 0) initialize();
-        if ((this.flags & MP_READ) == 0) throw new RuntimeException("Page is not readable");
-        return this.data.get(Memory.LAYOUT_BYTE, offset);
-    }
-
-    public short getShort(long offset) {
-        if ((this.flags & MP_PRESENT) == 0) initialize();
-        if ((this.flags & MP_READ) == 0) throw new RuntimeException("Page is not readable");
-        return this.data.get(Memory.LAYOUT_SHORT, offset);
-    }
-
-    public int getInt(long offset) {
-        if ((this.flags & MP_PRESENT) == 0) initialize();
-        if ((this.flags & MP_READ) == 0) throw new RuntimeException("Page is not readable");
-        return this.data.get(Memory.LAYOUT_INT, offset);
-    }
-
-    public long getLong(long offset) {
-        if ((this.flags & MP_PRESENT) == 0) initialize();
-        if ((this.flags & MP_READ) == 0) throw new RuntimeException("Page is not readable");
-        return this.data.get(Memory.LAYOUT_LONG, offset);
-    }
-
-    public float getFloat(long offset) {
-        if ((this.flags & MP_PRESENT) == 0) initialize();
-        if ((this.flags & MP_READ) == 0) throw new RuntimeException("Page is not readable");
-        return this.data.get(Memory.LAYOUT_FLOAT, offset);
-    }
-
-    public double getDouble(long offset) {
-        if ((this.flags & MP_PRESENT) == 0) initialize();
-        if ((this.flags & MP_READ) == 0) throw new RuntimeException("Page is not readable");
-        return this.data.get(Memory.LAYOUT_DOUBLE, offset);
-    }
 
     public static final class FreeMemory {
         public long start;

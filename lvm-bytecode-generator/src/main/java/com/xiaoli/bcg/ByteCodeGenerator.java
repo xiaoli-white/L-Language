@@ -817,6 +817,21 @@ public class ByteCodeGenerator extends Generator {
         }
 
         @Override
+        public Object visitStackAllocate(IRStackAllocate irStackAllocate, Object additional) {
+//            this.visit(irStackAllocate.size, additional);
+//            BCRegister size = registerStack.pop();
+//
+//            this.visit(irStackAllocate.target, additional);
+//            BCRegister target = registerStack.pop();
+//
+//            addInstruction(new BCInstruction(ByteCode.SUB, new BCRegister(ByteCode.SP_REGISTER), size, new BCRegister(ByteCode.SP_REGISTER)));
+//            addInstruction(new BCInstruction(ByteCode.MOV, new BCRegister(ByteCode.SP_REGISTER), target));
+//
+//            registerStack.push(new BCRegister(target.virtualRegister));
+            return null;
+        }
+
+        @Override
         public Object visitConstant(IRConstant irConstant, Object additional) {
             IRConstantPool.Entry entry = this.irModule.constantPool.get(irConstant.index);
 
