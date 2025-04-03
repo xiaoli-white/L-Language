@@ -1,0 +1,15 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="L-Language-Dev.lc.main:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/L_Language_Dev_lc_main_jar</output-path>
+    <root id="archive" name="L-Language-Dev.lc.main.jar">
+      <element id="module-output" name="L-Language-Dev.lc.main" />
+      <element id="module-output" name="L-Language-Dev.lutil.main" />
+      <element id="module-output" name="L-Language-Dev.lg.main" />
+      <element id="module-output" name="L-Language-Dev.lvm-bytecode-generator.main" />
+      <element id="module-output" name="L-Language-Dev.lvm.main" />
+      <element id="directory" name="META-INF">
+        <element id="file-copy" path="$PROJECT_DIR$/lc/src/main/resources/META-INF/MANIFEST.MF" />
+      </element>
+    </root>
+  </artifact>
+</component>

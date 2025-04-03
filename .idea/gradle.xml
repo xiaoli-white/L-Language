@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="GradleMigrationSettings" migrationVersion="1" />
+  <component name="GradleSettings">
+    <option name="linkedExternalProjectsSettings">
+      <GradleProjectSettings>
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="gradleJvm" value="23" />
+        <option name="modules">
+          <set>
+            <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/lc" />
+            <option value="$PROJECT_DIR$/lg" />
+            <option value="$PROJECT_DIR$/llvm-ir-generator" />
+            <option value="$PROJECT_DIR$/lutil" />
+            <option value="$PROJECT_DIR$/lvm" />
+            <option value="$PROJECT_DIR$/lvm-bytecode-generator" />
+          </set>
+        </option>
+      </GradleProjectSettings>
+    </option>
+  </component>
+</project>

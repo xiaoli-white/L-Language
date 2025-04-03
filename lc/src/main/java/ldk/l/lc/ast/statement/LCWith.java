@@ -1,0 +1,44 @@
+package ldk.l.lc.ast.statement;
+
+import ldk.l.lc.ast.LCAstVisitor;
+import ldk.l.lc.ast.base.LCStatement;
+import ldk.l.lc.ast.base.LCStatementWithScope;
+import ldk.l.lc.util.Position;
+
+import java.util.Arrays;
+import java.util.Objects;
+
+public class LCWith extends LCStatementWithScope {
+    public LCStatement[] resources;
+    public LCStatement body;
+
+    public LCWith(LCStatement[] resources, LCStatement body, Position pos, boolean isErrorNode) {
+        super(pos, isErrorNode);
+        this.resources = resources;
+        for (LCStatement resource : resources) resource.parentNode = this;
+        this.body = body;
+        this.body.parentNode = this;
+    }
+
+    @Override
+    public Object accept(LCAstVisitor visitor, Object additional) {
+        return visitor.visitWith(this, additional);
+    }
+
+    @Override
+    public String toString() {
+        return "LCWith{" +
+                "resources=" + Arrays.toString(resources) +
+                ", body=" + body +
+                ", scope=" + scope +
+                ", annotations=" + Arrays.toString(annotations) +
+                ", position=" + position +
+                ", isErrorNode=" + isErrorNode +
+                '}';
+    }
+
+    @Override
+    public LCWith clone() throws CloneNotSupportedException {
+        return new LCWith(resources.clone(), body.clone(), position.clone(), isErrorNode);
+    }
+}

@@ -1,0 +1,37 @@
+package ldk.l.lg.ir.operand;
+
+import ldk.l.lg.ir.IRVisitor;
+import ldk.l.lg.ir.type.IRType;
+
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+public class IRPhi extends IROperand {
+    public final IRType type;
+    public final String[] labels;
+    public final IROperand[] operands;
+
+    public IRPhi(IRType type, String[] labels, IROperand[] operands) {
+        this.type = type;
+        this.labels = labels;
+        this.operands = operands;
+    }
+
+    @Override
+    public Object accept(IRVisitor visitor, Object additional) {
+        return visitor.visitPhi(this, additional);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder("phi ");
+        builder.append(type).append(" ");
+        for (int i = 0; i < labels.length; i++) {
+            builder.append("[").append(labels[i]).append(", ").append(operands[i]).append("]");
+            if (i < labels.length - 1)
+                builder.append(", ");
+        }
+        return builder.toString();
+    }
+}
