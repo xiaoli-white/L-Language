@@ -16,8 +16,8 @@ public class ExecutionUnit implements Runnable {
     }
 
     public void init(long stackStart, long entryPoint) {
-        registers[ByteCode.SP_REGISTER] = stackStart;
         registers[ByteCode.BP_REGISTER] = stackStart;
+        registers[ByteCode.SP_REGISTER] = stackStart;
         registers[ByteCode.PC_REGISTER] = entryPoint;
     }
 
@@ -25,7 +25,7 @@ public class ExecutionUnit implements Runnable {
         running = true;
         while (running) {
             byte code = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]++);
-            System.out.printf("%d: %s\n", registers[ByteCode.PC_REGISTER] - 1, ByteCode.getInstructionName(code));
+//            System.out.printf("%d: %s\n", registers[ByteCode.PC_REGISTER] - 1, ByteCode.getInstructionName(code));
             switch (code) {
                 case ByteCode.NOP -> {
                 }

@@ -818,16 +818,14 @@ public class ByteCodeGenerator extends Generator {
 
         @Override
         public Object visitStackAllocate(IRStackAllocate irStackAllocate, Object additional) {
-//            this.visit(irStackAllocate.size, additional);
-//            BCRegister size = registerStack.pop();
-//
-//            this.visit(irStackAllocate.target, additional);
-//            BCRegister target = registerStack.pop();
-//
-//            addInstruction(new BCInstruction(ByteCode.SUB, new BCRegister(ByteCode.SP_REGISTER), size, new BCRegister(ByteCode.SP_REGISTER)));
-//            addInstruction(new BCInstruction(ByteCode.MOV, new BCRegister(ByteCode.SP_REGISTER), target));
-//
-//            registerStack.push(new BCRegister(target.virtualRegister));
+            this.visit(irStackAllocate.size, additional);
+            BCRegister size = registerStack.pop();
+
+            this.visit(irStackAllocate.target, additional);
+            BCRegister target = registerStack.pop();
+
+            addInstruction(new BCInstruction(ByteCode.SUB, new BCRegister(ByteCode.SP_REGISTER), size, new BCRegister(ByteCode.SP_REGISTER)));
+            addInstruction(new BCInstruction(ByteCode.MOV, new BCRegister(ByteCode.SP_REGISTER), target));
             return null;
         }
 
@@ -986,6 +984,9 @@ public class ByteCodeGenerator extends Generator {
         }
 
         private void createEpilogue(long currentFunctionLocalVarSize) {
+            BCRegister temp = allocateVirtualRegister();
+            addInstruction(new BCInstruction(ByteCode.MOV_IMMEDIATE8, new BCImmediate8(currentFunctionLocalVarSize), temp));
+            addInstruction(new BCInstruction(ByteCode.SUB, new BCRegister(ByteCode.BP_REGISTER), new BCRegister(temp.virtualRegister), new BCRegister(ByteCode.SP_REGISTER)));
             addInstruction(new BCInstruction(ByteCode.DESTROY_FRAME, new BCImmediate8(currentFunctionLocalVarSize)));
         }
 
@@ -1281,9 +1282,10 @@ public class ByteCodeGenerator extends Generator {
 
                 imm.value = this.offset;
                 BCControlFlowGraph.BasicBlock end = basicBlocks[basicBlocks.length - 1];
-                ((BCImmediate8) end.instructions.getFirst().operand1).value = this.offset;
+                ((BCImmediate8) end.instructions.get(0).operand1).value = this.offset + this.usedColors.size() * 8L;
+                ((BCImmediate8) end.instructions.get(2).operand1).value = this.offset;
                 for (Byte color : this.usedColors) {
-                    end.instructions.addFirst(new BCInstruction(ByteCode.POP_8, new BCRegister(color)));
+                    end.instructions.add(2, new BCInstruction(ByteCode.POP_8, new BCRegister(color)));
                 }
             }
             return null;

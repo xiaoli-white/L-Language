@@ -1945,7 +1945,7 @@ public class IRGenerator extends LCAstVisitor {
             addInstruction(new IRGet(IRType.getUnsignedLongType(), new IRVirtualRegister(countRegister), new IRVirtualRegister(temp6Register)));
             String temp7Register = allocateVirtualRegister();
             addInstruction(new IRIncrease(IRType.getUnsignedLongType(), new IRVirtualRegister(temp6Register), new IRVirtualRegister(temp7Register)));
-            addInstruction(new IRSet(IRType.getUnsignedLongType(), new IRVirtualRegister(countRegister), new IRVirtualRegister(temp7Register)));
+            addInstruction(new IRSet(IRType.getUnsignedLongType(), new IRVirtualRegister(temp7Register), new IRVirtualRegister(countRegister)));
             addInstruction(new IRGoto(conditionBlock.name));
             IRControlFlowGraph.BasicBlock end = createBasicBlock();
             irConditionalJump.target = end.name;

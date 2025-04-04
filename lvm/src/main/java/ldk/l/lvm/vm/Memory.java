@@ -102,10 +102,10 @@ public class Memory {
                 long start = freeMemory.start;
                 freeMemory.start += length;
                 long address = start;
-                while (size > 0) {
+                while (length > 0) {
                     setMemoryPageIfAbsent(address & ~PAGE_OFFSET_MASK, MemoryPage.MP_READ | MemoryPage.MP_WRITE);
                     long tmp = PAGE_SIZE - (address & PAGE_OFFSET_MASK);
-                    size -= tmp;
+                    length -= tmp;
                     address += tmp;
                 }
                 setLong(start, size);
