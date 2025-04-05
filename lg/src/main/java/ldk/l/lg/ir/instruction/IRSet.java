@@ -6,13 +6,13 @@ import ldk.l.lg.ir.type.IRType;
 
 public class IRSet extends IRInstruction {
     public final IRType type;
-    public final IROperand source;
     public final IROperand address;
+    public final IROperand source;
 
-    public IRSet(IRType type, IROperand source, IROperand address) {
+    public IRSet(IRType type, IROperand address, IROperand source) {
         this.type = type;
-        this.source = source;
         this.address = address;
+        this.source = source;
     }
 
     @Override
@@ -22,6 +22,6 @@ public class IRSet extends IRInstruction {
 
     @Override
     public String toString() {
-        return "set " + type + ", " + source + ", " + address;
+        return "set " + type + ", " + address + ", " + source;
     }
 }

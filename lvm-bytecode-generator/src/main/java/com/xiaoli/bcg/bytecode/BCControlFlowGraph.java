@@ -6,7 +6,7 @@ import ldk.l.lvm.vm.ByteCode;
 
 import java.util.*;
 
-public class BCControlFlowGraph {
+public final class BCControlFlowGraph {
     public final Map<String, BasicBlock> basicBlocks = new LinkedHashMap<>();
     public final Map<BasicBlock, List<BasicBlock>> outEdges = new TreeMap<>();
     public final Map<BasicBlock, List<BasicBlock>> inEdges = new TreeMap<>();
@@ -32,22 +32,21 @@ public class BCControlFlowGraph {
             if (last != null) {
                 if (last.code == ByteCode.JUMP_IMMEDIATE) {
                     BCImmediate8 imm = (BCImmediate8) last.operand1;
-                    if (imm.comment.startsWith("<ir_basic_block>")) {
-                        BasicBlock next = this.basicBlocks.get(imm.comment.substring("<ir_basic_block>".length()));
+                    if (imm.comment.startsWith("<basic_block>")) {
+                        BasicBlock next = this.basicBlocks.get(imm.comment.substring("<basic_block>".length()));
                         outEdges.get(basicBlock).add(next);
                         inEdges.get(next).add(basicBlock);
+                        continue;
                     }
-                } else if (ByteCode.isConditionalJump(last.code)) {
+                } else if (ByteCode.isJump(last.code)) {
                     if (index - 1 >= 0) {
                         BCInstruction prev = basicBlock.instructions.get(index - 1);
                         BCImmediate8 imm = (BCImmediate8) prev.operand1;
-                        if (imm.comment.startsWith("<ir_basic_block>")) {
-                            BasicBlock target = this.basicBlocks.get(imm.comment.substring("<ir_basic_block>".length()));
-                            BasicBlock next = basicBlocks[i + 1];
+                        if (imm.comment.startsWith("<basic_block>")) {
+                            BasicBlock target = this.basicBlocks.get(imm.comment.substring("<basic_block>".length()));
                             outEdges.get(basicBlock).add(target);
-                            outEdges.get(basicBlock).add(next);
                             inEdges.get(target).add(basicBlock);
-                            inEdges.get(next).add(basicBlock);
+                            if (last.code == ByteCode.JUMP) continue;
                         }
                     }
                 }

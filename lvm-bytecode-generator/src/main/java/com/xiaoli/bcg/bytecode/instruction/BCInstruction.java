@@ -7,7 +7,7 @@ import ldk.l.lvm.vm.ByteCode;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BCInstruction {
+public final class BCInstruction {
     public byte code;
     public BCOperand operand1;
     public BCOperand operand2;

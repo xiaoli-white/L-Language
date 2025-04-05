@@ -5,7 +5,7 @@ import ldk.l.lg.ir.operand.IROperand;
 import ldk.l.lg.ir.operand.IRVirtualRegister;
 import ldk.l.lg.ir.type.IRType;
 
-public class IRCalculate extends IRInstruction {
+public final class IRCalculate extends IRInstruction {
     public final boolean isAtomic;
     public final Operator operator;
     public final IRType type;

@@ -5,7 +5,7 @@ import com.xiaoli.bcg.bytecode.operand.immediate.BCImmediate;
 
 import java.util.*;
 
-public class ByteCodeModule {
+public final class ByteCodeModule {
     public final Map<String, Long> functionName2EntryPoint = new LinkedHashMap<>();
     public final Map<String, BCControlFlowGraph> functionName2CFG = new LinkedHashMap<>();
     public final List<BCImmediate> rodataSection = new ArrayList<>();

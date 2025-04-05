@@ -4,7 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.math.BigInteger;
 
-public class ExecutionUnit implements Runnable {
+public final class ExecutionUnit implements Runnable {
     public final VirtualMachine virtualMachine;
     public long[] registers = new long[40];
     public static long flags = 0;

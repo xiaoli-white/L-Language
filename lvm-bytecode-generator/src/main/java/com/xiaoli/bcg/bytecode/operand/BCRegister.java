@@ -2,7 +2,7 @@ package com.xiaoli.bcg.bytecode.operand;
 
 import com.xiaoli.bcg.bytecode.BCVisitor;
 
-public class BCRegister extends BCOperand {
+public final class BCRegister extends BCOperand {
     public byte register;
     public long virtualRegister;
 

@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
-public class Parser {
+public final class Parser {
     private final LCAst ast;
     private final Options options;
     private final Token[] tokens;
@@ -2784,13 +2784,14 @@ public class Parser {
                             this.tokenIndex++;
                         }
                     }
-                    ArrayList<LCExpression> elements;
+                    List<LCExpression> elements;
                     if (this.peek().code == Tokens.Separator.OpenBrace) {
                         this.tokenIndex++;
                         elements = new ArrayList<>();
-                        while (this.peek().code != Tokens.Separator.CloseBrace) {
+                        Token t2 = this.peek();
+                        while (t2.code != Tokens.Separator.CloseBrace) {
                             elements.add(this.parseExpression());
-                            Token t2 = this.peek();
+                            t2 = this.peek();
                             if (t2.code == Tokens.Separator.Comma) {
                                 this.tokenIndex++;
                             } else if (t2.code != Tokens.Separator.CloseBrace) {
@@ -2799,6 +2800,7 @@ public class Parser {
                                 this.skip();
                             }
                         }
+                        this.tokenIndex++;
                     } else {
                         elements = null;
                     }

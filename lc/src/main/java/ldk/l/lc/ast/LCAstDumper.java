@@ -25,45 +25,45 @@ public class LCAstDumper extends LCAstVisitor {
     public Object visitAst(LCAst lcAst, Object prefix) {
         System.out.println((prefix instanceof String string && !string.isEmpty() ? prefix + "-" : "")
                 + "LCAst" + (lcAst.isErrorNode ? " **E**" : ""));
-        System.out.println(prefix + "  |-mainMethod: " + (lcAst.mainMethod != null ? lcAst.mainMethod.name : "none"));
-        System.out.println(prefix + "  |-sourceFiles:");
+        System.out.println(prefix + "\tmainMethod: " + (lcAst.mainMethod != null ? lcAst.mainMethod.name : "none"));
+        System.out.println(prefix + "\t\tsourceFiles:");
         for (LCSourceFile sourceFile : lcAst.sourceFiles) {
-            this.visit(sourceFile, prefix + "      |");
+            this.visit(sourceFile, prefix + "\t\t\t");
         }
         return null;
     }
 
     @Override
     public Object visitVariableDeclaration(LCVariableDeclaration lcVariableDeclaration, Object prefix) {
-        System.out.println(prefix + "-LCVariableDeclaration" + (lcVariableDeclaration.isErrorNode ? " **E**" : ""));
-        System.out.println(prefix + "   |-isVal: " + lcVariableDeclaration.isVal);
-        System.out.println(prefix + "   |-name: '" + lcVariableDeclaration.name + "'");
-        System.out.println(prefix + "   |-hasSimiColon: " + lcVariableDeclaration.hasSemiColon);
-        System.out.println(prefix + "   |-modifier:");
-        this.visitModifier(lcVariableDeclaration.modifier, prefix + "   |   |");
+        System.out.println(prefix + "LCVariableDeclaration" + (lcVariableDeclaration.isErrorNode ? " **E**" : ""));
+        System.out.println(prefix + "\tisVal: " + lcVariableDeclaration.isVal);
+        System.out.println(prefix + "\tname: '" + lcVariableDeclaration.name + "'");
+        System.out.println(prefix + "\thasSimiColon: " + lcVariableDeclaration.hasSemiColon);
+        System.out.println(prefix + "\tmodifier:");
+        this.visitModifier(lcVariableDeclaration.modifier, prefix + "\t\t");
         if (lcVariableDeclaration.typeExpression != null) {
-            System.out.println(prefix + "   |-typeExpression:");
-            this.visit(lcVariableDeclaration.typeExpression, prefix + "   |   |");
+            System.out.println(prefix + "\ttypeExpression:");
+            this.visit(lcVariableDeclaration.typeExpression, prefix + "\t\t");
         }
         if (lcVariableDeclaration.extended != null) {
-            System.out.println(prefix + "   |-extended:");
-            this.visitTypeReferenceExpression(lcVariableDeclaration.extended, prefix + "   |   |");
+            System.out.println(prefix + "\textended:");
+            this.visitTypeReferenceExpression(lcVariableDeclaration.extended, prefix + "\t\t");
         }
         if (lcVariableDeclaration.delegated != null) {
-            System.out.println(prefix + "   |-delegated:");
-            this.visit(lcVariableDeclaration.delegated, prefix + "   |   |");
+            System.out.println(prefix + "\tdelegated:");
+            this.visit(lcVariableDeclaration.delegated, prefix + "\t\t");
         }
         if (lcVariableDeclaration.init != null) {
-            System.out.println(prefix + "   |-init:");
-            this.visit(lcVariableDeclaration.init, prefix + "   |   |");
+            System.out.println(prefix + "\tinit:");
+            this.visit(lcVariableDeclaration.init, prefix + "\t\t");
         }
         if (lcVariableDeclaration.getter != null) {
-            System.out.println(prefix + "   |-getter:");
-            this.visitMethodDeclaration(lcVariableDeclaration.getter, prefix + "   |   |");
+            System.out.println(prefix + "\tgetter:");
+            this.visitMethodDeclaration(lcVariableDeclaration.getter, prefix + "\t\t");
         }
         if (lcVariableDeclaration.setter != null) {
-            System.out.println(prefix + "   |-setter:");
-            this.visitMethodDeclaration(lcVariableDeclaration.setter, prefix + "       |");
+            System.out.println(prefix + "\tsetter:");
+            this.visitMethodDeclaration(lcVariableDeclaration.setter, prefix + "\t\t");
         }
         return null;
     }

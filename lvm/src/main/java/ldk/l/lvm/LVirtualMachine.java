@@ -8,8 +8,8 @@ import ldk.l.util.option.OptionsParser;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-public class LVirtualMachine {
-    public static final long DEFAULT_INITIAL_STACK_SIZE = 4 * 1024 * 1024;
+public final class LVirtualMachine {
+    public static final long DEFAULT_STACK_SIZE = 4 * 1024 * 1024;
 
     public static void main(String[] args) {
         Options options = LVirtualMachine.getOptionsParser().parse(OptionsParser.OptionsParserMode.Skip, args);
@@ -31,6 +31,6 @@ public class LVirtualMachine {
                 .addVar("help", "--help", false).addVar("help", "-h", false)
                 .addVar("version", "--version", false).addBooleanVar("version", "-version", false)
                 .addVar("verbose", "--verbose", false).addVar("verbose", "-verbose", false)
-                .addVar("stackSize", "--stackSize", DEFAULT_INITIAL_STACK_SIZE).addVar("stackSize", "-ss", DEFAULT_INITIAL_STACK_SIZE);
+                .addVar("stackSize", "--stackSize", DEFAULT_STACK_SIZE).addVar("stackSize", "-ss", DEFAULT_STACK_SIZE);
     }
 }

@@ -31,7 +31,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-public class ByteCodeGenerator extends Generator {
+public final class ByteCodeGenerator extends Generator {
     @Override
     public void generate(IRModule module, Options options) {
         boolean verbose = options.getBooleanVar("verbose");
@@ -99,7 +99,7 @@ public class ByteCodeGenerator extends Generator {
     }
 
     public static Module toModule(ByteCodeModule byteCodeModule) {
-        ArrayList<Byte> arrayList = new ArrayList<>();
+        List<Byte> arrayList = new ArrayList<>();
         for (BCControlFlowGraph cfg : byteCodeModule.functionName2CFG.values()) {
             for (BCControlFlowGraph.BasicBlock basicBlock : cfg.basicBlocks.values()) {
                 for (BCInstruction instruction : basicBlock.instructions) {
@@ -157,7 +157,7 @@ public class ByteCodeGenerator extends Generator {
         }
     }
 
-    private static class ByteCodeModuleGenerator extends IRVisitor {
+    private static final class ByteCodeModuleGenerator extends IRVisitor {
         private final IRModule irModule;
         private final ByteCodeModule module;
         private final Options options;
@@ -820,11 +820,10 @@ public class ByteCodeGenerator extends Generator {
         public Object visitStackAllocate(IRStackAllocate irStackAllocate, Object additional) {
             this.visit(irStackAllocate.size, additional);
             BCRegister size = registerStack.pop();
+            addInstruction(new BCInstruction(ByteCode.SUB, new BCRegister(ByteCode.SP_REGISTER), size, new BCRegister(ByteCode.SP_REGISTER)));
 
             this.visit(irStackAllocate.target, additional);
             BCRegister target = registerStack.pop();
-
-            addInstruction(new BCInstruction(ByteCode.SUB, new BCRegister(ByteCode.SP_REGISTER), size, new BCRegister(ByteCode.SP_REGISTER)));
             addInstruction(new BCInstruction(ByteCode.MOV, new BCRegister(ByteCode.SP_REGISTER), target));
             return null;
         }
@@ -1106,7 +1105,7 @@ public class ByteCodeGenerator extends Generator {
         }
     }
 
-    private static class Tagger extends BCVisitor {
+    private static final class Tagger extends BCVisitor {
         private final ByteCodeModule module;
         private final Map<String, Map<Long, BCRegister.Interval>> resultMap;
         private final Map<BCControlFlowGraph.BasicBlock, List<Long>> initialRegisters;
@@ -1200,7 +1199,7 @@ public class ByteCodeGenerator extends Generator {
         }
     }
 
-    private static class RegisterAllocator extends BCVisitor {
+    private static final class RegisterAllocator extends BCVisitor {
         private final ByteCodeModule module;
         private final Map<String, Map<Long, BCRegister.Interval>> intervalMap;
         private final byte numRegisters;
@@ -1437,7 +1436,7 @@ public class ByteCodeGenerator extends Generator {
         }
     }
 
-    private static class Locator {
+    private static final class Locator {
         private final ByteCodeModule module;
         private long textSectionLength = 0;
 
@@ -1458,7 +1457,7 @@ public class ByteCodeGenerator extends Generator {
         }
     }
 
-    private static class Redirector extends BCVisitor {
+    private static final class Redirector extends BCVisitor {
         private final ByteCodeModule module;
         private BCControlFlowGraph currentCFG = null;
 

@@ -2,7 +2,7 @@ package com.xiaoli.bcg.bytecode.operand.immediate;
 
 import com.xiaoli.bcg.bytecode.BCVisitor;
 
-public class BCImmediate1 extends BCImmediate {
+public final class BCImmediate1 extends BCImmediate {
     public byte value;
 
     public BCImmediate1(byte value) {

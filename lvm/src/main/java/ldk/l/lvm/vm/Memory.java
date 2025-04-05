@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class Memory {
+public final class Memory {
     public static final ValueLayout.OfByte LAYOUT_BYTE = ValueLayout.JAVA_BYTE.withOrder(ByteOrder.LITTLE_ENDIAN);
     public static final ValueLayout.OfShort LAYOUT_SHORT = ValueLayout.JAVA_SHORT_UNALIGNED.withOrder(ByteOrder.LITTLE_ENDIAN);
     public static final ValueLayout.OfInt LAYOUT_INT = ValueLayout.JAVA_INT_UNALIGNED.withOrder(ByteOrder.LITTLE_ENDIAN);
@@ -159,22 +159,13 @@ public class Memory {
     private MemoryPage getMemoryPage(long address) {
         int pgdOffset = (int) ((address >> 39) & 0x1ff);
         MemoryPage[][][] pud = memoryPageTable[pgdOffset];
-        if (pud == null) {
-            pud = new MemoryPage[PAGE_TABLE_SIZE][][];
-            memoryPageTable[pgdOffset] = pud;
-        }
+        if (pud == null) return null;
         int pudOffset = (int) ((address >> 30) & 0x1ff);
         MemoryPage[][] pmd = pud[pudOffset];
-        if (pmd == null) {
-            pmd = new MemoryPage[PAGE_TABLE_SIZE][];
-            pud[pudOffset] = pmd;
-        }
+        if (pmd == null) return null;
         int pmdOffset = (int) ((address >> 21) & 0x1ff);
         MemoryPage[] pte = pmd[pmdOffset];
-        if (pte == null) {
-            pte = new MemoryPage[PAGE_TABLE_SIZE];
-            pmd[pmdOffset] = pte;
-        }
+        if (pte == null) return null;
         int pteOffset = (int) ((address >> 12) & 0x1ff);
         return pte[pteOffset];
     }

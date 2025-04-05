@@ -38,7 +38,7 @@ import ldk.l.util.option.Options;
 
 import java.util.*;
 
-public class IRGenerator extends LCAstVisitor {
+public final class IRGenerator extends LCAstVisitor {
     private final IRModule module;
     private final Options options;
     private final ErrorStream errorStream;
@@ -120,6 +120,8 @@ public class IRGenerator extends LCAstVisitor {
         this.currentCFG = module.globalInitSection;
         createBasicBlock("<init_string_constants>");
         this.stringConstantInitInvocations.forEach(this::addInstruction);
+        createBasicBlock("<retain_string_constants>");
+        this.stringConstant2GlobalDataName.values().forEach(globalDataName -> retain(new IRMacro("global_data_address",new String[]{globalDataName}),SystemTypes.String_Type));
         createBasicBlock();
         this.objectStaticInitInvocations.forEach(this::addInstruction);
 
@@ -312,7 +314,7 @@ public class IRGenerator extends LCAstVisitor {
 
                 this.visit(lcVariableDeclaration.init, additional);
                 IROperand result = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
-                addInstruction(new IRSet(type, result, new IRMacro("global_data_address", new String[]{name})));
+                addInstruction(new IRSet(type, new IRMacro("global_data_address", new String[]{name}), result));
 
                 this.currentCFG = lastCFG;
             }
@@ -342,7 +344,7 @@ public class IRGenerator extends LCAstVisitor {
                 } else {
                     address = new IRMacro("field_address", new String[]{variableName2FieldName.get(lcVariableDeclaration.name).peek()});
                 }
-                addInstruction(new IRSet(type, result, address));
+                addInstruction(new IRSet(type, address, result));
             }
             this.currentCFG = lastCFG;
         }
@@ -799,7 +801,7 @@ public class IRGenerator extends LCAstVisitor {
                         String operand1Register = allocateVirtualRegister();
                         addInstruction(new IRGet(operand1Type, operand1, new IRVirtualRegister(operand1Register)));
                         String resultRegister = allocateVirtualRegister();
-                        addInstruction(new IRCalculate(false, IRCalculate.Operator.Add, operandType, new IRVirtualRegister(operand1Register), operand2, new IRVirtualRegister(resultRegister)));
+                        addInstruction(new IRCalculate(IRCalculate.Operator.Add, operandType, new IRVirtualRegister(operand1Register), operand2, new IRVirtualRegister(resultRegister)));
                         result = new IRVirtualRegister(resultRegister);
                     }
                     case MinusAssign -> {
@@ -807,7 +809,7 @@ public class IRGenerator extends LCAstVisitor {
                         String operand1Register = allocateVirtualRegister();
                         addInstruction(new IRGet(operand1Type, operand1, new IRVirtualRegister(operand1Register)));
                         String resultRegister = allocateVirtualRegister();
-                        addInstruction(new IRCalculate(false, IRCalculate.Operator.Sub, operandType, new IRVirtualRegister(operand1Register), operand2, new IRVirtualRegister(resultRegister)));
+                        addInstruction(new IRCalculate(IRCalculate.Operator.Sub, operandType, new IRVirtualRegister(operand1Register), operand2, new IRVirtualRegister(resultRegister)));
                         result = new IRVirtualRegister(resultRegister);
                     }
                     case MultiplyAssign -> {
@@ -815,7 +817,7 @@ public class IRGenerator extends LCAstVisitor {
                         String operand1Register = allocateVirtualRegister();
                         addInstruction(new IRGet(operand1Type, operand1, new IRVirtualRegister(operand1Register)));
                         String resultRegister = allocateVirtualRegister();
-                        addInstruction(new IRCalculate(false, IRCalculate.Operator.Mul, operandType, new IRVirtualRegister(operand1Register), operand2, new IRVirtualRegister(resultRegister)));
+                        addInstruction(new IRCalculate(IRCalculate.Operator.Mul, operandType, new IRVirtualRegister(operand1Register), operand2, new IRVirtualRegister(resultRegister)));
                         result = new IRVirtualRegister(resultRegister);
                     }
                     case DivideAssign -> {
@@ -823,7 +825,7 @@ public class IRGenerator extends LCAstVisitor {
                         String operand1Register = allocateVirtualRegister();
                         addInstruction(new IRGet(operand1Type, operand1, new IRVirtualRegister(operand1Register)));
                         String resultRegister = allocateVirtualRegister();
-                        addInstruction(new IRCalculate(false, IRCalculate.Operator.Div, operandType, new IRVirtualRegister(operand1Register), operand2, new IRVirtualRegister(resultRegister)));
+                        addInstruction(new IRCalculate(IRCalculate.Operator.Div, operandType, new IRVirtualRegister(operand1Register), operand2, new IRVirtualRegister(resultRegister)));
                         result = new IRVirtualRegister(resultRegister);
                     }
                     case ModulusAssign -> {
@@ -831,7 +833,7 @@ public class IRGenerator extends LCAstVisitor {
                         String operand1Register = allocateVirtualRegister();
                         addInstruction(new IRGet(operand1Type, operand1, new IRVirtualRegister(operand1Register)));
                         String resultRegister = allocateVirtualRegister();
-                        addInstruction(new IRCalculate(false, IRCalculate.Operator.Mod, operandType, new IRVirtualRegister(operand1Register), operand2, new IRVirtualRegister(resultRegister)));
+                        addInstruction(new IRCalculate(IRCalculate.Operator.Mod, operandType, new IRVirtualRegister(operand1Register), operand2, new IRVirtualRegister(resultRegister)));
                         result = new IRVirtualRegister(resultRegister);
                     }
                     case LeftShiftArithmeticAssign -> {
@@ -839,7 +841,7 @@ public class IRGenerator extends LCAstVisitor {
                         String operand1Register = allocateVirtualRegister();
                         addInstruction(new IRGet(operand1Type, operand1, new IRVirtualRegister(operand1Register)));
                         String resultRegister = allocateVirtualRegister();
-                        addInstruction(new IRCalculate(false, IRCalculate.Operator.Shl, operandType, new IRVirtualRegister(operand1Register), operand2, new IRVirtualRegister(resultRegister)));
+                        addInstruction(new IRCalculate(IRCalculate.Operator.Shl, operandType, new IRVirtualRegister(operand1Register), operand2, new IRVirtualRegister(resultRegister)));
                         result = new IRVirtualRegister(resultRegister);
                     }
                     case RightShiftArithmeticAssign -> {
@@ -847,7 +849,7 @@ public class IRGenerator extends LCAstVisitor {
                         String operand1Register = allocateVirtualRegister();
                         addInstruction(new IRGet(operand1Type, operand1, new IRVirtualRegister(operand1Register)));
                         String resultRegister = allocateVirtualRegister();
-                        addInstruction(new IRCalculate(false, IRCalculate.Operator.Shr, operandType, new IRVirtualRegister(operand1Register), operand2, new IRVirtualRegister(resultRegister)));
+                        addInstruction(new IRCalculate(IRCalculate.Operator.Shr, operandType, new IRVirtualRegister(operand1Register), operand2, new IRVirtualRegister(resultRegister)));
                         result = new IRVirtualRegister(resultRegister);
                     }
                     case RightShiftLogicalAssign -> {
@@ -855,7 +857,7 @@ public class IRGenerator extends LCAstVisitor {
                         String operand1Register = allocateVirtualRegister();
                         addInstruction(new IRGet(operand1Type, operand1, new IRVirtualRegister(operand1Register)));
                         String resultRegister = allocateVirtualRegister();
-                        addInstruction(new IRCalculate(false, IRCalculate.Operator.UShr, operandType, new IRVirtualRegister(operand1Register), operand2, new IRVirtualRegister(resultRegister)));
+                        addInstruction(new IRCalculate(IRCalculate.Operator.UShr, operandType, new IRVirtualRegister(operand1Register), operand2, new IRVirtualRegister(resultRegister)));
                         result = new IRVirtualRegister(resultRegister);
                     }
                     case BitAndAssign -> {
@@ -863,7 +865,7 @@ public class IRGenerator extends LCAstVisitor {
                         String operand1Register = allocateVirtualRegister();
                         addInstruction(new IRGet(operand1Type, operand1, new IRVirtualRegister(operand1Register)));
                         String resultRegister = allocateVirtualRegister();
-                        addInstruction(new IRCalculate(false, IRCalculate.Operator.And, operandType, new IRVirtualRegister(operand1Register), operand2, new IRVirtualRegister(resultRegister)));
+                        addInstruction(new IRCalculate(IRCalculate.Operator.And, operandType, new IRVirtualRegister(operand1Register), operand2, new IRVirtualRegister(resultRegister)));
                         result = new IRVirtualRegister(resultRegister);
                     }
                     case BitOrAssign -> {
@@ -871,7 +873,7 @@ public class IRGenerator extends LCAstVisitor {
                         String operand1Register = allocateVirtualRegister();
                         addInstruction(new IRGet(operand1Type, operand1, new IRVirtualRegister(operand1Register)));
                         String resultRegister = allocateVirtualRegister();
-                        addInstruction(new IRCalculate(false, IRCalculate.Operator.Or, operandType, new IRVirtualRegister(operand1Register), operand2, new IRVirtualRegister(resultRegister)));
+                        addInstruction(new IRCalculate(IRCalculate.Operator.Or, operandType, new IRVirtualRegister(operand1Register), operand2, new IRVirtualRegister(resultRegister)));
                         result = new IRVirtualRegister(resultRegister);
                     }
                     case BitXorAssign -> {
@@ -879,12 +881,12 @@ public class IRGenerator extends LCAstVisitor {
                         String operand1Register = allocateVirtualRegister();
                         addInstruction(new IRGet(operand1Type, operand1, new IRVirtualRegister(operand1Register)));
                         String resultRegister = allocateVirtualRegister();
-                        addInstruction(new IRCalculate(false, IRCalculate.Operator.Xor, operandType, new IRVirtualRegister(operand1Register), operand2, new IRVirtualRegister(resultRegister)));
+                        addInstruction(new IRCalculate(IRCalculate.Operator.Xor, operandType, new IRVirtualRegister(operand1Register), operand2, new IRVirtualRegister(resultRegister)));
                         result = new IRVirtualRegister(resultRegister);
                     }
                     case null, default -> throw new RuntimeException("Unsupported operator: " + lcBinary._operator);
                 }
-                addInstruction(new IRSet(operandType, result, operand1));
+                addInstruction(new IRSet(operandType, operand1, result));
                 operandStack.push(result);
             }
         }
@@ -910,7 +912,7 @@ public class IRGenerator extends LCAstVisitor {
             IROperand result = SystemTypes.VOID.equals(lcUnary.methodSymbol.returnType) ? null : operandStack.pop();
             if (result != null) {
                 if (lcUnary._operator == Tokens.Operator.Inc || lcUnary._operator == Tokens.Operator.Dec) {
-                    addInstruction(new IRSet(type, result, operand));
+                    addInstruction(new IRSet(type, operand, result));
                     if (lcUnary.isPrefix) operandStack.push(result);
                     else operandStack.push(irOperand);
                 } else {
@@ -927,13 +929,13 @@ public class IRGenerator extends LCAstVisitor {
                     String operandRegister = allocateVirtualRegister();
                     addInstruction(new IRGet(type, operand, new IRVirtualRegister(operandRegister)));
                     addInstruction(new IRIncrease(type, new IRVirtualRegister(operandRegister), new IRVirtualRegister(resultRegister)));
-                    addInstruction(new IRSet(type, new IRVirtualRegister(resultRegister), operand));
+                    addInstruction(new IRSet(type, operand, new IRVirtualRegister(resultRegister)));
                     operandStack.push(new IRVirtualRegister(resultRegister));
                 } else if (lcUnary._operator == Tokens.Operator.Dec) {
                     String operandRegister = allocateVirtualRegister();
                     addInstruction(new IRGet(type, operand, new IRVirtualRegister(operandRegister)));
                     addInstruction(new IRDecrease(type, new IRVirtualRegister(operandRegister), new IRVirtualRegister(resultRegister)));
-                    addInstruction(new IRSet(type, new IRVirtualRegister(resultRegister), operand));
+                    addInstruction(new IRSet(type, operand, new IRVirtualRegister(resultRegister)));
                     operandStack.push(new IRVirtualRegister(resultRegister));
                 } else {
                     if (lcUnary._operator == Tokens.Operator.Minus) {
@@ -956,7 +958,7 @@ public class IRGenerator extends LCAstVisitor {
             } else {
                 throw new IllegalArgumentException("Unknown unary operator: " + lcUnary._operator);
             }
-            addInstruction(new IRSet(type, new IRVirtualRegister(resultRegister), operand));
+            addInstruction(new IRSet(type, operand, new IRVirtualRegister(resultRegister)));
             operandStack.push(new IRVirtualRegister(operandRegister));
         }
         return null;
@@ -1113,7 +1115,7 @@ public class IRGenerator extends LCAstVisitor {
         String tempRegister = allocateVirtualRegister();
         if (lcArrayAccess.base.theType instanceof ArrayType) {
             int constant16Index = this.module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 16));
-            addInstruction(new IRCalculate(IRCalculate.Operator.Add, new IRPointerType(IRType.getVoidType()), base, new IRConstant(constant16Index), new IRVirtualRegister(tempRegister)));
+            addInstruction(new IRCalculate(IRCalculate.Operator.Add, new IRPointerType(elementType), base, new IRConstant(constant16Index), new IRVirtualRegister(tempRegister)));
         } else {
             addInstruction(new IRSetVirtualRegister(base, new IRVirtualRegister(tempRegister)));
         }
@@ -1444,8 +1446,9 @@ public class IRGenerator extends LCAstVisitor {
 
     @Override
     public Object visitNewArray(LCNewArray lcNewArray, Object additional) {
-        int constant8Index = this.module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 8));
-        IRConstant typeSize = new IRConstant(constant8Index);
+        IRType elementType = parseType(lcNewArray.getRealType());
+        int constantTypeSizeIndex = this.module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), IRType.getLength(elementType)));
+        IRConstant typeSize = new IRConstant(constantTypeSizeIndex);
 
         if (lcNewArray.place != null) {
             this.visit(lcNewArray.place, additional);
@@ -1465,18 +1468,27 @@ public class IRGenerator extends LCAstVisitor {
         retain(place, lcNewArray.theType);
 
         if (lcNewArray.elements != null) {
-            String addressRegister = allocateVirtualRegister();
-            addInstruction(new IRSetVirtualRegister(place, new IRVirtualRegister(addressRegister)));
             int constant16Index = module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 16));
-            addInstruction(new IRCalculate(false, IRCalculate.Operator.Add, IRType.getUnsignedLongType(), new IRVirtualRegister(addressRegister), new IRConstant(constant16Index), new IRVirtualRegister(addressRegister)));
+            String temp = allocateVirtualRegister();
+            addInstruction(new IRCalculate(IRCalculate.Operator.Add, IRType.getUnsignedLongType(), place, new IRConstant(constant16Index), new IRVirtualRegister(temp)));
+            String address = allocateVirtualRegister();
+            int constant8Index = module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 8));
+            addInstruction(new IRStackAllocate(new IRConstant(constant8Index), new IRVirtualRegister(address)));
+            addInstruction(new IRSet(new IRPointerType(elementType), new IRVirtualRegister(address), new IRVirtualRegister(temp)));
             for (int i = 0; i < lcNewArray.elements.length; i++) {
-                this.visit(lcNewArray.elements[i], additional);
-                IROperand element = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
-                addInstruction(new IRSet(parseType(lcNewArray.getRealType()), new IRVirtualRegister(addressRegister), element));
-                addInstruction(new IRCalculate(false, IRCalculate.Operator.Add, IRType.getUnsignedLongType(), new IRVirtualRegister(addressRegister), typeSize, new IRVirtualRegister(addressRegister)));
+                LCExpression element = lcNewArray.elements[i];
+                this.visit(element, additional);
+                IROperand elem = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
+                retain(elem, element.theType);
+                String elementAddress = allocateVirtualRegister();
+                addInstruction(new IRGet(new IRPointerType(elementType), new IRVirtualRegister(address), new IRVirtualRegister(elementAddress)));
+                addInstruction(new IRSet(elementType, new IRVirtualRegister(elementAddress), elem));
+                String temp2 = allocateVirtualRegister();
+                addInstruction(new IRCalculate(IRCalculate.Operator.Add, IRType.getUnsignedLongType(), new IRVirtualRegister(elementAddress), typeSize, new IRVirtualRegister(temp2)));
+                addInstruction(new IRSet(new IRPointerType(elementType), new IRVirtualRegister(address), new IRVirtualRegister(temp2)));
             }
         } else {
-            initArray(place, typeSize, lcNewArray.dimensions, 1);
+            initArray(place, typeSize, lcNewArray.dimensions, 0);
         }
         operandStack.push(place);
         return null;
@@ -1571,10 +1583,10 @@ public class IRGenerator extends LCAstVisitor {
 
     @Override
     public Object visitForeach(LCForeach lcForeach, Object additional) {
+        this.visitVariableDeclaration(lcForeach.init, additional);
+
         this.visit(lcForeach.source, additional);
         IROperand source = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
-
-        this.visitVariableDeclaration(lcForeach.init, additional);
 
         if (lcForeach.source.theType instanceof ArrayType arrayType) {
             IRType type = parseType(arrayType.base);
@@ -1585,35 +1597,43 @@ public class IRGenerator extends LCAstVisitor {
             String count = allocateVirtualRegister();
             addInstruction(new IRStackAllocate(new IRConstant(constant8Index), new IRVirtualRegister(count)));
             int constant0Index = module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 0));
-            addInstruction(new IRSet(IRType.getUnsignedLongType(), new IRConstant(constant0Index), new IRVirtualRegister(count)));
+            addInstruction(new IRSet(IRType.getUnsignedLongType(), new IRVirtualRegister(count), new IRConstant(constant0Index)));
+            String elementAddress = allocateVirtualRegister();
+            addInstruction(new IRStackAllocate(new IRConstant(constant8Index), new IRVirtualRegister(elementAddress)));
+            int constant16Index = this.module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 16));
+            String temp = allocateVirtualRegister();
+            addInstruction(new IRCalculate(IRCalculate.Operator.Add, new IRPointerType(IRType.getVoidType()), source, new IRConstant(constant16Index), new IRVirtualRegister(temp)));
+            addInstruction(new IRSet(new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(elementAddress), new IRVirtualRegister(temp)));
+
             var condition = createBasicBlock();
-            String tempRegister = allocateVirtualRegister();
-            addInstruction(new IRGet(IRType.getUnsignedLongType(), new IRVirtualRegister(count), new IRVirtualRegister(tempRegister)));
-            var conditionalJump = new IRConditionalJump(IRType.getUnsignedLongType(), IRCondition.GreaterEqual, new IRVirtualRegister(tempRegister), arrayLength, "");
+            String temp2 = allocateVirtualRegister();
+            addInstruction(new IRGet(IRType.getUnsignedLongType(), new IRVirtualRegister(count), new IRVirtualRegister(temp2)));
+            var conditionalJump = new IRConditionalJump(IRType.getUnsignedLongType(), IRCondition.GreaterEqual, new IRVirtualRegister(temp2), arrayLength, "");
             addInstruction(conditionalJump);
 
             createBasicBlock();
-            int constant16Index = this.module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 16));
-            String tempRegister2 = allocateVirtualRegister();
-            addInstruction(new IRCalculate(IRCalculate.Operator.Add, new IRPointerType(IRType.getVoidType()), source, new IRConstant(constant16Index), new IRVirtualRegister(tempRegister2)));
-            String tempRegister3 = allocateVirtualRegister();
-            addInstruction(new IRGet(IRType.getUnsignedLongType(), new IRVirtualRegister(count), new IRVirtualRegister(tempRegister3)));
-            int constantElementSizeIndex = module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), IRType.getLength(parseType(arrayType.base))));
-            String tempRegister4 = allocateVirtualRegister();
-            addInstruction(new IRCalculate(IRCalculate.Operator.Mul, IRType.getUnsignedLongType(), new IRVirtualRegister(tempRegister3), new IRConstant(constantElementSizeIndex), new IRVirtualRegister(tempRegister4)));
-            String tempRegister5 = allocateVirtualRegister();
-            addInstruction(new IRCalculate(IRCalculate.Operator.Add, new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(tempRegister2), new IRVirtualRegister(tempRegister4), new IRVirtualRegister(tempRegister5)));
-
+            String temp3 = allocateVirtualRegister();
+            addInstruction(new IRGet(new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(elementAddress), new IRVirtualRegister(temp3)));
+            String element = allocateVirtualRegister();
+            addInstruction(new IRGet(type, new IRVirtualRegister(temp3), new IRVirtualRegister(element)));
+            retain(new IRVirtualRegister(element),arrayType.base);
             IRMacro address = new IRMacro("field_address", new String[]{this.variableName2FieldName.get(lcForeach.init.name).peek()});
-            addInstruction(new IRSet(type, new IRVirtualRegister(tempRegister5), address));
+            addInstruction(new IRSet(type, address, new IRVirtualRegister(element)));
+
+            int constantElementSizeIndex = module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), IRType.getLength(parseType(arrayType.base))));
+            String temp4 = allocateVirtualRegister();
+            addInstruction(new IRCalculate(IRCalculate.Operator.Add, new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(temp3), new IRConstant(constantElementSizeIndex), new IRVirtualRegister(temp4)));
+            addInstruction(new IRSet(new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(elementAddress), new IRVirtualRegister(temp4)));
+            String temp5 = allocateVirtualRegister();
+            addInstruction(new IRIncrease(IRType.getUnsignedLongType(), new IRVirtualRegister(temp2), new IRVirtualRegister(temp5)));
+            addInstruction(new IRSet(IRType.getUnsignedLongType(), new IRVirtualRegister(count), new IRVirtualRegister(temp5)));
 
             this.visit(lcForeach.body, additional);
 
+            release(new IRVirtualRegister(element),arrayType.base);
             addInstruction(new IRGoto(condition.name));
 
             var end = createBasicBlock();
-            variableName2FieldName.get(lcForeach.init.name).pop();
-
             conditionalJump.target = end.name;
         }
 
@@ -1720,7 +1740,7 @@ public class IRGenerator extends LCAstVisitor {
     private void initObjectHead(String objectName) {
         this.getThisInstance();
         IROperand thisInstance = operandStack.pop();
-        addInstruction(new IRSet(new IRPointerType(IRType.getVoidType()), new IRMacro("global_data_address", new String[]{"<class_instance " + objectName + ">"}), thisInstance));
+        addInstruction(new IRSet(new IRPointerType(IRType.getVoidType()), thisInstance, new IRMacro("global_data_address", new String[]{"<class_instance " + objectName + ">"})));
     }
 
     private void getThisInstance() {
@@ -1808,38 +1828,52 @@ public class IRGenerator extends LCAstVisitor {
     }
 
     private void initArray(IROperand place, IROperand typeSize, LCExpression[] dimensions, int index) {
-        if (index == dimensions.length) return;
+        if (index + 1 >= dimensions.length) return;
 
-        this.visit(dimensions[index], null);
-        IROperand length = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
+        LCExpression dimension = dimensions[index];
+        LCExpression length = dimensions[index + 1];
+        if (dimension == null || length == null) return;
 
-        String addressRegister = allocateVirtualRegister();
-        addInstruction(new IRSetVirtualRegister(place, new IRVirtualRegister(addressRegister)));
-        int constant16Index = module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 16));
-        addInstruction(new IRCalculate(false, IRCalculate.Operator.Add, IRType.getUnsignedLongType(), new IRVirtualRegister(addressRegister), new IRConstant(constant16Index), new IRVirtualRegister(addressRegister)));
-        String countRegister = allocateVirtualRegister();
+        this.visit(dimension, null);
+        IROperand dim = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
+        this.visit(length, null);
+        IROperand len = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
+
+        String address = allocateVirtualRegister();
         int constant8Index = module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 8));
+        addInstruction(new IRStackAllocate(new IRConstant(8), new IRVirtualRegister(address)));
+        int constant16Index = module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 16));
+        String temp = allocateVirtualRegister();
+        addInstruction(new IRCalculate(IRCalculate.Operator.Add, IRType.getUnsignedLongType(), place, new IRConstant(constant16Index), new IRVirtualRegister(temp)));
+        addInstruction(new IRSet(new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(address), new IRVirtualRegister(temp)));
+        String countRegister = allocateVirtualRegister();
         addInstruction(new IRStackAllocate(new IRConstant(constant8Index), new IRVirtualRegister(countRegister)));
         int constant0Index = module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 0));
-        addInstruction(new IRSet(IRType.getUnsignedLongType(), new IRConstant(constant0Index), new IRVirtualRegister(countRegister)));
+        addInstruction(new IRSet(IRType.getUnsignedLongType(), new IRVirtualRegister(countRegister), new IRConstant(constant0Index)));
 
         IRControlFlowGraph.BasicBlock condition = createBasicBlock();
-        IRConditionalJump irConditionalJump = new IRConditionalJump(IRType.getUnsignedLongType(), IRCondition.GreaterEqual, new IRVirtualRegister(countRegister), length, "");
+        String temp2 = allocateVirtualRegister();
+        addInstruction(new IRGet(IRType.getUnsignedLongType(), new IRVirtualRegister(countRegister), new IRVirtualRegister(temp2)));
+        IRConditionalJump irConditionalJump = new IRConditionalJump(IRType.getUnsignedLongType(), IRCondition.GreaterEqual, new IRVirtualRegister(temp2), dim, "");
         addInstruction(irConditionalJump);
 
         createBasicBlock();
-        newArray(typeSize, length);
+        newArray(typeSize, len);
         IROperand newPlace = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
         initArrayHead(newPlace);
         initArray(newPlace, typeSize, dimensions, index + 1);
-        addInstruction(new IRSet(IRType.getUnsignedLongType(), new IRVirtualRegister(addressRegister), newPlace));
-        addInstruction(new IRCalculate(false, IRCalculate.Operator.Add, IRType.getUnsignedLongType(), new IRVirtualRegister(addressRegister), typeSize, new IRVirtualRegister(addressRegister)));
+        String temp3 = allocateVirtualRegister();
+        addInstruction(new IRGet(new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(address), new IRVirtualRegister(temp3)));
+        addInstruction(new IRSet(IRType.getUnsignedLongType(), new IRVirtualRegister(temp3), newPlace));
+        String temp4 = allocateVirtualRegister();
+        addInstruction(new IRCalculate(IRCalculate.Operator.Add, IRType.getUnsignedLongType(), new IRVirtualRegister(temp3), typeSize, new IRVirtualRegister(temp4)));
+        addInstruction(new IRSet(new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(address), new IRVirtualRegister(temp4)));
 
-        String temp = allocateVirtualRegister();
-        addInstruction(new IRGet(IRType.getUnsignedLongType(), new IRVirtualRegister(countRegister), new IRVirtualRegister(temp)));
-        String temp2 = allocateVirtualRegister();
-        addInstruction(new IRIncrease(IRType.getUnsignedLongType(), new IRVirtualRegister(temp), new IRVirtualRegister(temp2)));
-        addInstruction(new IRSet(IRType.getUnsignedLongType(), new IRVirtualRegister(temp2), new IRVirtualRegister(countRegister)));
+        String temp5 = allocateVirtualRegister();
+        addInstruction(new IRGet(IRType.getUnsignedLongType(), new IRVirtualRegister(countRegister), new IRVirtualRegister(temp5)));
+        String temp6 = allocateVirtualRegister();
+        addInstruction(new IRIncrease(IRType.getUnsignedLongType(), new IRVirtualRegister(temp5), new IRVirtualRegister(temp6)));
+        addInstruction(new IRSet(IRType.getUnsignedLongType(), new IRVirtualRegister(countRegister), new IRVirtualRegister(temp6)));
         addInstruction(new IRGoto(condition.name));
 
         IRControlFlowGraph.BasicBlock end = createBasicBlock();
@@ -1853,9 +1887,12 @@ public class IRGenerator extends LCAstVisitor {
         addInstruction(new IRCalculate(IRCalculate.Operator.Sub, new IRPointerType(IRType.getUnsignedLongType()), array, new IRConstant(constant8Index), new IRVirtualRegister(tempRegister1)));
         String tempRegister2 = allocateVirtualRegister();
         addInstruction(new IRGet(IRType.getUnsignedLongType(), new IRVirtualRegister(tempRegister1), new IRVirtualRegister(tempRegister2)));
+        String temp3 = allocateVirtualRegister();
+        int constant16Index = module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 16));
+        addInstruction(new IRCalculate(IRCalculate.Operator.Sub, IRType.getUnsignedLongType(), new IRVirtualRegister(tempRegister2), new IRConstant(constant16Index), new IRVirtualRegister(temp3)));
         int constantElementSizeIndex = module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), IRType.getLength(parseType(elementType))));
         String lengthRegister = allocateVirtualRegister();
-        addInstruction(new IRCalculate(IRCalculate.Operator.Div, IRType.getUnsignedLongType(), new IRVirtualRegister(tempRegister2), new IRConstant(constantElementSizeIndex), new IRVirtualRegister(lengthRegister)));
+        addInstruction(new IRCalculate(IRCalculate.Operator.Div, IRType.getUnsignedLongType(), new IRVirtualRegister(temp3), new IRConstant(constantElementSizeIndex), new IRVirtualRegister(lengthRegister)));
         operandStack.push(new IRVirtualRegister(lengthRegister));
     }
 
@@ -1901,51 +1938,55 @@ public class IRGenerator extends LCAstVisitor {
 
     private void deleteArray(IROperand array, ArrayType arrayType) {
         if (!SystemTypes.isPrimitiveType(arrayType.base)) {
+            int constantTypeSizeIndex = module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), IRType.getLength(parseType(arrayType.base))));
+
             String addressRegister = allocateVirtualRegister();
             int constant8Index = module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 8));
             addInstruction(new IRStackAllocate(new IRConstant(constant8Index), new IRVirtualRegister(addressRegister)));
-            String tempRegister = allocateVirtualRegister();
-            addInstruction(new IRCalculate(false, IRCalculate.Operator.Sub, IRType.getUnsignedLongType(), array, new IRConstant(constant8Index), new IRVirtualRegister(tempRegister)));
-            addInstruction(new IRSet(new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(tempRegister), new IRVirtualRegister(addressRegister)));
+            String temp = allocateVirtualRegister();
+            addInstruction(new IRCalculate(IRCalculate.Operator.Sub, IRType.getUnsignedLongType(), array, new IRConstant(constant8Index), new IRVirtualRegister(temp)));
+            addInstruction(new IRSet(new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(addressRegister), new IRVirtualRegister(temp)));
             String sizeRegister0 = allocateVirtualRegister();
             addInstruction(new IRGet(IRType.getUnsignedLongType(), new IRVirtualRegister(addressRegister), new IRVirtualRegister(sizeRegister0)));
             String sizeRegister1 = allocateVirtualRegister();
             addInstruction(new IRGet(IRType.getUnsignedLongType(), new IRVirtualRegister(sizeRegister0), new IRVirtualRegister(sizeRegister1)));
             String sizeRegister = allocateVirtualRegister();
             int constant16Index = module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 16));
-            addInstruction(new IRCalculate(false, IRCalculate.Operator.Sub, IRType.getUnsignedLongType(), new IRVirtualRegister(sizeRegister1), new IRConstant(constant16Index), new IRVirtualRegister(sizeRegister)));
+            addInstruction(new IRCalculate(IRCalculate.Operator.Sub, IRType.getUnsignedLongType(), new IRVirtualRegister(sizeRegister1), new IRConstant(constant16Index), new IRVirtualRegister(sizeRegister)));
             String lengthRegister = allocateVirtualRegister();
-            addInstruction(new IRCalculate(false, IRCalculate.Operator.Div, IRType.getUnsignedLongType(), new IRVirtualRegister(sizeRegister), getTypeSize(arrayType.base), new IRVirtualRegister(lengthRegister)));
-            String temp2Register = allocateVirtualRegister();
-            addInstruction(new IRCalculate(false, IRCalculate.Operator.Add, IRType.getUnsignedLongType(), array, new IRConstant(constant16Index), new IRVirtualRegister(temp2Register)));
-            addInstruction(new IRSet(new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(temp2Register), new IRVirtualRegister(addressRegister)));
+            addInstruction(new IRCalculate(IRCalculate.Operator.Div, IRType.getUnsignedLongType(), new IRVirtualRegister(sizeRegister), new IRConstant(constantTypeSizeIndex), new IRVirtualRegister(lengthRegister)));
+            String temp2 = allocateVirtualRegister();
+            addInstruction(new IRCalculate(IRCalculate.Operator.Add, IRType.getUnsignedLongType(), array, new IRConstant(constant16Index), new IRVirtualRegister(temp2)));
+            addInstruction(new IRSet(new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(addressRegister), new IRVirtualRegister(temp2)));
 
             String countRegister = allocateVirtualRegister();
             addInstruction(new IRStackAllocate(new IRConstant(constant8Index), new IRVirtualRegister(countRegister)));
             int constant0Index = module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 0));
-            addInstruction(new IRSet(IRType.getUnsignedLongType(), new IRConstant(constant0Index), new IRVirtualRegister(countRegister)));
+            addInstruction(new IRSet(IRType.getUnsignedLongType(), new IRVirtualRegister(countRegister), new IRConstant(constant0Index)));
 
             IRControlFlowGraph.BasicBlock conditionBlock = createBasicBlock();
-            String temp3Register = allocateVirtualRegister();
-            addInstruction(new IRGet(IRType.getUnsignedLongType(), new IRVirtualRegister(countRegister), new IRVirtualRegister(temp3Register)));
-            IRConditionalJump irConditionalJump = new IRConditionalJump(IRType.getUnsignedLongType(), IRCondition.GreaterEqual, new IRVirtualRegister(temp3Register), new IRVirtualRegister(lengthRegister), null);
+            String temp3 = allocateVirtualRegister();
+            addInstruction(new IRGet(IRType.getUnsignedLongType(), new IRVirtualRegister(countRegister), new IRVirtualRegister(temp3)));
+            IRConditionalJump irConditionalJump = new IRConditionalJump(IRType.getUnsignedLongType(), IRCondition.GreaterEqual, new IRVirtualRegister(temp3), new IRVirtualRegister(lengthRegister), null);
             addInstruction(irConditionalJump);
             createBasicBlock();
 
+            String temp4 = allocateVirtualRegister();
+            addInstruction(new IRGet(new IRPointerType(new IRPointerType(IRType.getVoidType())), new IRVirtualRegister(addressRegister), new IRVirtualRegister(temp4)));
             String elementRegister = allocateVirtualRegister();
-            addInstruction(new IRGet(IRType.getUnsignedLongType(), new IRVirtualRegister(addressRegister), new IRVirtualRegister(elementRegister)));
-            deleteSomething(new IRVirtualRegister(elementRegister), arrayType.base);
+            addInstruction(new IRGet(new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(temp4), new IRVirtualRegister(elementRegister)));
+            release(new IRVirtualRegister(elementRegister), arrayType.base);
 
-            String temp4Register = allocateVirtualRegister();
-            addInstruction(new IRGet(IRType.getUnsignedLongType(), new IRVirtualRegister(addressRegister), new IRVirtualRegister(temp4Register)));
-            String temp5Register = allocateVirtualRegister();
-            addInstruction(new IRCalculate(false, IRCalculate.Operator.Add, IRType.getUnsignedLongType(), new IRVirtualRegister(temp4Register), getTypeSize(arrayType.base), new IRVirtualRegister(temp5Register)));
-            addInstruction(new IRSet(IRType.getUnsignedLongType(), new IRVirtualRegister(temp5Register), new IRVirtualRegister(addressRegister)));
-            String temp6Register = allocateVirtualRegister();
-            addInstruction(new IRGet(IRType.getUnsignedLongType(), new IRVirtualRegister(countRegister), new IRVirtualRegister(temp6Register)));
-            String temp7Register = allocateVirtualRegister();
-            addInstruction(new IRIncrease(IRType.getUnsignedLongType(), new IRVirtualRegister(temp6Register), new IRVirtualRegister(temp7Register)));
-            addInstruction(new IRSet(IRType.getUnsignedLongType(), new IRVirtualRegister(temp7Register), new IRVirtualRegister(countRegister)));
+            String temp5 = allocateVirtualRegister();
+            addInstruction(new IRGet(IRType.getUnsignedLongType(), new IRVirtualRegister(addressRegister), new IRVirtualRegister(temp5)));
+            String temp6 = allocateVirtualRegister();
+            addInstruction(new IRCalculate(IRCalculate.Operator.Add, IRType.getUnsignedLongType(), new IRVirtualRegister(temp5), new IRConstant(constantTypeSizeIndex), new IRVirtualRegister(temp6)));
+            addInstruction(new IRSet(IRType.getUnsignedLongType(), new IRVirtualRegister(addressRegister), new IRVirtualRegister(temp6)));
+            String temp7 = allocateVirtualRegister();
+            addInstruction(new IRGet(IRType.getUnsignedLongType(), new IRVirtualRegister(countRegister), new IRVirtualRegister(temp7)));
+            String temp8 = allocateVirtualRegister();
+            addInstruction(new IRIncrease(IRType.getUnsignedLongType(), new IRVirtualRegister(temp7), new IRVirtualRegister(temp8)));
+            addInstruction(new IRSet(IRType.getUnsignedLongType(), new IRVirtualRegister(countRegister), new IRVirtualRegister(temp8)));
             addInstruction(new IRGoto(conditionBlock.name));
             IRControlFlowGraph.BasicBlock end = createBasicBlock();
             irConditionalJump.target = end.name;
@@ -1992,14 +2033,21 @@ public class IRGenerator extends LCAstVisitor {
         }
 
         int constant8Index = this.module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 8));
-        String tempRegister = allocateVirtualRegister();
-        addInstruction(new IRCalculate(false, IRCalculate.Operator.Add, IRType.getUnsignedLongType(), operand, new IRConstant(constant8Index), new IRVirtualRegister(tempRegister)));
-        addInstruction(new IRDecrease(IRType.getUnsignedLongType(), new IRVirtualRegister(tempRegister)));
+        String temp = allocateVirtualRegister();
+        addInstruction(new IRCalculate(IRCalculate.Operator.Add, IRType.getUnsignedLongType(), operand, new IRConstant(constant8Index), new IRVirtualRegister(temp)));
+        addInstruction(new IRDecrease(IRType.getUnsignedLongType(), new IRVirtualRegister(temp)));
 
-        // TODO delete if reference count is 0
+        String temp2 = allocateVirtualRegister();
+        addInstruction(new IRGet(IRType.getUnsignedLongType(), new IRVirtualRegister(temp), new IRVirtualRegister(temp2)));
+        int constant0Index = module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 0));
+        IRConditionalJump irConditionalJump2 = new IRConditionalJump(IRType.getUnsignedLongType(), IRCondition.NotEqual, new IRVirtualRegister(temp2), new IRConstant(constant0Index), "");
+        addInstruction(irConditionalJump2);
+        createBasicBlock();
+        deleteSomething(operand, type);
 
+        var end = createBasicBlock();
+        irConditionalJump2.target = end.name;
         if (irConditionalJump != null) {
-            var end = createBasicBlock();
             irConditionalJump.target = end.name;
         }
     }
@@ -2111,20 +2159,4 @@ public class IRGenerator extends LCAstVisitor {
         };
     }
 
-    private IROperand getTypeSize(Type type) {
-        if (SystemTypes.BYTE.equals(type) || SystemTypes.UNSIGNED_BYTE.equals(type) || SystemTypes.BOOLEAN.equals(type)) {
-            int constant1Index = this.module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 1));
-            return new IRConstant(constant1Index);
-        } else if (SystemTypes.SHORT.equals(type) || SystemTypes.UNSIGNED_SHORT.equals(type)) {
-            int constant2Index = this.module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 2));
-            return new IRConstant(constant2Index);
-        } else if (SystemTypes.INT.equals(type) || SystemTypes.UNSIGNED_INT.equals(type) || SystemTypes.CHAR.equals(type) || SystemTypes.FLOAT.equals(type)) {
-            int constant4Index = this.module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 4));
-            return new IRConstant(constant4Index);
-        } else if (SystemTypes.LONG.equals(type) || SystemTypes.UNSIGNED_LONG.equals(type) || SystemTypes.DOUBLE.equals(type) || type instanceof ArrayType) {
-            int constant8Index = this.module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 8));
-            return new IRConstant(constant8Index);
-        }
-        return null;
-    }
 }

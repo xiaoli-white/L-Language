@@ -6,7 +6,7 @@ import ldk.l.lg.ir.instruction.IRInstruction;
 
 import java.util.*;
 
-public class IRControlFlowGraph {
+public final class IRControlFlowGraph {
     public final Map<String, BasicBlock> basicBlocks = new LinkedHashMap<>();
     public final Map<BasicBlock, List<BasicBlock>> outEdges = new TreeMap<>();
     public final Map<BasicBlock, List<BasicBlock>> inEdges = new TreeMap<>();
