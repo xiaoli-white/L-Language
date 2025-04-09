@@ -34,7 +34,7 @@ import ldk.l.lc.util.symbol.VariableSymbol;
 import java.util.*;
 import java.util.stream.Stream;
 
-public class ReferenceResolver extends LCAstVisitor {
+public final class ReferenceResolver extends LCAstVisitor {
     private final SemanticAnalyzer semanticAnalyzer;
     private final ErrorStream errorStream;
     private Scope scope = null;
@@ -359,8 +359,7 @@ public class ReferenceResolver extends LCAstVisitor {
         this.declaredVarsMap.put(this.scope, new HashMap<>());
         super.visitIf(lcIf, additional);
 
-        if (lcIf.then instanceof LCExpressionStatement exp1 && !exp1.hasSemiColon
-                && lcIf._else instanceof LCExpressionStatement exp2 && !exp2.hasSemiColon) {
+        if (lcIf.then instanceof LCExpressionStatement exp1 && lcIf._else instanceof LCExpressionStatement exp2) {
             lcIf.theType = TypeUtil.getUpperBound(exp1.expression.theType, exp2.expression.theType);
         } else {
             lcIf.theType = SystemTypes.VOID;
@@ -528,7 +527,7 @@ public class ReferenceResolver extends LCAstVisitor {
         super.visitBlock(lcBlock, additional);
 
         // TODO 支持yield
-        if (lcBlock.statements.length > 0 && lcBlock.statements[lcBlock.statements.length - 1] instanceof LCExpressionStatement expressionStatement && !expressionStatement.hasSemiColon) {
+        if (lcBlock.statements.length > 0 && lcBlock.statements[lcBlock.statements.length - 1] instanceof LCExpressionStatement expressionStatement) {
             lcBlock.theType = expressionStatement.expression.theType;
         } else {
             lcBlock.theType = SystemTypes.VOID;
@@ -567,7 +566,7 @@ public class ReferenceResolver extends LCAstVisitor {
         }
 
         if (lcMethodCall.expression == null) {
-            ArrayList<Type> paramTypes = new ArrayList<>();
+            List<Type> paramTypes = new ArrayList<>();
             for (LCExpression argument : lcMethodCall.arguments) {
                 paramTypes.add(argument.theType);
             }
@@ -630,7 +629,7 @@ public class ReferenceResolver extends LCAstVisitor {
                 this.semanticAnalyzer.typeResolver.visitTypeReferenceExpression(lcTypeReferenceExpression, additional);
                 if (lcTypeReferenceExpression.theType == null) {
                     while (lcBinary.expression2 instanceof LCBinary binary && binary.expression1 instanceof LCVariable variable) {
-                        Position position = new Position(lcTypeReferenceExpression.position.beginPos, variable.position.endPos, lcTypeReferenceExpression.position.beginLine, variable.position.endLine, lcTypeReferenceExpression.position.beginCol, variable.position.endCol);
+                        Position position = new Position(lcTypeReferenceExpression.position.beginPos(), variable.position.endPos(), lcTypeReferenceExpression.position.beginLine(), variable.position.endLine(), lcTypeReferenceExpression.position.beginCol(), variable.position.endCol());
                         lcTypeReferenceExpression = new LCTypeReferenceExpression(lcTypeReferenceExpression.name + "." + variable.name, position, variable.isErrorNode || lcTypeReferenceExpression.isErrorNode);
                         lcTypeReferenceExpression.parentNode = lcBinary;
                         lcBinary.expression1 = lcTypeReferenceExpression;

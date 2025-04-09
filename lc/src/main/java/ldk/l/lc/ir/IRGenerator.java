@@ -405,31 +405,31 @@ public final class IRGenerator extends LCAstVisitor {
 
         IRControlFlowGraph.BasicBlock next;
         if (lcIf._else != null) {
-            IRType resultType;
-            String resultRegister;
-            if (lcIf.theType.equals(SystemTypes.VOID)) {
-                resultType = null;
-                resultRegister = null;
-            } else {
-                resultType = parseType(lcIf.theType);
-                resultRegister = allocateVirtualRegister();
-                addInstruction(new IRPush(resultType, thenResult));
-            }
+//            IRType resultType;
+//            String resultRegister;
+//            if (lcIf.theType.equals(SystemTypes.VOID)) {
+//                resultType = null;
+//                resultRegister = null;
+//            } else {
+//                resultType = parseType(lcIf.theType);
+//                resultRegister = allocateVirtualRegister();
+//                addInstruction(new IRPush(resultType, thenResult));
+//            }
             IRGoto irGoto = new IRGoto(null);
             addInstruction(irGoto);
             next = createBasicBlock();
 
             this.visit(lcIf._else, additional);
-            if (resultType != null) {
-                IROperand elseResult = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
-                addInstruction(new IRPush(resultType, elseResult));
-            }
+//            if (resultType != null) {
+//                IROperand elseResult = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
+//                addInstruction(new IRPush(resultType, elseResult));
+//            }
 
             irGoto.target = createBasicBlock().name;
-            if (resultType != null) {
-                addInstruction(new IRPop(resultType, new IRVirtualRegister(resultRegister)));
-                operandStack.push(new IRVirtualRegister(resultRegister));
-            }
+//            if (resultType != null) {
+//                addInstruction(new IRPop(resultType, new IRVirtualRegister(resultRegister)));
+//                operandStack.push(new IRVirtualRegister(resultRegister));
+//            }
         } else {
             next = createBasicBlock();
         }
@@ -636,16 +636,16 @@ public final class IRGenerator extends LCAstVisitor {
         for (int i = 0; i < lcBlock.statements.length; i++) {
             LCStatement statement = lcBlock.statements[i];
             this.visit(statement, additional);
-            IROperand operand;
-            if (i + 1 == lcBlock.statements.length && statement instanceof LCExpressionStatement) {
-                operand = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
-            } else {
-                operand = null;
-            }
+//            IROperand operand;
+//            if (i + 1 == lcBlock.statements.length && statement instanceof LCExpressionStatement) {
+//                operand = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
+//            } else {
+//                operand = null;
+//            }
             operandStack.clear();
-            if (operand != null) {
-                operandStack.push(operand);
-            }
+//            if (operand != null) {
+//                operandStack.push(operand);
+//            }
         }
         if (this.getEnclosingMethodDeclaration(lcBlock) != null) {
             Symbol[] symbols = lcBlock.scope.name2symbol.values().toArray(new Symbol[0]);
@@ -1641,7 +1641,6 @@ public final class IRGenerator extends LCAstVisitor {
 
         return null;
     }
-
     private void createClassInstance(LCObjectDeclaration lcObjectDeclaration) {
         int constantNullptrIndex = module.constantPool.put(new IRConstantPool.Entry(new IRPointerType(IRType.getVoidType()), 0));
         String vtableName = String.format("<vtable %s>", lcObjectDeclaration.getFullName());

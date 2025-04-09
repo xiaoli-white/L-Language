@@ -6,6 +6,7 @@ import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.ast.base.LCBlock;
 import ldk.l.lc.ast.expression.literal.LCIntegerLiteral;
 import ldk.l.lc.ast.expression.literal.LCNullLiteral;
+import ldk.l.lc.ast.expression.literal.LCStringLiteral;
 import ldk.l.lc.ast.expression.type.LCPointerTypeExpression;
 import ldk.l.lc.ast.expression.type.LCPredefinedTypeExpression;
 import ldk.l.lc.ast.expression.type.LCTypeExpression;
@@ -38,7 +39,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Stack;
 
-public class TypeChecker extends LCAstVisitor {
+public final class TypeChecker extends LCAstVisitor {
     private final CharStream charStream;
     private final SemanticAnalyzer semanticAnalyzer;
     private final ErrorStream errorStream;
@@ -444,6 +445,25 @@ public class TypeChecker extends LCAstVisitor {
                 lcBinary.expression2.parentNode = lcBinary;
                 lcTypeCast.theType = SystemTypes.VOID_POINTER;
             } else if (SystemTypes.isNumberType(t1)) {
+                if (SystemTypes.isNumberType(t2)) {
+                    lcBinary.theType = TypeUtil.getUpperBound(t1, t2);
+                } else {
+                    String name = lcBinary._operator == Tokens.Operator.Plus ? "plus" : "minus";
+                    LCObjectDeclaration objectDeclaration = LCAstUtil.getObjectDeclarationByFullName(lcBinary, t2.toTypeString());
+                    System.err.println(name);
+                    if (objectDeclaration != null) {
+                        ObjectSymbol objectSymbol = Objects.requireNonNull(LCAstUtil.getObjectSymbol(objectDeclaration));
+                        MethodSymbol methodSymbol = ReferenceResolver.findMethodSymbolOfObjectSymbol(objectSymbol, name, new Type[]{t1});
+                        if (methodSymbol != null) {
+                            lcBinary.methodSymbol = methodSymbol;
+                            lcBinary.theType = methodSymbol.returnType;
+                        } else {
+                            System.err.println("Operator '" + lcBinary._operator.getCode() + "' can not be applied to '" + t1.toTypeString() + "' and '" + t2.toTypeString() + "'.");
+                        }
+                    } else {
+                        lcBinary.theType = TypeUtil.getUpperBound(t1, t2);
+                    }
+                }
             } else {
                 String name = lcBinary._operator == Tokens.Operator.Plus ? "plus" : "minus";
                 LCObjectDeclaration objectDeclaration = LCAstUtil.getObjectDeclarationByFullName(lcBinary, t1.toTypeString());
@@ -453,15 +473,12 @@ public class TypeChecker extends LCAstVisitor {
                     if (methodSymbol != null) {
                         lcBinary.methodSymbol = methodSymbol;
                         lcBinary.theType = methodSymbol.returnType;
-                    } else if (!SystemTypes.isNumberType(t1) || !SystemTypes.isNumberType(t2)) {
-                        System.err.println("Operator '" + lcBinary._operator.getCode() + "' can not be applied to '" + t1.toTypeString() + "' and '" + t2.toTypeString() + "'.");
                     } else {
-                        lcBinary.theType = TypeUtil.getUpperBound(t1, t2);
+                        System.err.println("Operator '" + lcBinary._operator.getCode() + "' can not be applied to '" + t1.toTypeString() + "' and '" + t2.toTypeString() + "'.");
                     }
                 } else {
                     lcBinary.theType = TypeUtil.getUpperBound(t1, t2);
                 }
-
             }
         } else if (Token.isArithmeticOperator(lcBinary._operator)) {
             LCObjectDeclaration objectDeclaration = LCAstUtil.getObjectDeclarationByFullName(lcBinary, t1.toTypeString());
@@ -631,6 +648,7 @@ public class TypeChecker extends LCAstVisitor {
 
     @Override
     public Object visitMethodCall(LCMethodCall lcMethodCall, Object additional) {
+        super.visitMethodCall(lcMethodCall, additional);
         // TODO check method call
         return null;
     }

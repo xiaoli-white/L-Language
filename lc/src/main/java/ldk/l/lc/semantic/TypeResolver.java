@@ -18,7 +18,7 @@ import ldk.l.lc.util.error.ErrorStream;
 
 import java.util.ArrayList;
 
-public class TypeResolver extends LCAstVisitor {
+public final class TypeResolver extends LCAstVisitor {
     private final ErrorStream errorStream;
 
     public TypeResolver(ErrorStream errorStream) {

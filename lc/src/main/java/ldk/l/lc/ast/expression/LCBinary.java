@@ -6,7 +6,7 @@ import ldk.l.lc.token.Tokens;
 import ldk.l.lc.util.Position;
 import ldk.l.lc.util.symbol.MethodSymbol;
 
-public class LCBinary extends LCExpression {
+public final class LCBinary extends LCExpression {
     public Tokens.Operator _operator;
     public LCExpression expression1;
     public LCExpression expression2;
@@ -17,7 +17,7 @@ public class LCBinary extends LCExpression {
     }
 
     public LCBinary(Tokens.Operator _operator, LCExpression expression1, LCExpression expression2, boolean isErrorNode) {
-        super(new Position(expression1.position.beginPos, expression2.position.endPos, expression1.position.beginLine, expression2.position.endLine, expression1.position.beginCol, expression2.position.endCol), isErrorNode);
+        super(new Position(expression1.position.beginPos(), expression2.position.endPos(), expression1.position.beginLine(), expression2.position.endLine(), expression1.position.beginCol(), expression2.position.endCol()), isErrorNode);
         this._operator = _operator;
         this.expression1 = expression1;
         this.expression2 = expression2;

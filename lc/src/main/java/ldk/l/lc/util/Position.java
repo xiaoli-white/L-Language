@@ -2,22 +2,7 @@ package ldk.l.lc.util;
 
 import java.util.Objects;
 
-public class Position implements Cloneable {
-    public int beginPos;
-    public int endPos;
-    public int beginLine;
-    public int endLine;
-    public int beginCol;
-    public int endCol;
-
-    public Position(int beginPos, int endPos, int beginLine, int endLine, int beginCol, int endCol) {
-        this.beginPos = beginPos;
-        this.endPos = endPos;
-        this.beginLine = beginLine;
-        this.endLine = endLine;
-        this.beginCol = beginCol;
-        this.endCol = endCol;
-    }
+public record Position(int beginPos, int endPos, int beginLine, int endLine, int beginCol, int endCol) implements Cloneable {
 
     @Override
     public String toString() {
@@ -37,8 +22,8 @@ public class Position implements Cloneable {
     }
 
     @Override
-    public Position clone() throws CloneNotSupportedException {
-        return (Position) super.clone();
+    public Position clone() {
+        return new Position(beginPos, endPos, beginLine, endLine, beginCol, endCol);
     }
 
     public static Position origin = new Position(-1, -1, -1, -1, -1, -1);

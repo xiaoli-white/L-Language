@@ -6,7 +6,7 @@ import ldk.l.lc.util.Position;
 
 import java.util.Objects;
 
-public class LCIntegerLiteral extends LCLiteral<Long> {
+public final class LCIntegerLiteral extends LCLiteral<Long> {
     public LCIntegerLiteral(long value, boolean isLong, Position pos) {
         this(value, isLong, pos, false);
     }

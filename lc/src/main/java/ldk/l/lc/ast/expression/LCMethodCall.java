@@ -7,9 +7,8 @@ import ldk.l.lc.util.Position;
 import ldk.l.lc.util.symbol.MethodSymbol;
 
 import java.util.Arrays;
-import java.util.Objects;
 
-public class LCMethodCall extends LCExpression {
+public final class LCMethodCall extends LCExpression {
     public String name;
     public LCExpression expression;
     public LCTypeExpression[] typeArguments;

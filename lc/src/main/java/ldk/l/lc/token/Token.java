@@ -2,34 +2,30 @@ package ldk.l.lc.token;
 
 import ldk.l.lc.util.Position;
 
-public class Token {
-    public TokenKind kind;
-    public String text;
-    public Position pos;
-    public Tokens.TokenCode code;
-
-    public Token(TokenKind kind, char text, Position pos, Tokens.TokenCode code) {
-        this(kind, String.valueOf(text), pos, code);
+public record Token(TokenKind kind, String text, Position position, Tokens.TokenCode code, boolean newLine) {
+    public Token(TokenKind kind, String text, Position position) {
+        this(kind, text, position, false);
     }
 
-    public Token(TokenKind kind, char text, Position pos) {
-        this(kind, String.valueOf(text), pos, Tokens.Others.OTHERS);
+    public Token(TokenKind kind, String text, Position position, Tokens.TokenCode code) {
+        this(kind, text, position, code, false);
     }
 
-    public Token(TokenKind kind, String text, Position pos) {
-        this(kind, text, pos, Tokens.Others.OTHERS);
+    public Token(TokenKind kind, char text, Position position, Tokens.TokenCode code, boolean newLine) {
+        this(kind, String.valueOf(text), position, code, newLine);
     }
 
-    public Token(TokenKind kind, String text, Position pos, Tokens.TokenCode code) {
-        this.kind = kind;
-        this.text = text;
-        this.pos = pos;
-        this.code = code;
+    public Token(TokenKind kind, String text, Position position, boolean newLine) {
+        this(kind, text, position, Tokens.Others.OTHERS, newLine);
     }
 
     @Override
     public String toString() {
-        return "Token" + "@" + this.pos.toString() + "\t" + this.kind + " \t'" + this.text.replace("\n", "\\n") + "'";
+        return "Token@" + this.position.toString() + "\t" + this.kind + " \t'" + this.text.replace("\n", "\\n") + "'" + (this.newLine ? "N" : "");
+    }
+
+    public Token setNewLine(boolean newLine) {
+        return new Token(kind, text, position, code, newLine);
     }
 
     public static boolean isWhiteSpace(char ch) {

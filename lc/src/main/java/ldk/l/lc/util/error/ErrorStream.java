@@ -27,39 +27,39 @@ public class ErrorStream {
     public void printError(boolean isError, Position position, int infoNum, String... others) {
         printStackTrace();
 
-        System.err.println(this.fileName + ":" + (position.beginLine == position.endLine ? position.beginLine : (position.endLine > position.beginLine ? position.beginLine + "-" + position.endLine : position.endLine + "-" + position.beginLine)) + ": " + (isError ? "error" : "warning") + ": " + this.key2info.get(infoNum));
-        if (position.beginLine == position.endLine) {
-            System.err.println(this.fileLines[position.beginLine]);
-            for (int i = 0; i < position.beginCol; i++) {
+        System.err.println(this.fileName + ":" + (position.beginLine() == position.endLine() ? position.beginLine() : (position.endLine() > position.beginLine() ? position.beginLine() + "-" + position.endLine() : position.endLine() + "-" + position.beginLine())) + ": " + (isError ? "error" : "warning") + ": " + this.key2info.get(infoNum));
+        if (position.beginLine() == position.endLine()) {
+            System.err.println(this.fileLines[position.beginLine()]);
+            for (int i = 0; i < position.beginCol(); i++) {
                 System.err.print(' ');
             }
-            if (position.endCol == -1) {
-                for (int i = 0; i < this.fileLines[position.beginLine].length() - position.beginCol; i++) {
+            if (position.endCol() == -1) {
+                for (int i = 0; i < this.fileLines[position.beginLine()].length() - position.beginCol(); i++) {
                     System.err.print('^');
                 }
-            } else if (position.endCol == position.beginCol) {
+            } else if (position.endCol() == position.beginCol()) {
                 System.err.print('^');
             } else {
-                for (int i = 0; i < position.endCol - position.beginCol + 1; i++) {
+                for (int i = 0; i < position.endCol() - position.beginCol() + 1; i++) {
                     System.err.print('^');
                 }
             }
             System.err.print('\n');
-        } else if (position.endLine > position.beginLine) {
-            for (int lineIndex = position.beginLine; lineIndex <= position.endLine; lineIndex++) {
+        } else if (position.endLine() > position.beginLine()) {
+            for (int lineIndex = position.beginLine(); lineIndex <= position.endLine(); lineIndex++) {
                 System.err.println(this.fileLines[lineIndex]);
-                if (lineIndex == position.beginLine || lineIndex == position.endLine) {
-                    for (int i = 0; i < position.beginCol; i++) {
+                if (lineIndex == position.beginLine() || lineIndex == position.endLine()) {
+                    for (int i = 0; i < position.beginCol(); i++) {
                         System.err.print(' ');
                     }
-                    if (position.endCol == -1) {
-                        for (int i = 0; i < this.fileLines[lineIndex].length() - position.beginCol; i++) {
+                    if (position.endCol() == -1) {
+                        for (int i = 0; i < this.fileLines[lineIndex].length() - position.beginCol(); i++) {
                             System.err.print('^');
                         }
-                    } else if (position.endCol == position.beginCol) {
+                    } else if (position.endCol() == position.beginCol()) {
                         System.err.print('^');
                     } else {
-                        for (int i = 0; i < position.endCol - position.beginCol + 1; i++) {
+                        for (int i = 0; i < position.endCol() - position.beginCol() + 1; i++) {
                             System.err.print('^');
                         }
                     }
@@ -71,20 +71,20 @@ public class ErrorStream {
                 System.err.print('\n');
             }
         } else {
-            for (int lineIndex = position.endLine; lineIndex <= position.beginLine; lineIndex++) {
+            for (int lineIndex = position.endLine(); lineIndex <= position.beginLine(); lineIndex++) {
                 System.err.println(this.fileLines[lineIndex]);
-                if (lineIndex == position.beginLine || lineIndex == position.endLine) {
-                    for (int i = 0; i < position.beginCol; i++) {
+                if (lineIndex == position.beginLine() || lineIndex == position.endLine()) {
+                    for (int i = 0; i < position.beginCol(); i++) {
                         System.err.print(' ');
                     }
-                    if (position.endCol == -1) {
-                        for (int i = 0; i < this.fileLines[lineIndex].length() - position.beginCol; i++) {
+                    if (position.endCol() == -1) {
+                        for (int i = 0; i < this.fileLines[lineIndex].length() - position.beginCol(); i++) {
                             System.err.print('^');
                         }
-                    } else if (position.endCol == position.beginCol) {
+                    } else if (position.endCol() == position.beginCol()) {
                         System.err.print('^');
                     } else {
-                        for (int i = 0; i < position.endCol - position.beginCol + 1; i++) {
+                        for (int i = 0; i < position.endCol() - position.beginCol() + 1; i++) {
                             System.err.print('^');
                         }
                     }

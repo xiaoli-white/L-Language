@@ -4,9 +4,7 @@ import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.semantic.types.SystemTypes;
 import ldk.l.lc.util.Position;
 
-import java.util.Objects;
-
-public class LCBooleanLiteral extends LCLiteral<Boolean> {
+public final class LCBooleanLiteral extends LCLiteral<Boolean> {
     public LCBooleanLiteral(boolean value, Position pos) {
         this(value, pos, false);
     }

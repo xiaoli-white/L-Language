@@ -6,7 +6,7 @@ import ldk.l.lc.util.Position;
 
 import java.util.Objects;
 
-public class LCDecimalLiteral extends LCLiteral<Double> {
+public final class LCDecimalLiteral extends LCLiteral<Double> {
     public LCDecimalLiteral(double value, boolean isFloat, Position pos) {
         this(value, isFloat, pos, false);
     }

@@ -6,7 +6,7 @@ import ldk.l.lc.token.CharStream;
 import ldk.l.lc.util.error.ErrorStream;
 import ldk.l.util.option.Options;
 
-public class SemanticAnalyzer {
+public final class SemanticAnalyzer {
     private final LCAst ast;
     private final ErrorStream errorStream;
     public final TypeBuilder typeBuilder;
@@ -50,7 +50,6 @@ public class SemanticAnalyzer {
         this.typeParameterEnter.visitAst(this.ast, null);
         this.objectSymbolResolver.visitAst(this.ast, null);
         this.referenceResolver.visitAst(this.ast, null);
-        // TODO Check type and other analyze semantic
         this.typeChecker.visitAst(this.ast, null);
         this.modifierChecker.visitAst(this.ast, null);
 //        this.closureAnalyzer.visitAst(this.ast, null);

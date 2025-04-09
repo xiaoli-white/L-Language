@@ -38,7 +38,6 @@ public class LCAstDumper extends LCAstVisitor {
         System.out.println(prefix + "LCVariableDeclaration" + (lcVariableDeclaration.isErrorNode ? " **E**" : ""));
         System.out.println(prefix + "\tisVal: " + lcVariableDeclaration.isVal);
         System.out.println(prefix + "\tname: '" + lcVariableDeclaration.name + "'");
-        System.out.println(prefix + "\thasSimiColon: " + lcVariableDeclaration.hasSemiColon);
         System.out.println(prefix + "\tmodifier:");
         this.visitModifier(lcVariableDeclaration.modifier, prefix + "\t\t");
         if (lcVariableDeclaration.typeExpression != null) {
@@ -144,7 +143,6 @@ public class LCAstDumper extends LCAstVisitor {
     @Override
     public Object visitExpressionStatement(LCExpressionStatement lcExpressionStatement, Object prefix) {
         System.out.println(prefix + "-LCExpressionStatement" + (lcExpressionStatement.isErrorNode ? " **E**" : ""));
-        System.out.println(prefix + "   |-hasSemiColon: " + lcExpressionStatement.hasSemiColon);
         System.out.println(prefix + "   |-expression:");
         this.visit(lcExpressionStatement.expression, prefix + "       |");
         return null;

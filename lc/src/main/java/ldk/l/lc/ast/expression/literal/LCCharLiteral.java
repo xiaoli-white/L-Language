@@ -6,7 +6,7 @@ import ldk.l.lc.util.Position;
 
 import java.util.Objects;
 
-public class LCCharLiteral extends LCLiteral<Character> {
+public final class LCCharLiteral extends LCLiteral<Character> {
     public LCCharLiteral(Character value, Position pos) {
         this(value, pos, false);
     }

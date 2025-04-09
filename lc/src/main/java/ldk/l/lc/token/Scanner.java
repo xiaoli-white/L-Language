@@ -6,8 +6,9 @@ import ldk.l.lc.util.Position;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
-public class Scanner {
+public final class Scanner {
     private static final HashMap<String, Tokens.TokenCode> keywordMap = new HashMap<>() {{
         Arrays.stream(Tokens.Keyword.values()).forEach(keyword -> put(keyword.getCode(), keyword));
         Arrays.stream(Tokens.Type.values()).forEach(type -> put(type.getCode(), type));
@@ -25,17 +26,17 @@ public class Scanner {
             Position pos = new Position(this.stream.pos, this.stream.pos, this.stream.line, this.stream.line, this.stream.col, this.stream.col);
             return new Token[]{new Token(TokenKind.EOF, "", pos, Tokens.Others.EOF)};
         } else {
-            ArrayList<Token> tokens = new ArrayList<>();
+            List<Token> tokens = new ArrayList<>();
             char ch;
             while (!this.stream.eof()) {
-                this.skipWhiteSpaces();
+                boolean hasNewLine = this.skipWhiteSpaces();
                 Position beginPosition = this.stream.getPosition();
                 ch = this.stream.peek();
 
                 if (ch == '"') {
-                    tokens.add(this.parseStringLiteral());
+                    tokens.add(this.parseStringLiteral().setNewLine(hasNewLine));
                 } else if (ch == '\'') {
-                    tokens.add(this.parseCharLiteral());
+                    tokens.add(this.parseCharLiteral().setNewLine(hasNewLine));
                 } else if (Character.isDigit(ch)) {
                     this.stream.addPos(1);
                     char ch1 = this.stream.peek();
@@ -59,8 +60,8 @@ public class Scanner {
                             }
 
                             Position endPosition = this.stream.getPosition();
-                            Position position = new Position(beginPosition.beginPos, endPosition.endPos, beginPosition.beginLine, endPosition.endLine, beginPosition.beginCol, endPosition.endCol);
-                            tokens.add(new Token(TokenKind.IntegerLiteral, literal.toString(), position));
+                            Position position = new Position(beginPosition.beginPos(), endPosition.endPos(), beginPosition.beginLine(), endPosition.endLine(), beginPosition.beginCol(), endPosition.endCol());
+                            tokens.add(new Token(TokenKind.IntegerLiteral, literal.toString(), position, hasNewLine));
                             continue;
                         } else if (ch1 == 'b' || ch1 == 'B') {
                             literal = new StringBuilder("0");
@@ -80,8 +81,8 @@ public class Scanner {
                             }
 
                             Position endPosition = this.stream.getPosition();
-                            Position position = new Position(beginPosition.beginPos, endPosition.endPos, beginPosition.beginLine, endPosition.endLine, beginPosition.beginCol, endPosition.endCol);
-                            tokens.add(new Token(TokenKind.IntegerLiteral, literal.toString(), position));
+                            Position position = new Position(beginPosition.beginPos(), endPosition.endPos(), beginPosition.beginLine(), endPosition.endLine(), beginPosition.beginCol(), endPosition.endCol());
+                            tokens.add(new Token(TokenKind.IntegerLiteral, literal.toString(), position, hasNewLine));
                             continue;
                         } else if (Token.isOctal(ch1)) {
                             literal = new StringBuilder("0");
@@ -101,8 +102,8 @@ public class Scanner {
                             }
 
                             Position endPosition = this.stream.getPosition();
-                            Position position = new Position(beginPosition.beginPos, endPosition.endPos, beginPosition.beginLine, endPosition.endLine, beginPosition.beginCol, endPosition.endCol);
-                            tokens.add(new Token(TokenKind.IntegerLiteral, literal.toString(), position));
+                            Position position = new Position(beginPosition.beginPos(), endPosition.endPos(), beginPosition.beginLine(), endPosition.endLine(), beginPosition.beginCol(), endPosition.endCol());
+                            tokens.add(new Token(TokenKind.IntegerLiteral, literal.toString(), position, hasNewLine));
                             continue;
                         } else {
                             literal = new StringBuilder("0");
@@ -121,15 +122,15 @@ public class Scanner {
                         literal.append(ch1);
 
                         Position endPosition = this.stream.getPosition();
-                        Position position = new Position(beginPosition.beginPos, endPosition.endPos, beginPosition.beginLine, endPosition.endLine, beginPosition.beginCol, endPosition.endCol);
-                        tokens.add(new Token(TokenKind.IntegerLiteral, literal.toString(), position));
+                        Position position = new Position(beginPosition.beginPos(), endPosition.endPos(), beginPosition.beginLine(), endPosition.endLine(), beginPosition.beginCol(), endPosition.endCol());
+                        tokens.add(new Token(TokenKind.IntegerLiteral, literal.toString(), position, hasNewLine));
                     } else if (ch1 == 'f' || ch1 == 'F') {
                         this.stream.addPos(1);
                         literal.append(ch1);
 
                         Position endPosition = this.stream.getPosition();
-                        Position position = new Position(beginPosition.beginPos, endPosition.endPos, beginPosition.beginLine, endPosition.endLine, beginPosition.beginCol, endPosition.endCol);
-                        tokens.add(new Token(TokenKind.DecimalLiteral, literal.toString(), position));
+                        Position position = new Position(beginPosition.beginPos(), endPosition.endPos(), beginPosition.beginLine(), endPosition.endLine(), beginPosition.beginCol(), endPosition.endCol());
+                        tokens.add(new Token(TokenKind.DecimalLiteral, literal.toString(), position, hasNewLine));
                     } else if (ch1 == '.') {
                         literal.append('.');
                         this.stream.addPos(1);
@@ -146,12 +147,12 @@ public class Scanner {
                         }
 
                         Position endPosition = this.stream.getPosition();
-                        Position position = new Position(beginPosition.beginPos, endPosition.endPos, beginPosition.beginLine, endPosition.endLine, beginPosition.beginCol, endPosition.endCol);
-                        tokens.add(new Token(TokenKind.DecimalLiteral, literal.toString(), position));
+                        Position position = new Position(beginPosition.beginPos(), endPosition.endPos(), beginPosition.beginLine(), endPosition.endLine(), beginPosition.beginCol(), endPosition.endCol());
+                        tokens.add(new Token(TokenKind.DecimalLiteral, literal.toString(), position, hasNewLine));
                     } else {
                         Position endPosition = this.stream.getPosition();
-                        Position position = new Position(beginPosition.beginPos, endPosition.endPos, beginPosition.beginLine, endPosition.endLine, beginPosition.beginCol, endPosition.endCol);
-                        tokens.add(new Token(TokenKind.IntegerLiteral, literal.toString(), position));
+                        Position position = new Position(beginPosition.beginPos(), endPosition.endPos(), beginPosition.beginLine(), endPosition.endLine(), beginPosition.beginCol(), endPosition.endCol());
+                        tokens.add(new Token(TokenKind.IntegerLiteral, literal.toString(), position, hasNewLine));
                     }
                 } else if (ch == '.') {
                     this.stream.addPos(1);
@@ -165,53 +166,53 @@ public class Scanner {
                         }
 
                         Position endPosition = this.stream.getPosition();
-                        Position position = new Position(beginPosition.beginPos, endPosition.endPos, beginPosition.beginLine, endPosition.endLine, beginPosition.beginCol, endPosition.endCol);
-                        tokens.add(new Token(TokenKind.DecimalLiteral, literal.toString(), position));
+                        Position position = new Position(beginPosition.beginPos(), endPosition.endPos(), beginPosition.beginLine(), endPosition.endLine(), beginPosition.beginCol(), endPosition.endCol());
+                        tokens.add(new Token(TokenKind.DecimalLiteral, literal.toString(), position, hasNewLine));
                     } else {
-                        tokens.add(new Token(TokenKind.Operator, ".", beginPosition, Tokens.Operator.Dot));
+                        tokens.add(new Token(TokenKind.Operator, ".", beginPosition, Tokens.Operator.Dot, hasNewLine));
                     }
                 } else if (ch == '(') {
                     this.stream.addPos(1);
-                    tokens.add(new Token(TokenKind.Separator, ch, beginPosition, Tokens.Separator.OpenParen));
+                    tokens.add(new Token(TokenKind.Separator, ch, beginPosition, Tokens.Separator.OpenParen, hasNewLine));
                 } else if (ch == ')') {
                     this.stream.addPos(1);
-                    tokens.add(new Token(TokenKind.Separator, ch, beginPosition, Tokens.Separator.CloseParen));
+                    tokens.add(new Token(TokenKind.Separator, ch, beginPosition, Tokens.Separator.CloseParen, hasNewLine));
                 } else if (ch == '{') {
                     this.stream.addPos(1);
-                    tokens.add(new Token(TokenKind.Separator, ch, beginPosition, Tokens.Separator.OpenBrace));
+                    tokens.add(new Token(TokenKind.Separator, ch, beginPosition, Tokens.Separator.OpenBrace, hasNewLine));
                 } else if (ch == '}') {
                     this.stream.addPos(1);
-                    tokens.add(new Token(TokenKind.Separator, ch, beginPosition, Tokens.Separator.CloseBrace));
+                    tokens.add(new Token(TokenKind.Separator, ch, beginPosition, Tokens.Separator.CloseBrace, hasNewLine));
                 } else if (ch == '[') {
                     this.stream.addPos(1);
-                    tokens.add(new Token(TokenKind.Separator, ch, beginPosition, Tokens.Separator.OpenBracket));
+                    tokens.add(new Token(TokenKind.Separator, ch, beginPosition, Tokens.Separator.OpenBracket, hasNewLine));
                 } else if (ch == ']') {
                     this.stream.addPos(1);
-                    tokens.add(new Token(TokenKind.Separator, ch, beginPosition, Tokens.Separator.CloseBracket));
+                    tokens.add(new Token(TokenKind.Separator, ch, beginPosition, Tokens.Separator.CloseBracket, hasNewLine));
                 } else if (ch == ':') {
                     this.stream.addPos(1);
-                    tokens.add(new Token(TokenKind.Separator, ch, beginPosition, Tokens.Separator.Colon));
+                    tokens.add(new Token(TokenKind.Separator, ch, beginPosition, Tokens.Separator.Colon, hasNewLine));
                 } else if (ch == ';') {
                     this.stream.addPos(1);
-                    tokens.add(new Token(TokenKind.Separator, ch, beginPosition, Tokens.Separator.SemiColon));
+                    tokens.add(new Token(TokenKind.Separator, ch, beginPosition, Tokens.Separator.SemiColon, hasNewLine));
                 } else if (ch == ',') {
                     this.stream.addPos(1);
-                    tokens.add(new Token(TokenKind.Separator, ch, beginPosition, Tokens.Separator.Comma));
+                    tokens.add(new Token(TokenKind.Separator, ch, beginPosition, Tokens.Separator.Comma, hasNewLine));
                 } else if (ch == '?') {
                     this.stream.addPos(1);
                     char ch2 = this.stream.peek();
                     if (ch2 == '.') {
                         this.stream.addPos(1);
-                        tokens.add(new Token(TokenKind.Operator, ch, beginPosition, Tokens.Operator.QuestionMarkDot));
+                        tokens.add(new Token(TokenKind.Operator, ch, beginPosition, Tokens.Operator.QuestionMarkDot, hasNewLine));
                     } else if (ch2 == ':') {
                         this.stream.addPos(1);
-                        tokens.add(new Token(TokenKind.Operator, ch, beginPosition, Tokens.Operator.Elvis));
+                        tokens.add(new Token(TokenKind.Operator, ch, beginPosition, Tokens.Operator.Elvis, hasNewLine));
                     } else {
-                        tokens.add(new Token(TokenKind.Separator, ch, beginPosition, Tokens.Operator.QuestionMark));
+                        tokens.add(new Token(TokenKind.Separator, ch, beginPosition, Tokens.Operator.QuestionMark, hasNewLine));
                     }
                 } else if (ch == '@') {
                     this.stream.addPos(1);
-                    tokens.add(new Token(TokenKind.Separator, ch, beginPosition, Tokens.Operator.At));
+                    tokens.add(new Token(TokenKind.Separator, ch, beginPosition, Tokens.Operator.At, hasNewLine));
                 } else if (ch == '/') {
                     this.stream.addPos(1);
                     char ch1 = this.stream.peek();
@@ -222,13 +223,11 @@ public class Scanner {
                     } else if (ch1 == '=') {
                         this.stream.addPos(1);
 
-                        beginPosition.endPos = this.stream.pos;
-                        beginPosition.endLine = this.stream.line;
-                        beginPosition.endCol = this.stream.col;
+                        Position position = new Position(beginPosition.beginPos(), this.stream.pos, beginPosition.beginLine(), this.stream.line, beginPosition.beginCol(), this.stream.col);
 
-                        tokens.add(new Token(TokenKind.Operator, "/=", beginPosition, Tokens.Operator.DivideAssign));
+                        tokens.add(new Token(TokenKind.Operator, "/=", position, Tokens.Operator.DivideAssign, hasNewLine));
                     } else {
-                        tokens.add(new Token(TokenKind.Operator, "/", beginPosition, Tokens.Operator.Divide));
+                        tokens.add(new Token(TokenKind.Operator, "/", beginPosition, Tokens.Operator.Divide, hasNewLine));
                     }
                 } else if (ch == '+') {
                     this.stream.addPos(1);
@@ -236,21 +235,17 @@ public class Scanner {
                     if (ch1 == '+') {
                         this.stream.addPos(1);
 
-                        beginPosition.endPos = this.stream.pos;
-                        beginPosition.endLine = this.stream.line;
-                        beginPosition.endCol = this.stream.col;
+                        Position position = new Position(beginPosition.beginPos(), this.stream.pos, beginPosition.beginLine(), this.stream.line, beginPosition.beginCol(), this.stream.col);
 
-                        tokens.add(new Token(TokenKind.Operator, "++", beginPosition, Tokens.Operator.Inc));
+                        tokens.add(new Token(TokenKind.Operator, "++", position, Tokens.Operator.Inc, hasNewLine));
                     } else if (ch1 == '=') {
                         this.stream.addPos(1);
 
-                        beginPosition.endPos = this.stream.pos;
-                        beginPosition.endLine = this.stream.line;
-                        beginPosition.endCol = this.stream.col;
+                        Position position = new Position(beginPosition.beginPos(), this.stream.pos, beginPosition.beginLine(), this.stream.line, beginPosition.beginCol(), this.stream.col);
 
-                        tokens.add(new Token(TokenKind.Operator, "+=", beginPosition, Tokens.Operator.PlusAssign));
+                        tokens.add(new Token(TokenKind.Operator, "+=", position, Tokens.Operator.PlusAssign, hasNewLine));
                     } else {
-                        tokens.add(new Token(TokenKind.Operator, "+", beginPosition, Tokens.Operator.Plus));
+                        tokens.add(new Token(TokenKind.Operator, "+", beginPosition, Tokens.Operator.Plus, hasNewLine));
                     }
                 } else if (ch == '-') {
                     this.stream.addPos(1);
@@ -258,29 +253,23 @@ public class Scanner {
                     if (ch1 == '-') {
                         this.stream.addPos(1);
 
-                        beginPosition.endPos = this.stream.pos;
-                        beginPosition.endLine = this.stream.line;
-                        beginPosition.endCol = this.stream.col;
+                        Position position = new Position(beginPosition.beginPos(), this.stream.pos, beginPosition.beginLine(), this.stream.line, beginPosition.beginCol(), this.stream.col);
 
-                        tokens.add(new Token(TokenKind.Operator, "--", beginPosition, Tokens.Operator.Dec));
+                        tokens.add(new Token(TokenKind.Operator, "--", position, Tokens.Operator.Dec, hasNewLine));
                     } else if (ch1 == '=') {
                         this.stream.addPos(1);
 
-                        beginPosition.endPos = this.stream.pos;
-                        beginPosition.endLine = this.stream.line;
-                        beginPosition.endCol = this.stream.col;
+                        Position position = new Position(beginPosition.beginPos(), this.stream.pos, beginPosition.beginLine(), this.stream.line, beginPosition.beginCol(), this.stream.col);
 
-                        tokens.add(new Token(TokenKind.Operator, "-=", beginPosition, Tokens.Operator.MinusAssign));
+                        tokens.add(new Token(TokenKind.Operator, "-=", position, Tokens.Operator.MinusAssign, hasNewLine));
                     } else if (ch1 == '>') {
                         this.stream.addPos(1);
 
-                        beginPosition.endPos = this.stream.pos;
-                        beginPosition.endLine = this.stream.line;
-                        beginPosition.endCol = this.stream.col;
+                        Position position = new Position(beginPosition.beginPos(), this.stream.pos, beginPosition.beginLine(), this.stream.line, beginPosition.beginCol(), this.stream.col);
 
-                        tokens.add(new Token(TokenKind.Operator, "->", beginPosition, Tokens.Operator.MemberAccess));
+                        tokens.add(new Token(TokenKind.Operator, "->", position, Tokens.Operator.MemberAccess, hasNewLine));
                     } else {
-                        tokens.add(new Token(TokenKind.Operator, "-", beginPosition, Tokens.Operator.Minus));
+                        tokens.add(new Token(TokenKind.Operator, "-", beginPosition, Tokens.Operator.Minus, hasNewLine));
                     }
                 } else if (ch == '*') {
                     this.stream.addPos(1);
@@ -288,13 +277,11 @@ public class Scanner {
                     if (ch1 == '=') {
                         this.stream.addPos(1);
 
-                        beginPosition.endPos = this.stream.pos;
-                        beginPosition.endLine = this.stream.line;
-                        beginPosition.endCol = this.stream.col;
+                        Position position = new Position(beginPosition.beginPos(), this.stream.pos, beginPosition.beginLine(), this.stream.line, beginPosition.beginCol(), this.stream.col);
 
-                        tokens.add(new Token(TokenKind.Operator, "*=", beginPosition, Tokens.Operator.MultiplyAssign));
+                        tokens.add(new Token(TokenKind.Operator, "*=", position, Tokens.Operator.MultiplyAssign, hasNewLine));
                     } else {
-                        tokens.add(new Token(TokenKind.Operator, "*", beginPosition, Tokens.Operator.Multiply));
+                        tokens.add(new Token(TokenKind.Operator, "*", beginPosition, Tokens.Operator.Multiply, hasNewLine));
                     }
                 } else if (ch == '%') {
                     this.stream.addPos(1);
@@ -302,23 +289,19 @@ public class Scanner {
                     if (ch1 == '=') {
                         this.stream.addPos(1);
 
-                        beginPosition.endPos = this.stream.pos;
-                        beginPosition.endLine = this.stream.line;
-                        beginPosition.endCol = this.stream.col;
+                        Position position = new Position(beginPosition.beginPos(), this.stream.pos, beginPosition.beginLine(), this.stream.line, beginPosition.beginCol(), this.stream.col);
 
-                        tokens.add(new Token(TokenKind.Operator, "%=", beginPosition, Tokens.Operator.ModulusAssign));
+                        tokens.add(new Token(TokenKind.Operator, "%=", position, Tokens.Operator.ModulusAssign, hasNewLine));
                     } else {
-                        tokens.add(new Token(TokenKind.Operator, "%", beginPosition, Tokens.Operator.Modulus));
+                        tokens.add(new Token(TokenKind.Operator, "%", beginPosition, Tokens.Operator.Modulus, hasNewLine));
                     }
                 } else if (ch == '>') {
                     this.stream.addPos(1);
                     char ch1 = this.stream.peek();
                     if (ch1 == '=') {
                         this.stream.addPos(1);
-                        beginPosition.endPos = this.stream.pos;
-                        beginPosition.endLine = this.stream.line;
-                        beginPosition.endCol = this.stream.col;
-                        tokens.add(new Token(TokenKind.Operator, ">=", beginPosition, Tokens.Operator.GreaterEqual));
+                        Position position = new Position(beginPosition.beginPos(), this.stream.pos, beginPosition.beginLine(), this.stream.line, beginPosition.beginCol(), this.stream.col);
+                        tokens.add(new Token(TokenKind.Operator, ">=", position, Tokens.Operator.GreaterEqual, hasNewLine));
                     } else if (ch1 == '>') {
                         this.stream.addPos(1);
                         ch1 = this.stream.peek();
@@ -327,185 +310,146 @@ public class Scanner {
                             ch1 = this.stream.peek();
                             if (ch1 == '=') {
                                 this.stream.addPos(1);
-                                beginPosition.endPos = this.stream.pos;
-                                beginPosition.endLine = this.stream.line;
-                                beginPosition.endCol = this.stream.col;
-                                tokens.add(new Token(TokenKind.Operator, ">>>=", beginPosition, Tokens.Operator.RightShiftLogicalAssign));
+                                Position position = new Position(beginPosition.beginPos(), this.stream.pos, beginPosition.beginLine(), this.stream.line, beginPosition.beginCol(), this.stream.col);
+                                tokens.add(new Token(TokenKind.Operator, ">>>=", position, Tokens.Operator.RightShiftLogicalAssign, hasNewLine));
                             } else {
-                                beginPosition.endPos = this.stream.pos;
-                                beginPosition.endLine = this.stream.line;
-                                beginPosition.endCol = this.stream.col;
-                                tokens.add(new Token(TokenKind.Operator, ">>>", beginPosition, Tokens.Operator.RightShiftLogical));
+                                Position position = new Position(beginPosition.beginPos(), this.stream.pos, beginPosition.beginLine(), this.stream.line, beginPosition.beginCol(), this.stream.col);
+                                tokens.add(new Token(TokenKind.Operator, ">>>", position, Tokens.Operator.RightShiftLogical, hasNewLine));
                             }
                         } else if (ch1 == '=') {
                             this.stream.addPos(1);
-                            beginPosition.endPos = this.stream.pos;
-                            beginPosition.endLine = this.stream.line;
-                            beginPosition.endCol = this.stream.col;
-                            tokens.add(new Token(TokenKind.Operator, ">>=", beginPosition, Tokens.Operator.LeftShiftArithmeticAssign));
+                            Position position = new Position(beginPosition.beginPos(), this.stream.pos, beginPosition.beginLine(), this.stream.line, beginPosition.beginCol(), this.stream.col);
+                            tokens.add(new Token(TokenKind.Operator, ">>=", position, Tokens.Operator.LeftShiftArithmeticAssign, hasNewLine));
                         } else {
-                            beginPosition.endPos = this.stream.pos;
-                            beginPosition.endLine = this.stream.line;
-                            beginPosition.endCol = this.stream.col;
-                            tokens.add(new Token(TokenKind.Operator, ">>", beginPosition, Tokens.Operator.RightShiftArithmetic));
+                            Position position = new Position(beginPosition.beginPos(), this.stream.pos, beginPosition.beginLine(), this.stream.line, beginPosition.beginCol(), this.stream.col);
+                            tokens.add(new Token(TokenKind.Operator, ">>", position, Tokens.Operator.RightShiftArithmetic, hasNewLine));
                         }
                     } else {
-                        tokens.add(new Token(TokenKind.Operator, ">", beginPosition, Tokens.Operator.Greater));
+                        tokens.add(new Token(TokenKind.Operator, ">", beginPosition, Tokens.Operator.Greater, hasNewLine));
                     }
                 } else if (ch == '<') {
                     this.stream.addPos(1);
                     char ch1 = this.stream.peek();
                     if (ch1 == '=') {
                         this.stream.addPos(1);
-                        beginPosition.endPos = this.stream.pos;
-                        beginPosition.endLine = this.stream.line;
-                        beginPosition.endCol = this.stream.col;
-                        tokens.add(new Token(TokenKind.Operator, "<=", beginPosition, Tokens.Operator.LessEqual));
+                        Position position = new Position(beginPosition.beginPos(), this.stream.pos, beginPosition.beginLine(), this.stream.line, beginPosition.beginCol(), this.stream.col);
+                        tokens.add(new Token(TokenKind.Operator, "<=", position, Tokens.Operator.LessEqual, hasNewLine));
                     } else if (ch1 == '<') {
                         this.stream.addPos(1);
                         ch1 = this.stream.peek();
                         if (ch1 == '=') {
                             this.stream.addPos(1);
-                            beginPosition.endPos = this.stream.pos;
-                            beginPosition.endLine = this.stream.line;
-                            beginPosition.endCol = this.stream.col;
-                            tokens.add(new Token(TokenKind.Operator, "<<=", beginPosition, Tokens.Operator.LeftShiftArithmeticAssign));
+                            Position position = new Position(beginPosition.beginPos(), this.stream.pos, beginPosition.beginLine(), this.stream.line, beginPosition.beginCol(), this.stream.col);
+                            tokens.add(new Token(TokenKind.Operator, "<<=", position, Tokens.Operator.LeftShiftArithmeticAssign, hasNewLine));
                         } else {
-                            beginPosition.endPos = this.stream.pos;
-                            beginPosition.endLine = this.stream.line;
-                            beginPosition.endCol = this.stream.col;
-                            tokens.add(new Token(TokenKind.Operator, "<<", beginPosition, Tokens.Operator.LeftShiftArithmetic));
+                            Position position = new Position(beginPosition.beginPos(), this.stream.pos, beginPosition.beginLine(), this.stream.line, beginPosition.beginCol(), this.stream.col);
+                            tokens.add(new Token(TokenKind.Operator, "<<", position, Tokens.Operator.LeftShiftArithmetic, hasNewLine));
                         }
                     } else {
-                        tokens.add(new Token(TokenKind.Operator, "<", beginPosition, Tokens.Operator.Less));
+                        tokens.add(new Token(TokenKind.Operator, "<", beginPosition, Tokens.Operator.Less, hasNewLine));
                     }
                 } else if (ch == '=') {
                     this.stream.addPos(1);
                     char ch1 = this.stream.peek();
                     if (ch1 == '=') {
                         this.stream.addPos(1);
-                        beginPosition.endPos = this.stream.pos;
-                        beginPosition.endLine = this.stream.line;
-                        beginPosition.endCol = this.stream.col;
-                        tokens.add(new Token(TokenKind.Operator, "==", beginPosition, Tokens.Operator.Equal));
+                        Position position = new Position(beginPosition.beginPos(), this.stream.pos, beginPosition.beginLine(), this.stream.line, beginPosition.beginCol(), this.stream.col);
+                        tokens.add(new Token(TokenKind.Operator, "==", position, Tokens.Operator.Equal, hasNewLine));
                     } else if (ch1 == '>') {
                         this.stream.addPos(1);
 
-                        beginPosition.endPos = this.stream.pos;
-                        beginPosition.endLine = this.stream.line;
-                        beginPosition.endCol = this.stream.col;
+                        Position position = new Position(beginPosition.beginPos(), this.stream.pos, beginPosition.beginLine(), this.stream.line, beginPosition.beginCol(), this.stream.col);
 
-                        tokens.add(new Token(TokenKind.Operator, "=>", beginPosition, Tokens.Operator.Arrow));
+                        tokens.add(new Token(TokenKind.Operator, "=>", position, Tokens.Operator.Arrow, hasNewLine));
                     } else {
-                        tokens.add(new Token(TokenKind.Operator, "=", beginPosition, Tokens.Operator.Assign));
+                        tokens.add(new Token(TokenKind.Operator, "=", beginPosition, Tokens.Operator.Assign, hasNewLine));
                     }
                 } else if (ch == '!') {
                     this.stream.addPos(1);
                     char ch1 = this.stream.peek();
                     if (ch1 == '=') {
                         this.stream.addPos(1);
-                        beginPosition.endPos = this.stream.pos;
-                        beginPosition.endLine = this.stream.line;
-                        beginPosition.endCol = this.stream.col;
-                        tokens.add(new Token(TokenKind.Operator, "!=", beginPosition, Tokens.Operator.NotEqual));
+                        Position position = new Position(beginPosition.beginPos(), this.stream.pos, beginPosition.beginLine(), this.stream.line, beginPosition.beginCol(), this.stream.col);
+                        tokens.add(new Token(TokenKind.Operator, "!=", position, Tokens.Operator.NotEqual, hasNewLine));
                     } else {
-                        tokens.add(new Token(TokenKind.Operator, "!", beginPosition, Tokens.Operator.Not));
+                        tokens.add(new Token(TokenKind.Operator, "!", beginPosition, Tokens.Operator.Not, hasNewLine));
                     }
                 } else if (ch == '|') {
                     this.stream.addPos(1);
                     char ch1 = this.stream.peek();
                     if (ch1 == '|') {
                         this.stream.addPos(1);
-                        beginPosition.endPos = this.stream.pos;
-                        beginPosition.endLine = this.stream.line;
-                        beginPosition.endCol = this.stream.col;
-                        tokens.add(new Token(TokenKind.Operator, "||", beginPosition, Tokens.Operator.Or));
+                        Position position = new Position(beginPosition.beginPos(), this.stream.pos, beginPosition.beginLine(), this.stream.line, beginPosition.beginCol(), this.stream.col);
+                        tokens.add(new Token(TokenKind.Operator, "||", position, Tokens.Operator.Or, hasNewLine));
                     } else if (ch1 == '=') {
                         this.stream.addPos(1);
-                        beginPosition.endPos = this.stream.pos;
-                        beginPosition.endLine = this.stream.line;
-                        beginPosition.endCol = this.stream.col;
-                        tokens.add(new Token(TokenKind.Operator, "|=", beginPosition, Tokens.Operator.BitOrAssign));
+                        Position position = new Position(beginPosition.beginPos(), this.stream.pos, beginPosition.beginLine(), this.stream.line, beginPosition.beginCol(), this.stream.col);
+                        tokens.add(new Token(TokenKind.Operator, "|=", position, Tokens.Operator.BitOrAssign, hasNewLine));
                     } else {
-                        tokens.add(new Token(TokenKind.Operator, "|", beginPosition, Tokens.Operator.BitOr));
+                        tokens.add(new Token(TokenKind.Operator, "|", beginPosition, Tokens.Operator.BitOr, hasNewLine));
                     }
                 } else if (ch == '&') {
                     this.stream.addPos(1);
                     char ch1 = this.stream.peek();
                     if (ch1 == '&') {
                         this.stream.addPos(1);
-                        beginPosition.endPos = this.stream.pos;
-                        beginPosition.endLine = this.stream.line;
-                        beginPosition.endCol = this.stream.col;
-                        tokens.add(new Token(TokenKind.Operator, "&&", beginPosition, Tokens.Operator.And));
+                        Position position = new Position(beginPosition.beginPos(), this.stream.pos, beginPosition.beginLine(), this.stream.line, beginPosition.beginCol(), this.stream.col);
+                        tokens.add(new Token(TokenKind.Operator, "&&", position, Tokens.Operator.And, hasNewLine));
                     } else if (ch1 == '=') {
                         this.stream.addPos(1);
-                        beginPosition.endPos = this.stream.pos;
-                        beginPosition.endLine = this.stream.line;
-                        beginPosition.endCol = this.stream.col;
-                        tokens.add(new Token(TokenKind.Operator, "&=", beginPosition, Tokens.Operator.BitAndAssign));
+                        Position position = new Position(beginPosition.beginPos(), this.stream.pos, beginPosition.beginLine(), this.stream.line, beginPosition.beginCol(), this.stream.col);
+                        tokens.add(new Token(TokenKind.Operator, "&=", position, Tokens.Operator.BitAndAssign, hasNewLine));
                     } else {
-                        tokens.add(new Token(TokenKind.Operator, "&", beginPosition, Tokens.Operator.BitAnd));
+                        tokens.add(new Token(TokenKind.Operator, "&", beginPosition, Tokens.Operator.BitAnd, hasNewLine));
                     }
                 } else if (ch == '^') {
                     this.stream.addPos(1);
                     char ch1 = this.stream.peek();
                     if (ch1 == '=') {
                         this.stream.addPos(1);
-                        beginPosition.endPos = this.stream.pos;
-                        beginPosition.endLine = this.stream.line;
-                        beginPosition.endCol = this.stream.col;
-                        tokens.add(new Token(TokenKind.Operator, "^=", beginPosition, Tokens.Operator.BitXorAssign));
+                        Position position = new Position(beginPosition.beginPos(), this.stream.pos, beginPosition.beginLine(), this.stream.line, beginPosition.beginCol(), this.stream.col);
+                        tokens.add(new Token(TokenKind.Operator, "^=", position, Tokens.Operator.BitXorAssign, hasNewLine));
                     } else {
-                        tokens.add(new Token(TokenKind.Operator, "^", beginPosition, Tokens.Operator.BitXor));
+                        tokens.add(new Token(TokenKind.Operator, "^", beginPosition, Tokens.Operator.BitXor, hasNewLine));
                     }
                 } else if (ch == '~') {
                     this.stream.addPos(1);
-                    tokens.add(new Token(TokenKind.Operator, "~", beginPosition, Tokens.Operator.BitNot));
+                    tokens.add(new Token(TokenKind.Operator, "~", beginPosition, Tokens.Operator.BitNot, hasNewLine));
                 } else {
-                    tokens.add(this.parseIdentifier());
+                    tokens.add(this.parseIdentifier().setNewLine(hasNewLine));
                 }
             }
             Position pos = new Position(this.stream.pos, this.stream.pos, this.stream.line, this.stream.line, this.stream.col, this.stream.col);
-            tokens.add(new Token(TokenKind.EOF, "", pos, Tokens.Others.EOF));
+            tokens.add(new Token(TokenKind.EOF, "", pos, Tokens.Others.EOF, true));
             return tokens.toArray(new Token[0]);
         }
     }
 
     private Token parseIdentifier() {
-        Position pos = this.stream.getPosition();
-        Token token = new Token(TokenKind.Identifier, "", pos);
-
-        StringBuilder text = new StringBuilder(String.valueOf(this.stream.next()));
+        Position beginPosition = this.stream.getPosition();
+        StringBuilder builder = new StringBuilder(String.valueOf(this.stream.next()));
 
         while (!this.stream.eof() && Token.isIdentifier(this.stream.peek())) {
-            text.append(this.stream.next());
+            builder.append(this.stream.next());
         }
 
-        token.text = text.toString();
+        String text = builder.toString();
 
-        pos.endPos = this.stream.pos - 1;
-        pos.endLine = this.stream.line;
-        pos.endCol = this.stream.col - 1;
+        Position position = new Position(beginPosition.beginPos(), this.stream.pos - 1, beginPosition.beginLine(), this.stream.col == 0 ? this.stream.line - 1 : this.stream.line, beginPosition.beginCol(), this.stream.col - 1);
 
-        if (token.text.equals("true")) {
-            token.kind = TokenKind.BooleanLiteral;
-            token.code = Tokens.BaseLiteral.True;
-        } else if (token.text.equals("false")) {
-            token.kind = TokenKind.BooleanLiteral;
-            token.code = Tokens.BaseLiteral.False;
-        } else if (token.text.equals("null")) {
-            token.kind = TokenKind.NullLiteral;
-            token.code = Tokens.BaseLiteral.Null;
-        } else if (token.text.equals("nullptr")) {
-            token.kind = TokenKind.NullptrLiteral;
-            token.code = Tokens.BaseLiteral.Nullptr;
-        } else if (this.keywordMap.containsKey(token.text)) {
-            token.kind = TokenKind.Keyword;
-            token.code = this.keywordMap.get(token.text);
+        if (text.equals("true")) {
+            return new Token(TokenKind.BooleanLiteral, text, position, Tokens.BaseLiteral.True);
+        } else if (text.equals("false")) {
+            return new Token(TokenKind.BooleanLiteral, text, position, Tokens.BaseLiteral.False);
+        } else if (text.equals("null")) {
+            return new Token(TokenKind.NullLiteral, text, position, Tokens.BaseLiteral.Null);
+        } else if (text.equals("nullptr")) {
+            return new Token(TokenKind.NullptrLiteral, text, position, Tokens.BaseLiteral.Nullptr);
+        } else if (keywordMap.containsKey(text)) {
+            return new Token(TokenKind.Keyword, text, position, keywordMap.get(text));
+        } else {
+            return new Token(TokenKind.Identifier, text, position);
         }
-
-        return token;
     }
 
     private Token parseStringLiteral() {
@@ -541,35 +485,28 @@ public class Scanner {
         }
 
         Position endPosition = this.stream.getPosition();
-        Position position = new Position(beginPosition.beginPos, endPosition.endPos, beginPosition.beginLine, endPosition.endLine, beginPosition.beginCol, endPosition.endCol);
+        Position position = new Position(beginPosition.beginPos(), endPosition.endPos(), beginPosition.beginLine(), endPosition.endLine(), beginPosition.beginCol(), endPosition.endCol());
         return new Token(TokenKind.StringLiteral, literal.toString(), position);
     }
 
     private Token parseCharLiteral() {
-        Position pos = this.stream.getPosition();
-        Token token = new Token(TokenKind.CharLiteral, "", pos);
-
+        Position beginPosition = this.stream.getPosition();
         this.stream.addPos(1);
 
-        token.text = String.valueOf(parseAChar());
+        char c = parseAChar();
 
-        if (this.stream.peek() != '\'' || this.stream.peek() == '\n') {
-            pos.endPos = this.stream.pos - 1;
-            pos.endLine = this.stream.line;
-            pos.endCol = this.stream.col - 1;
-            errorStream.printError(true, pos, 3);
+        Position position = new Position(beginPosition.beginPos(), this.stream.pos, beginPosition.beginLine(), this.stream.line, beginPosition.beginCol(), this.stream.col);
+        if (this.stream.peek() != '\'') {
+            errorStream.printError(true, beginPosition, 3);
         } else {
-            pos.endPos = this.stream.pos;
-            pos.endLine = this.stream.line;
-            pos.endCol = this.stream.col;
             this.stream.addPos(1);
         }
 
-        return token;
+        return new Token(TokenKind.CharLiteral, String.valueOf(c), position);
     }
 
     private char parseAChar() {
-        Position pos = this.stream.getPosition();
+        Position beginPosition = this.stream.getPosition();
 
         char ch = this.stream.next();
         if (ch == '\\') {
@@ -612,11 +549,8 @@ public class Scanner {
                     return '\0';
                 }
             } else {
-                pos.endPos = this.stream.pos - 1;
-                pos.endLine = this.stream.line;
-                pos.endCol = this.stream.col - 1;
-
-                this.errorStream.printError(true, pos, 4);
+                Position position = new Position(beginPosition.beginPos(), this.stream.pos, beginPosition.beginLine(), this.stream.line, beginPosition.beginCol(), this.stream.col);
+                this.errorStream.printError(true, position, 4);
 
                 return ch2;
             }
@@ -625,18 +559,24 @@ public class Scanner {
         }
     }
 
-    private void skipWhiteSpaces() {
-        while (!(this.stream.eof()) && Token.isWhiteSpace(this.stream.peek())) {
-            this.stream.addPos(1);
+    private boolean skipWhiteSpaces() {
+        boolean hasNewLine = false;
+        while (!this.stream.eof()) {
+            char c = this.stream.peek();
+            if (Token.isWhiteSpace(c)) {
+                this.stream.addPos(1);
+                if (c == '\n') hasNewLine = true;
+            } else {
+                break;
+            }
         }
+        return hasNewLine;
     }
 
     private void skipSingleLineComment() {
-        this.stream.addPos(1);
-
-        while (!(this.stream.eof()) && this.stream.peek() != '\n') {
+        do {
             this.stream.addPos(1);
-        }
+        } while (!(this.stream.eof()) && this.stream.peek() != '\n');
     }
 
     private void skipMultipleLineComments() {

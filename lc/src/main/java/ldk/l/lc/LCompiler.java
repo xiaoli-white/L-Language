@@ -62,7 +62,7 @@ public class LCompiler {
             Token[] tokens = scanner.scan();
             if (verbose) {
                 for (Token token : tokens) {
-                    System.out.printf("text: '%s', kind: %s, code: %s\n", token.text.replace("\n", "\\n"), token.kind, token.code);
+                    System.out.printf("text: '%s', kind: %s, code: %s\n", token.text().replace("\n", "\\n"), token.kind(), token.code());
                 }
             }
             if (!errorStream.checkErrorNum(""))

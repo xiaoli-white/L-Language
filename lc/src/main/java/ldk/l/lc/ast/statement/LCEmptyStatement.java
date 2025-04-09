@@ -5,7 +5,6 @@ import ldk.l.lc.ast.base.LCStatement;
 import ldk.l.lc.util.Position;
 
 import java.util.Arrays;
-import java.util.Objects;
 
 public class LCEmptyStatement extends LCStatement {
     public LCEmptyStatement(Position pos) {

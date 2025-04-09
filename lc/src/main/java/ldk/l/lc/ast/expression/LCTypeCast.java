@@ -5,9 +5,7 @@ import ldk.l.lc.ast.base.LCExpression;
 import ldk.l.lc.ast.expression.type.LCTypeExpression;
 import ldk.l.lc.util.Position;
 
-import java.util.Objects;
-
-public class LCTypeCast extends LCExpression {
+public final class LCTypeCast extends LCExpression {
     public Kind kind;
     public LCTypeExpression typeExpression;
     public LCExpression expression;

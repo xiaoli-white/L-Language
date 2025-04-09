@@ -11,7 +11,7 @@ import ldk.l.lc.ast.statement.declaration.LCVariableDeclaration;
 import ldk.l.lc.token.Tokens;
 import ldk.l.lc.util.error.ErrorStream;
 
-public class SyntaxChecker extends LCAstVisitor {
+public final class SyntaxChecker extends LCAstVisitor {
     private final ErrorStream errorStream;
 
     public SyntaxChecker(ErrorStream errorStream) {

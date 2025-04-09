@@ -28,19 +28,19 @@ public class LCVariableDeclaration extends LCDeclaration {
     public VariableSymbol symbol = null;
     private static int unnamedVarCount = 0;
 
-    public LCVariableDeclaration(boolean isVal, String name, LCTypeExpression typeExpression, LCExpression delegated, LCExpression init, LCMethodDeclaration getter, LCMethodDeclaration setter, boolean hasSemiColon, Position pos, boolean isErrorNode) {
-        this(isVal, name, typeExpression, null, delegated, init, getter, setter, hasSemiColon, pos, isErrorNode);
+    public LCVariableDeclaration(boolean isVal, String name, LCTypeExpression typeExpression, LCExpression delegated, LCExpression init, LCMethodDeclaration getter, LCMethodDeclaration setter, Position pos, boolean isErrorNode) {
+        this(isVal, name, typeExpression, null, delegated, init, getter, setter, pos, isErrorNode);
     }
 
-    public LCVariableDeclaration(boolean isVal, String name, LCTypeExpression typeExpression, LCTypeReferenceExpression extended, LCExpression delegated, LCExpression init, LCMethodDeclaration getter, LCMethodDeclaration setter, boolean hasSemiColon, Position pos, boolean isErrorNode) {
-        this(null, isVal, name, typeExpression, extended, delegated, init, getter, setter, hasSemiColon, pos, isErrorNode);
+    public LCVariableDeclaration(boolean isVal, String name, LCTypeExpression typeExpression, LCTypeReferenceExpression extended, LCExpression delegated, LCExpression init, LCMethodDeclaration getter, LCMethodDeclaration setter, Position pos, boolean isErrorNode) {
+        this(null, isVal, name, typeExpression, extended, delegated, init, getter, setter, pos, isErrorNode);
     }
 
-    public LCVariableDeclaration(LCModifier modifier, boolean isVal, String name, LCTypeExpression typeExpression, LCExpression delegated, LCExpression init, LCMethodDeclaration getter, LCMethodDeclaration setter, boolean hasSemiColon, Position pos, boolean isErrorNode) {
-        this(modifier, isVal, name, typeExpression, null, delegated, init, getter, setter, hasSemiColon, pos, isErrorNode);
+    public LCVariableDeclaration(LCModifier modifier, boolean isVal, String name, LCTypeExpression typeExpression, LCExpression delegated, LCExpression init, LCMethodDeclaration getter, LCMethodDeclaration setter, Position pos, boolean isErrorNode) {
+        this(modifier, isVal, name, typeExpression, null, delegated, init, getter, setter, pos, isErrorNode);
     }
 
-    public LCVariableDeclaration(LCModifier modifier, boolean isVal, String name, LCTypeExpression typeExpression, LCTypeReferenceExpression extended, LCExpression delegated, LCExpression init, LCMethodDeclaration getter, LCMethodDeclaration setter, boolean hasSemiColon, Position pos, boolean isErrorNode) {
+    public LCVariableDeclaration(LCModifier modifier, boolean isVal, String name, LCTypeExpression typeExpression, LCTypeReferenceExpression extended, LCExpression delegated, LCExpression init, LCMethodDeclaration getter, LCMethodDeclaration setter, Position pos, boolean isErrorNode) {
         super(pos, isErrorNode);
         if (modifier != null) this.setModifier(modifier);
 
@@ -68,8 +68,6 @@ public class LCVariableDeclaration extends LCDeclaration {
         if (this.getter != null) this.getter.parentNode = this;
         this.setter = setter;
         if (this.setter != null) this.setter.parentNode = this;
-
-        this.hasSemiColon = hasSemiColon;
     }
 
     public final void setModifier(LCModifier LCModifier) {
@@ -99,7 +97,6 @@ public class LCVariableDeclaration extends LCDeclaration {
                 ", init=" + init +
                 ", getter=" + getter +
                 ", setter=" + setter +
-                ", hasSemiColon=" + hasSemiColon +
                 ", theType=" + theType +
                 ", symbol=" + symbol +
                 ", annotations=" + Arrays.toString(annotations) +
@@ -110,6 +107,6 @@ public class LCVariableDeclaration extends LCDeclaration {
 
     @Override
     public LCVariableDeclaration clone() throws CloneNotSupportedException {
-        return new LCVariableDeclaration(this.modifier.clone(), this.isVal, this.name, typeExpression != null ? typeExpression.clone() : null, extended != null ? extended.clone() : null, this.delegated != null ? this.delegated.clone() : null, init != null ? init.clone() : null, this.getter != null ? getter.clone() : null, this.setter != null ? setter.clone() : null, hasSemiColon, this.position.clone(), isErrorNode);
+        return new LCVariableDeclaration(this.modifier.clone(), this.isVal, this.name, typeExpression != null ? typeExpression.clone() : null, extended != null ? extended.clone() : null, this.delegated != null ? this.delegated.clone() : null, init != null ? init.clone() : null, this.getter != null ? getter.clone() : null, this.setter != null ? setter.clone() : null, this.position.clone(), isErrorNode);
     }
 }

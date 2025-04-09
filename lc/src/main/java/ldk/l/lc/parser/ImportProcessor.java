@@ -21,7 +21,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 
-public class ImportProcessor extends LCAstVisitor {
+public final class ImportProcessor extends LCAstVisitor {
     private final Options options;
     private final ErrorStream errorStream;
     private LCAst ast = null;

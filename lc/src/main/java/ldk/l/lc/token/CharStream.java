@@ -99,6 +99,6 @@ public class CharStream {
     }
 
     public String getStringByPosition(Position position) {
-        return this.string.substring(position.beginPos, position.endPos);
+        return this.string.substring(position.beginPos(), position.endPos());
     }
 }

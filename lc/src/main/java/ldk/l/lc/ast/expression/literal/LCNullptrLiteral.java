@@ -3,7 +3,7 @@ package ldk.l.lc.ast.expression.literal;
 import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.util.Position;
 
-public class LCNullptrLiteral extends LCLiteral<Object> {
+public final class LCNullptrLiteral extends LCLiteral<Object> {
     public LCNullptrLiteral(Position pos) {
         this(pos, false);
     }
