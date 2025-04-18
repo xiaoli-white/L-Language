@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class NamedType extends Type {
+public final class NamedType extends Type {
     public String name;
     public List<NamedType> upperTypes;
     public boolean isComplement;

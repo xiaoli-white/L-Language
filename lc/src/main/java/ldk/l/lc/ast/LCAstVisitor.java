@@ -820,8 +820,8 @@ public abstract class LCAstVisitor {
     }
 
     public Object visitWith(LCWith lcWith, Object additional) {
-        for (LCStatement resource : lcWith.resources) {
-            this.visit(resource, additional);
+        for (LCVariableDeclaration resource : lcWith.resources) {
+            this.visitVariableDeclaration(resource, additional);
         }
         this.visit(lcWith.body, additional);
         return null;

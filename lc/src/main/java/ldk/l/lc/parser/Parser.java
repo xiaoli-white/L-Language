@@ -1579,12 +1579,12 @@ public final class Parser {
 
         this.tokenIndex++;
 
-        ArrayList<LCStatement> resources = new ArrayList<>();
+        List<LCVariableDeclaration> resources = new ArrayList<>();
         if (this.peek().code() == Tokens.Separator.OpenParen) {
             this.tokenIndex++;
             Token t = this.peek();
             while (t.kind() != TokenKind.EOF && t.code() != Tokens.Separator.CloseParen) {
-                resources.add(this.parseMethodBlockStatement());
+                resources.add(this.parseVariableDeclaration(false));
                 t = this.peek();
             }
             if (this.peek().code() == Tokens.Separator.CloseParen) {
@@ -1600,7 +1600,7 @@ public final class Parser {
 
         Position endPosition = this.getPos();
         Position position = new Position(beginPosition.beginPos(), endPosition.endPos(), beginPosition.beginLine(), endPosition.endLine(), beginPosition.beginCol(), endPosition.endCol());
-        return new LCWith(resources.toArray(new LCStatement[0]), body, position, isErrorNode);
+        return new LCWith(resources, body, position, isErrorNode);
     }
 
     private LCYield parseYield() {

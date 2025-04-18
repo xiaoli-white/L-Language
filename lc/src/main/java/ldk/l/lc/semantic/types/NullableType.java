@@ -2,7 +2,7 @@ package ldk.l.lc.semantic.types;
 
 import java.util.Objects;
 
-public class NullableType extends Type {
+public final class NullableType extends Type {
     public Type base;
 
     public NullableType(Type base) {

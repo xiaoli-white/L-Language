@@ -121,7 +121,7 @@ public final class IRGenerator extends LCAstVisitor {
         createBasicBlock("<init_string_constants>");
         this.stringConstantInitInvocations.forEach(this::addInstruction);
         createBasicBlock("<retain_string_constants>");
-        this.stringConstant2GlobalDataName.values().forEach(globalDataName -> retain(new IRMacro("global_data_address",new String[]{globalDataName}),SystemTypes.String_Type));
+        this.stringConstant2GlobalDataName.values().forEach(globalDataName -> retain(new IRMacro("global_data_address", new String[]{globalDataName}), SystemTypes.String_Type));
         createBasicBlock();
         this.objectStaticInitInvocations.forEach(this::addInstruction);
 
@@ -1616,7 +1616,7 @@ public final class IRGenerator extends LCAstVisitor {
             addInstruction(new IRGet(new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(elementAddress), new IRVirtualRegister(temp3)));
             String element = allocateVirtualRegister();
             addInstruction(new IRGet(type, new IRVirtualRegister(temp3), new IRVirtualRegister(element)));
-            retain(new IRVirtualRegister(element),arrayType.base);
+            retain(new IRVirtualRegister(element), arrayType.base);
             IRMacro address = new IRMacro("field_address", new String[]{this.variableName2FieldName.get(lcForeach.init.name).peek()});
             addInstruction(new IRSet(type, address, new IRVirtualRegister(element)));
 
@@ -1630,7 +1630,7 @@ public final class IRGenerator extends LCAstVisitor {
 
             this.visit(lcForeach.body, additional);
 
-            release(new IRVirtualRegister(element),arrayType.base);
+            release(new IRVirtualRegister(element), arrayType.base);
             addInstruction(new IRGoto(condition.name));
 
             var end = createBasicBlock();
@@ -1641,6 +1641,18 @@ public final class IRGenerator extends LCAstVisitor {
 
         return null;
     }
+
+    @Override
+    public Object visitWith(LCWith lcWith, Object additional) {
+        super.visitWith(lcWith, additional);
+        for (int i = lcWith.resources.size() - 1; i >= 0; i--) {
+            var resource = lcWith.resources.get(i);
+            var name = this.variableName2FieldName.get(resource.name).pop();
+            callMethod(lcWith.methodSymbol, List.of(parseType(resource.theType)), List.of(new IRMacro("field_address", new String[]{name})));
+        }
+        return null;
+    }
+
     private void createClassInstance(LCObjectDeclaration lcObjectDeclaration) {
         int constantNullptrIndex = module.constantPool.put(new IRConstantPool.Entry(new IRPointerType(IRType.getVoidType()), 0));
         String vtableName = String.format("<vtable %s>", lcObjectDeclaration.getFullName());

@@ -29,6 +29,7 @@ public class SystemTypes {
     public static NamedType String_Type = null;
     public static NamedType Class_Type = null;
     public static NamedType Throwable_Type = null;
+    public static NamedType Closeable_Type = null;
     // Wrapper Types
     public static NamedType Byte_WrapperType = null;
     public static NamedType Short_WrapperType = null;
@@ -100,6 +101,7 @@ public class SystemTypes {
         SystemTypes.String_Type = ast.getType("l.lang.String");
         SystemTypes.Class_Type = ast.getType("l.lang.Class");
         SystemTypes.Throwable_Type = ast.getType("l.lang.Throwable");
+        SystemTypes.Closeable_Type = ast.getType("l.lang.Closeable");
         SystemTypes.Byte_WrapperType = ast.getType("l.lang.Byte");
         SystemTypes.Short_WrapperType = ast.getType("l.lang.Short");
         SystemTypes.Integer_WrapperType = ast.getType("l.lang.Integer");
@@ -124,6 +126,9 @@ public class SystemTypes {
         }
         if (SystemTypes.Throwable_Type == null) {
             System.err.println("Cannot found the class 'l.lang.Throwable'.");
+        }
+        if (SystemTypes.Closeable_Type == null) {
+            System.err.println("Cannot found the class 'l.lang.Closeable'.");
         }
         if (SystemTypes.Byte_WrapperType == null) {
             System.err.println("Cannot found the class 'l.lang.Byte'.");

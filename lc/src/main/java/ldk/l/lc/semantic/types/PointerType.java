@@ -2,7 +2,7 @@ package ldk.l.lc.semantic.types;
 
 import java.util.Objects;
 
-public class PointerType extends Type {
+public final class PointerType extends Type {
     public Type base;
 
     public PointerType(Type base) {

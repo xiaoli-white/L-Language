@@ -23,7 +23,6 @@ public class LCVariableDeclaration extends LCDeclaration {
     public LCExpression init;
     public LCMethodDeclaration getter;
     public LCMethodDeclaration setter;
-    public boolean hasSemiColon;
     public Type theType = SystemTypes.AUTO;
     public VariableSymbol symbol = null;
     private static int unnamedVarCount = 0;

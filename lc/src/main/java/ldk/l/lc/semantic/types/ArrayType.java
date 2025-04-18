@@ -2,7 +2,7 @@ package ldk.l.lc.semantic.types;
 
 import java.util.Objects;
 
-public class ArrayType extends Type {
+public final class ArrayType extends Type {
     public Type base;
 
     public ArrayType(Type base) {

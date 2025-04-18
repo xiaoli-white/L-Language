@@ -2,7 +2,7 @@ package ldk.l.lc.semantic.types;
 
 import java.util.Objects;
 
-public class ReferenceType extends Type {
+public final class ReferenceType extends Type {
     public Type base;
 
     public ReferenceType(Type base) {

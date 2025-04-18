@@ -3,7 +3,7 @@ package ldk.l.lc.semantic.types;
 import java.util.Arrays;
 import java.util.Objects;
 
-public class MethodPointerType extends Type {
+public final class MethodPointerType extends Type {
     public Type[] paramTypes;
     public Type returnType;
 

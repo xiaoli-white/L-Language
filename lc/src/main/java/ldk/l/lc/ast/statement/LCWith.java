@@ -3,16 +3,20 @@ package ldk.l.lc.ast.statement;
 import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.ast.base.LCStatement;
 import ldk.l.lc.ast.base.LCStatementWithScope;
+import ldk.l.lc.ast.statement.declaration.LCVariableDeclaration;
 import ldk.l.lc.util.Position;
+import ldk.l.lc.util.symbol.MethodSymbol;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Objects;
+import java.util.List;
 
 public class LCWith extends LCStatementWithScope {
-    public LCStatement[] resources;
+    public List<LCVariableDeclaration> resources;
     public LCStatement body;
+    public MethodSymbol methodSymbol = null;
 
-    public LCWith(LCStatement[] resources, LCStatement body, Position pos, boolean isErrorNode) {
+    public LCWith(List<LCVariableDeclaration> resources, LCStatement body, Position pos, boolean isErrorNode) {
         super(pos, isErrorNode);
         this.resources = resources;
         for (LCStatement resource : resources) resource.parentNode = this;
@@ -28,7 +32,7 @@ public class LCWith extends LCStatementWithScope {
     @Override
     public String toString() {
         return "LCWith{" +
-                "resources=" + Arrays.toString(resources) +
+                "resources=" + resources +
                 ", body=" + body +
                 ", scope=" + scope +
                 ", annotations=" + Arrays.toString(annotations) +
@@ -39,6 +43,6 @@ public class LCWith extends LCStatementWithScope {
 
     @Override
     public LCWith clone() throws CloneNotSupportedException {
-        return new LCWith(resources.clone(), body.clone(), position.clone(), isErrorNode);
+        return new LCWith(new ArrayList<>(resources), body.clone(), position.clone(), isErrorNode);
     }
 }

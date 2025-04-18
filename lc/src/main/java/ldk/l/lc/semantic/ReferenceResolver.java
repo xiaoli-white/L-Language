@@ -32,13 +32,12 @@ import ldk.l.lc.util.symbol.Symbol;
 import ldk.l.lc.util.symbol.VariableSymbol;
 
 import java.util.*;
-import java.util.stream.Stream;
 
 public final class ReferenceResolver extends LCAstVisitor {
     private final SemanticAnalyzer semanticAnalyzer;
     private final ErrorStream errorStream;
     private Scope scope = null;
-    private LCMethodDeclaration currentMethodDecl = null;
+    private LCMethodDeclaration currentMethodDeclaration = null;
     private final HashMap<Scope, HashMap<String, VariableSymbol>> declaredVarsMap = new HashMap<>();
     private final Stack<ObjectSymbol> objectSymbolStack = new Stack<>();
 
@@ -397,8 +396,6 @@ public final class ReferenceResolver extends LCAstVisitor {
         this.declaredVarsMap.put(this.scope, new HashMap<>());
         super.visitCatch(lcCatch, additional);
 
-        char c = '你';
-
         this.scope = oldScope;
         return null;
     }
@@ -414,6 +411,15 @@ public final class ReferenceResolver extends LCAstVisitor {
 
         this.declaredVarsMap.put(this.scope, new HashMap<>());
         super.visitWith(lcWith, additional);
+
+        ObjectSymbol objectSymbol = Objects.requireNonNull(LCAstUtil.getObjectSymbol(Objects.requireNonNull(LCAstUtil.getObjectDeclarationByFullName(lcWith, SystemTypes.Closeable_Type.toTypeString()))));
+        MethodSymbol methodSymbol = ReferenceResolver.findMethodSymbolOfObjectSymbol(objectSymbol, "close", new Type[0]);
+
+        if (methodSymbol != null) {
+            lcWith.methodSymbol = methodSymbol;
+        } else {
+            System.err.println("Can not found method symbol for 'close()'.");
+        }
 
         this.scope = oldScope;
         return null;
@@ -494,8 +500,8 @@ public final class ReferenceResolver extends LCAstVisitor {
 
     @Override
     public Object visitMethodDeclaration(LCMethodDeclaration lcMethodDeclaration, Object additional) {
-        LCMethodDeclaration oldMethodDecl = this.currentMethodDecl;
-        this.currentMethodDecl = lcMethodDeclaration;
+        LCMethodDeclaration oldMethodDecl = this.currentMethodDeclaration;
+        this.currentMethodDeclaration = lcMethodDeclaration;
 
         Scope oldScope = this.scope;
         this.scope = lcMethodDeclaration.scope;
@@ -509,7 +515,7 @@ public final class ReferenceResolver extends LCAstVisitor {
         super.visitMethodDeclaration(lcMethodDeclaration, additional);
 
         this.scope = oldScope;
-        this.currentMethodDecl = oldMethodDecl;
+        this.currentMethodDeclaration = oldMethodDecl;
 
         return null;
     }

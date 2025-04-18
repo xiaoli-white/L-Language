@@ -1359,7 +1359,7 @@ public class LCAstDumper extends LCAstVisitor {
     @Override
     public Object visitWith(LCWith lcWith, Object prefix) {
         System.out.println(prefix + "-LCWith" + (lcWith.isErrorNode ? " **E**" : ""));
-        if (lcWith.resources.length != 0) {
+        if (!lcWith.resources.isEmpty()) {
             System.out.println(prefix + "   |-resources:");
             for (LCStatement resource : lcWith.resources) {
                 this.visit(resource, prefix + "   |   |");
