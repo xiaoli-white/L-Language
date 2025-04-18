@@ -8,7 +8,7 @@ import ldk.l.lc.ast.statement.declaration.object.LCAnnotationDeclaration;
 import ldk.l.lc.ast.statement.LCPackage;
 import ldk.l.lc.semantic.types.NamedType;
 
-public class TypeBuilder extends LCAstVisitor {
+public final class TypeBuilder extends LCAstVisitor {
     @Override
     public Object visitPackage(LCPackage lcPackage, Object additional) {
         if (LCAstUtil.getSourceFile(lcPackage) instanceof LCSourceCodeFile sourceCodeFile) {

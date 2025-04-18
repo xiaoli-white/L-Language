@@ -533,7 +533,7 @@ public final class ReferenceResolver extends LCAstVisitor {
         super.visitBlock(lcBlock, additional);
 
         // TODO 支持yield
-        if (lcBlock.statements.length > 0 && lcBlock.statements[lcBlock.statements.length - 1] instanceof LCExpressionStatement expressionStatement) {
+        if (!lcBlock.statements.isEmpty() && lcBlock.statements.getLast() instanceof LCExpressionStatement expressionStatement) {
             lcBlock.theType = expressionStatement.expression.theType;
         } else {
             lcBlock.theType = SystemTypes.VOID;

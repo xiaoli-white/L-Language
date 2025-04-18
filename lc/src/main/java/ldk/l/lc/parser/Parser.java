@@ -57,7 +57,7 @@ public final class Parser {
     private LCBlock parseBaseStatements(String fileNameWithoutExtension) {
         Position beginPosition = this.getPos();
 
-        ArrayList<LCStatement> statements = new ArrayList<>();
+        List<LCStatement> statements = new ArrayList<>();
         boolean isErrorNode = false;
 
         Token t = peek();
@@ -165,7 +165,7 @@ public final class Parser {
 
         Position endPosition = this.getPos();
         Position position = new Position(beginPosition.beginPos(), endPosition.endPos(), beginPosition.beginLine(), endPosition.endLine(), beginPosition.beginCol(), endPosition.endCol());
-        return new LCBlock(statements.toArray(new LCStatement[0]), position, isErrorNode);
+        return new LCBlock(statements, position, isErrorNode);
     }
 
     private LCImport parseImport() {
@@ -411,7 +411,7 @@ public final class Parser {
             isErrorNode = true;
             this.errorStream.printError(true, this.getPos(), 8);
             this.skip();
-            body = new LCBlock(new LCStatement[0], t2.position(), true);
+            body = new LCBlock(List.of(), t2.position(), true);
         }
 
         Position endPos = this.getPos();
@@ -425,7 +425,7 @@ public final class Parser {
 
         this.tokenIndex++;
 
-        LCStatement[] statements = this.parseStatementsOfClass();
+        List<LCStatement> statements = this.parseStatementsOfClass();
 
         Token t = this.peek();
         if (t.code() == Tokens.Separator.CloseBrace) {  //'}'
@@ -497,7 +497,7 @@ public final class Parser {
             isErrorNode = true;
             this.errorStream.printError(true, this.getPos(), 8);
             this.skip();
-            body = new LCBlock(new LCStatement[0], t1.position(), true);
+            body = new LCBlock(List.of(), t1.position(), true);
         }
 
         Position endPos = this.getPos();
@@ -511,7 +511,7 @@ public final class Parser {
 
         this.tokenIndex++;
 
-        ArrayList<LCStatement> statements = new ArrayList<>();
+        List<LCStatement> statements = new ArrayList<>();
 
         Token t = this.peek();
         while (t.kind() != TokenKind.EOF && t.code() != Tokens.Separator.CloseBrace) {
@@ -649,7 +649,7 @@ public final class Parser {
 
         Position endPos = this.getPos();
         Position pos = new Position(beginPos.beginPos(), endPos.endPos(), beginPos.beginLine(), endPos.endLine(), beginPos.beginCol(), endPos.endCol());
-        return new LCBlock(statements.toArray(new LCStatement[0]), pos, isErrorNode);
+        return new LCBlock(statements, pos, isErrorNode);
     }
 
     private LCAnnotationDeclaration parseAnnotationDeclaration() {
@@ -834,7 +834,7 @@ public final class Parser {
         if (t3.code() != Tokens.Separator.CloseBrace) {
             body = this.parseEnumBody();
         } else {
-            body = new LCBlock(new LCStatement[0], new Position(t3.position().beginPos(), t3.position().beginPos(), t3.position().beginLine(), t3.position().beginLine(), t3.position().beginCol(), t3.position().beginCol()));
+            body = new LCBlock(List.of(), new Position(t3.position().beginPos(), t3.position().beginPos(), t3.position().beginLine(), t3.position().beginLine(), t3.position().beginCol(), t3.position().beginCol()));
         }
         if (body.isErrorNode)
             isErrorNode = true;
@@ -849,7 +849,7 @@ public final class Parser {
         boolean isErrorNode = false;
         Position beginPos = this.getPos();
 
-        LCStatement[] statements = this.parseStatementsOfClass();
+        List<LCStatement> statements = this.parseStatementsOfClass();
 
         Token t = this.peek();
         if (t.code() == Tokens.Separator.CloseBrace) {  //'}'
@@ -937,7 +937,7 @@ public final class Parser {
         } else {
             this.errorStream.printError(true, this.getPos(), 8);
             this.skip();
-            body = new LCBlock(new LCStatement[0], t2.position(), true);
+            body = new LCBlock(List.of(), t2.position(), true);
         }
 
         Position endPos = this.getPos();
@@ -974,7 +974,7 @@ public final class Parser {
         } else {
             this.errorStream.printError(true, this.getPos(), 8);
             this.skip();
-            body = new LCBlock(new LCStatement[0], t1.position(), true);
+            body = new LCBlock(List.of(), t1.position(), true);
         }
 
         Position endPos = this.getPos();
@@ -1077,8 +1077,8 @@ public final class Parser {
         return typeParameters.toArray(new LCTypeParameter[0]);
     }
 
-    private LCStatement[] parseStatementsOfClass() {
-        ArrayList<LCStatement> statements = new ArrayList<>();
+    private List<LCStatement> parseStatementsOfClass() {
+        List<LCStatement> statements = new ArrayList<>();
         this.anonymousClassDeclarationsStack.push(new ArrayList<>());
         Token t = this.peek();
         while (t.kind() != TokenKind.EOF && t.code() != Tokens.Separator.CloseBrace) {
@@ -1200,7 +1200,7 @@ public final class Parser {
         }
         statements.addAll(0, this.anonymousClassDeclarationsStack.pop());
 
-        return statements.toArray(new LCStatement[0]);
+        return statements;
     }
 
     private LCAnnotationDeclaration.LCAnnotation[] parseAnnotations() {
@@ -1437,7 +1437,7 @@ public final class Parser {
         if (LCFlags.hasAbstract(flags) || LCFlags.hasExtern(flags)) {
             Position t_beginPos = this.getPos();
             Position thePos = new Position(t_beginPos.beginPos(), t_beginPos.beginPos(), t_beginPos.beginLine(), t_beginPos.beginLine(), t_beginPos.beginCol(), t_beginPos.beginCol());
-            methodBody = new LCBlock(new LCStatement[0], thePos, isErrorNode);
+            methodBody = new LCBlock(List.of(), thePos, isErrorNode);
         } else {
             t1 = peek();
             if (t1.code() == Tokens.Separator.OpenBrace) {
@@ -1452,7 +1452,7 @@ public final class Parser {
 
                 Position t_endPos = this.getPos();
                 Position thePos = new Position(t_beginPos.beginPos(), t_endPos.endPos(), t_beginPos.beginLine(), t_endPos.endLine(), t_beginPos.beginCol(), t_endPos.endCol());
-                methodBody = new LCBlock(new LCStatement[]{new LCExpressionStatement(expression, expression.position, t_isErrorNode)}, thePos, t_isErrorNode || isErrorNode);
+                methodBody = new LCBlock(List.of(new LCExpressionStatement(expression, expression.position, t_isErrorNode)), thePos, t_isErrorNode || isErrorNode);
             } else {
                 Position t_beginPos = this.getPos();
 
@@ -1462,7 +1462,7 @@ public final class Parser {
 
                 Position t_endPos = this.getPos();
                 Position thePos = new Position(t_beginPos.beginPos(), t_endPos.endPos(), t_beginPos.beginLine(), t_endPos.endLine(), t_beginPos.beginCol(), t_endPos.endCol());
-                methodBody = new LCBlock(new LCStatement[0], thePos, isErrorNode);
+                methodBody = new LCBlock(List.of(), thePos, isErrorNode);
             }
         }
 
@@ -1478,7 +1478,7 @@ public final class Parser {
 
         this.tokenIndex++;
 
-        ArrayList<LCStatement> statements = new ArrayList<>();
+        List<LCStatement> statements = new ArrayList<>();
         Token t = this.peek();
 
         while (t.kind() != TokenKind.EOF && t.code() != Tokens.Separator.CloseBrace) {
@@ -1491,13 +1491,13 @@ public final class Parser {
             this.tokenIndex++;
             Position endPos = this.getPos();
             Position pos = new Position(beginPos.beginPos(), endPos.endPos(), beginPos.beginLine(), endPos.endLine(), beginPos.beginCol(), endPos.endCol());
-            return new LCBlock(statements.toArray(new LCStatement[0]), pos);
+            return new LCBlock(statements, pos);
         } else {
             System.err.println("Expecting '}' while parsing a LCBlock, but we got a " + t.text());
             this.skip();
             Position endPos = getPos();
             Position pos = new Position(beginPos.beginPos(), endPos.endPos(), beginPos.beginLine(), endPos.endLine(), beginPos.beginCol(), endPos.endCol());
-            return new LCBlock(statements.toArray(new LCStatement[0]), pos, true);
+            return new LCBlock(statements, pos, true);
         }
     }
 
@@ -2957,7 +2957,7 @@ public final class Parser {
 
             Position endPosition = this.getPos();
             Position position = new Position(beginPosition.beginPos(), endPosition.endPos(), beginPosition.beginLine(), endPosition.endLine(), beginPosition.beginCol(), endPosition.endCol());
-            expression = new LCGetAddress(lcTypeExpression, name.text(), paramTypeExpressions.toArray(new LCTypeExpression[0]), position, isErrorNode);
+            expression = new LCGetAddress(lcTypeExpression, name.text(), paramTypeExpressions, position, isErrorNode);
         } else if (t.code() == Tokens.Keyword.__Platform__) {
             this.tokenIndex++;
             expression = new LCPlatform(this.options.getStringVar("platform"), t.position(), false);

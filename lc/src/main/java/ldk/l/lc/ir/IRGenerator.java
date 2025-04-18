@@ -633,8 +633,8 @@ public final class IRGenerator extends LCAstVisitor {
 
     @Override
     public Object visitBlock(LCBlock lcBlock, Object additional) {
-        for (int i = 0; i < lcBlock.statements.length; i++) {
-            LCStatement statement = lcBlock.statements[i];
+        for (int i = 0; i < lcBlock.statements.size(); i++) {
+            LCStatement statement = lcBlock.statements.get(i);
             this.visit(statement, additional);
 //            IROperand operand;
 //            if (i + 1 == lcBlock.statements.length && statement instanceof LCExpressionStatement) {
@@ -1162,7 +1162,7 @@ public final class IRGenerator extends LCAstVisitor {
         if (lcGetAddress.paramTypeExpressions == null) {
             this.visit(lcGetAddress.expression, additional);
         } else {
-            // TODO 解析方法引用
+            operandStack.push(new IRMacro("function_address", new String[]{lcGetAddress.methodSymbol.getFullName()}));
         }
         return null;
     }

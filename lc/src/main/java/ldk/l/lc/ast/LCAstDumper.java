@@ -20,7 +20,7 @@ import ldk.l.lc.ast.statement.loops.*;
 
 import java.util.Arrays;
 
-public class LCAstDumper extends LCAstVisitor {
+public final class LCAstDumper extends LCAstVisitor {
     @Override
     public Object visitAst(LCAst lcAst, Object prefix) {
         System.out.println((prefix instanceof String string && !string.isEmpty() ? prefix + "-" : "")
@@ -131,7 +131,7 @@ public class LCAstDumper extends LCAstVisitor {
         System.out.println(prefix + "   |-theType: " + (lcBlock.theType != null ? lcBlock.theType : "<unknown>"));
         System.out.println(prefix + "   |-shouldBeLeftValue: " + lcBlock.shouldBeLeftValue);
         System.out.println(prefix + "   |-isLeftValue: " + lcBlock.isLeftValue);
-        if (lcBlock.statements.length != 0) {
+        if (!lcBlock.statements.isEmpty()) {
             System.out.println(prefix + "   |-statements:");
             for (LCStatement statement : lcBlock.statements) {
                 this.visit(statement, prefix + "       |");
@@ -582,7 +582,7 @@ public class LCAstDumper extends LCAstVisitor {
 
         if (lcGetAddress.paramTypeExpressions != null) {
             System.out.println(prefix + "   |-paramTypeExpressions:");
-            if (lcGetAddress.paramTypeExpressions.length == 0) {
+            if (lcGetAddress.paramTypeExpressions.isEmpty()) {
                 System.out.println(prefix + "   |   |-<empty>");
             } else {
                 for (LCTypeExpression paramTypeExpression : lcGetAddress.paramTypeExpressions) {

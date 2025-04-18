@@ -1,22 +1,21 @@
 package ldk.l.lc.ast.base;
 
-
 import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.util.Position;
 
-import java.util.Arrays;
-import java.util.Objects;
+import java.util.ArrayList;
+import java.util.List;
 
 public class LCBlock extends LCExpressionWithScope {
-    public LCStatement[] statements;
+    public List<LCStatement> statements;
 
-    public LCBlock(LCStatement[] statements, Position pos) {
+    public LCBlock(List<LCStatement> statements, Position pos) {
         this(statements, pos, false);
     }
 
-    public LCBlock(LCStatement[] statements, Position pos, boolean isErrorNode) {
+    public LCBlock(List<LCStatement> statements, Position pos, boolean isErrorNode) {
         super(pos, isErrorNode);
-        this.statements = statements;
+        this.statements = new ArrayList<>(statements);
         for (LCStatement statement : statements) statement.parentNode = this;
     }
 
@@ -28,7 +27,7 @@ public class LCBlock extends LCExpressionWithScope {
     @Override
     public String toString() {
         return "LCBlock{" +
-                "statements=" + Arrays.toString(statements) +
+                "statements=" + statements +
                 ", scope=" + scope +
                 ", theType=" + theType +
                 ", shouldBeLeftValue=" + shouldBeLeftValue +
@@ -41,6 +40,6 @@ public class LCBlock extends LCExpressionWithScope {
 
     @Override
     public LCBlock clone() throws CloneNotSupportedException {
-        return new LCBlock(Arrays.copyOf(this.statements, this.statements.length), this.position.clone(), this.isErrorNode);
+        return new LCBlock(new ArrayList<>(this.statements), this.position.clone(), this.isErrorNode);
     }
 }

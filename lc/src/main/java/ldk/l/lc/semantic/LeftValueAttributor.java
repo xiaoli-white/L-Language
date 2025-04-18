@@ -7,7 +7,7 @@ import ldk.l.lc.token.Token;
 import ldk.l.lc.token.Tokens;
 import ldk.l.lc.util.error.ErrorStream;
 
-public class LeftValueAttributor extends LCAstVisitor {
+public final class LeftValueAttributor extends LCAstVisitor {
     private final ErrorStream errorStream;
 
     public LeftValueAttributor(ErrorStream errorStream) {

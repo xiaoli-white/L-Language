@@ -13,7 +13,7 @@ import ldk.l.util.option.Options;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ClosureAnalyzer extends LCAstVisitor {
+public final class ClosureAnalyzer extends LCAstVisitor {
     private final ErrorStream errorStream;
     private final Options options;
     private final ArrayList<Closure> closures = new ArrayList<>();

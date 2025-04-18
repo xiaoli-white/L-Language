@@ -8,7 +8,7 @@ import ldk.l.lc.util.error.ErrorStream;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LCASTDeadCodeRemover extends LiveAnalyzer {
+public final class LCASTDeadCodeRemover extends LiveAnalyzer {
     public LCASTDeadCodeRemover(ErrorStream errorStream) {
         super(errorStream, true);
     }
@@ -25,11 +25,9 @@ public class LCASTDeadCodeRemover extends LiveAnalyzer {
             }
         }
 
-        ArrayList<LCStatement> arrayList = new ArrayList<>(List.of(lcBlock.statements));
         for (LCStatement stmt : deadCodes) {
-            arrayList.remove(stmt);
+            lcBlock.statements.remove(stmt);
         }
-        lcBlock.statements = arrayList.toArray(new LCStatement[0]);
 
         return alive;
     }

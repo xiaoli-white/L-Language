@@ -22,7 +22,7 @@ import ldk.l.lc.util.symbol.object.ObjectSymbol;
 import java.util.ArrayList;
 import java.util.Objects;
 
-public class TypeParameterEnter extends LCAstVisitor {
+public final class TypeParameterEnter extends LCAstVisitor {
     private final ErrorStream errorStream;
     private Scope scope = null;
 

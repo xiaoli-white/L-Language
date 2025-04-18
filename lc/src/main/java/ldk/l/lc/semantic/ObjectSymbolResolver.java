@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 
-public class ObjectSymbolResolver extends LCAstVisitor {
+public final class ObjectSymbolResolver extends LCAstVisitor {
     private final ErrorStream errorStream;
 
     public ObjectSymbolResolver(ErrorStream errorStream) {

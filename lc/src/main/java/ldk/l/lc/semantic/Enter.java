@@ -23,7 +23,7 @@ import ldk.l.lc.util.symbol.object.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Enter extends LCAstVisitor {
+public final class Enter extends LCAstVisitor {
     private final ErrorStream errorStream;
     private Scope scope = null;
     private MethodSymbol currentMethodSymbol = null;

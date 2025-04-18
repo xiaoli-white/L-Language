@@ -12,7 +12,7 @@ import ldk.l.lc.util.Context;
 import ldk.l.lc.util.error.ErrorStream;
 import ldk.l.lc.util.symbol.MethodKind;
 
-public class ModifierChecker extends LCAstVisitor {
+public final class ModifierChecker extends LCAstVisitor {
     private final ErrorStream errorStream;
 
     public ModifierChecker(ErrorStream errorStream) {

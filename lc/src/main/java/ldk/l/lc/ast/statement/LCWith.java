@@ -18,7 +18,7 @@ public class LCWith extends LCStatementWithScope {
 
     public LCWith(List<LCVariableDeclaration> resources, LCStatement body, Position pos, boolean isErrorNode) {
         super(pos, isErrorNode);
-        this.resources = resources;
+        this.resources = new ArrayList<>(resources);
         for (LCStatement resource : resources) resource.parentNode = this;
         this.body = body;
         this.body.parentNode = this;

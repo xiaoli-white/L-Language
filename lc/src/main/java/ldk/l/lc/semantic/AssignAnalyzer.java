@@ -17,7 +17,7 @@ import ldk.l.lc.util.symbol.VariableSymbol;
 
 import java.util.HashMap;
 
-public class AssignAnalyzer extends LCAstVisitor {
+public final class AssignAnalyzer extends LCAstVisitor {
     private final ErrorStream errorStream;
     private HashMap<VariableSymbol, Boolean> assignMode;
 

@@ -35,9 +35,7 @@ public class LiveAnalyzer extends LCAstVisitor {
         if (alive) {
             if (lcMethodDeclaration.returnType == SystemTypes.VOID) {
                 Position pos = new Position(lcMethodDeclaration.body.position.endPos(), lcMethodDeclaration.body.position.endPos(), lcMethodDeclaration.body.position.endLine(), lcMethodDeclaration.body.position.endLine(), lcMethodDeclaration.body.position.endCol(), lcMethodDeclaration.body.position.endCol());
-                List<LCStatement> list = new ArrayList<>(List.of(lcMethodDeclaration.body.statements));
-                list.add(new LCReturn(null, pos));
-                lcMethodDeclaration.body.statements = list.toArray(new LCStatement[0]);
+                lcMethodDeclaration.body.statements.add(new LCReturn(null, pos));
             } else {
                 if (!this.isDeadCodeRemover) {
 //                this.addError("Function lacks ending return LCStatement and return type does not include 'undefined'.", functionDecl);
