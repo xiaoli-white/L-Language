@@ -88,7 +88,6 @@ public abstract class LCAstVisitor {
         return null;
     }
 
-    // Object Declarations
     public Object visitClassDeclaration(LCClassDeclaration lcClassDeclaration, Object additional) {
         for (LCAnnotationDeclaration.LCAnnotation lcAnnotation : lcClassDeclaration.annotations) {
             this.visit(lcAnnotation, additional);

@@ -6,18 +6,18 @@ import ldk.l.lg.ir.type.IRType;
 
 import java.util.Arrays;
 
-public class IRFunction extends IRNode {
+public final class IRFunction extends IRNode {
     // public final String[] attributes;
     public final IRType returnType;
     public final String name;
-    public final long argumentsCount;
+    public final long argumentCount;
     public final IRField[] fields;
     public final IRControlFlowGraph controlFlowGraph;
 
-    public IRFunction(IRType returnType,String name, long argumentsCount, IRField[] fields, IRControlFlowGraph controlFlowGraph) {
+    public IRFunction(IRType returnType, String name, long argumentCount, IRField[] fields, IRControlFlowGraph controlFlowGraph) {
         this.returnType = returnType;
         this.name = name;
-        this.argumentsCount = argumentsCount;
+        this.argumentCount = argumentCount;
         this.fields = fields;
         this.controlFlowGraph = controlFlowGraph;
     }
@@ -32,7 +32,7 @@ public class IRFunction extends IRNode {
         return "IRFunction{" +
                 "returnType=" + returnType +
                 ", name='" + name + '\'' +
-                ", argumentsCount=" + argumentsCount +
+                ", argumentsCount=" + argumentCount +
                 ", fields=" + Arrays.toString(fields) +
                 ", controlFlowGraph=" + controlFlowGraph +
                 '}';

@@ -4,7 +4,7 @@ import ldk.l.lg.ir.IRVisitor;
 
 import java.util.Arrays;
 
-public class IRInterfaceTable extends IROperand {
+public final class IRInterfaceTable extends IROperand {
     public final Entry[] entries;
 
     public IRInterfaceTable(Entry[] entries) {

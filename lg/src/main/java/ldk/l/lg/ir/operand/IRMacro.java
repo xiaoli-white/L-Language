@@ -3,7 +3,7 @@ package ldk.l.lg.ir.operand;
 import ldk.l.lg.ir.IRVisitor;
 import ldk.l.lg.ir.type.IRType;
 
-public class IRMacro extends IROperand {
+public final class IRMacro extends IROperand {
     private IRType type = null;
     public final String name;
     public final String[] args;

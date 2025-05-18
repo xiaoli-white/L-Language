@@ -4,7 +4,7 @@ import ldk.l.lg.ir.IRVisitor;
 
 import java.util.Objects;
 
-public class IRFloatType extends IRType {
+public final class IRFloatType extends IRType {
     public static final IRFloatType INSTANCE = new IRFloatType();
 
     private IRFloatType() {

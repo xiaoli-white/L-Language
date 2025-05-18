@@ -4,6 +4,7 @@ import ldk.l.lg.ir.IRVisitor;
 import ldk.l.lg.ir.operand.IRVirtualRegister;
 import ldk.l.lg.ir.type.IRType;
 
+@Deprecated
 public class IRPop extends IRInstruction {
     public final IRType type;
     public final IRVirtualRegister target;

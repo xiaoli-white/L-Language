@@ -1,6 +1,7 @@
 package ldk.l.lc;
 
 import com.xiaoli.bcg.ByteCodeGenerator;
+import com.xiaoli.llvmir_generator.LLVMIRGenerator;
 import ldk.l.lc.ast.LCAst;
 import ldk.l.lc.ast.LCAstDumper;
 import ldk.l.lc.ir.IRGenerator;
@@ -138,7 +139,7 @@ public class LCompiler {
                     }
                 }
                 for (IRFunction function : irModule.functions.values()) {
-                    System.out.println("function " + function.returnType + " " + function.name + ", arguments count: " + function.argumentsCount);
+                    System.out.println("function " + function.returnType + " " + function.name + ", arguments count: " + function.argumentCount);
                     for (IRField field : function.fields) {
                         System.out.println("\t" + field.name + ", " + field.type);
                     }
@@ -167,8 +168,11 @@ public class LCompiler {
             if (!errorStream.checkErrorNum(""))
                 return;
 
-            ByteCodeGenerator byteCodeGenerator = new ByteCodeGenerator();
-            byteCodeGenerator.generate(irModule, options);
+//            ByteCodeGenerator byteCodeGenerator = new ByteCodeGenerator();
+//            byteCodeGenerator.generate(irModule, options);
+
+            LLVMIRGenerator llvmIRGenerator = new LLVMIRGenerator();
+            llvmIRGenerator.generate(irModule, options);
 
             errorStream.dumpErrorsAndWarnings("");
         }

@@ -4,6 +4,7 @@ import ldk.l.lg.ir.IRVisitor;
 import ldk.l.lg.ir.operand.IROperand;
 import ldk.l.lg.ir.type.IRType;
 
+@Deprecated
 public class IRPush extends IRInstruction {
     public final IRType type;
     public final IROperand operand;

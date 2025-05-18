@@ -4,8 +4,6 @@ import ldk.l.lg.ir.IRVisitor;
 import ldk.l.lg.ir.base.IRNode;
 import ldk.l.lg.ir.type.IRType;
 
-import java.util.Objects;
-
 public class IRField extends IRNode {
     // public final String[] attributes;
     public final String name;

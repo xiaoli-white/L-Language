@@ -5,7 +5,7 @@ import ldk.l.lg.ir.operand.IROperand;
 import ldk.l.lg.ir.operand.IRVirtualRegister;
 import ldk.l.lg.ir.type.IRType;
 
-public class IRDecrease extends IRInstruction {
+public final class IRDecrease extends IRInstruction {
     public final IRType type;
     public final IROperand operand;
     public final IRVirtualRegister target;

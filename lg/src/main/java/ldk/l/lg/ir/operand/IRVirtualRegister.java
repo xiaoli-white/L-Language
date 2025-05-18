@@ -4,7 +4,7 @@ import ldk.l.lg.ir.IRVisitor;
 
 import java.util.Objects;
 
-public class IRVirtualRegister extends IROperand {
+public final class IRVirtualRegister extends IROperand {
     public final String name;
 
     public IRVirtualRegister(String name) {

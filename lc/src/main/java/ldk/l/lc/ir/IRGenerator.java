@@ -98,7 +98,6 @@ public final class IRGenerator extends LCAstVisitor {
         this.currentCFG.basicBlocks.values().stream().toList().getLast().instructions.add(instruction);
     }
 
-    // new IrConstant(-1) => error
     @Override
     public Object visit(LCAstNode node, Object additional) {
         if (node instanceof LCStatement statement) {
@@ -1739,7 +1738,8 @@ public final class IRGenerator extends LCAstVisitor {
             InterfaceSymbol interfaceSymbol = queue.poll();
             Map<String, String> map = new LinkedHashMap<>();
             for (MethodSymbol methodSymbol : interfaceSymbol.methods) {
-                map.put(methodSymbol.getSimpleName(), classSymbol.getMethodCascade(methodSymbol.getSimpleName()).getFullName());
+                MethodSymbol symbol = classSymbol.getMethodCascade(methodSymbol.getSimpleName());
+                map.put(methodSymbol.getSimpleName(), symbol != null ? symbol.getFullName() : "");
             }
             map.put("<deinit>()V", classSymbol.getFullName() + ".<deinit>()V");
             result.put(interfaceSymbol.getFullName(), map);
@@ -1824,10 +1824,11 @@ public final class IRGenerator extends LCAstVisitor {
     }
 
     private void newArray(IROperand typeSize, IROperand length) {
-        String sizeRegister = allocateVirtualRegister();
-        addInstruction(new IRCalculate(false, IRCalculate.Operator.Mul, IRType.getUnsignedLongType(), typeSize, length, new IRVirtualRegister(sizeRegister)));
+        String tempRegister = allocateVirtualRegister();
+        addInstruction(new IRCalculate(false, IRCalculate.Operator.Mul, IRType.getUnsignedLongType(), typeSize, length, new IRVirtualRegister(tempRegister)));
         int constant16Index = module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 16));
-        addInstruction(new IRCalculate(false, IRCalculate.Operator.Add, IRType.getUnsignedLongType(), new IRVirtualRegister(sizeRegister), new IRConstant(constant16Index), new IRVirtualRegister(sizeRegister)));
+        String sizeRegister = allocateVirtualRegister();
+        addInstruction(new IRCalculate(false, IRCalculate.Operator.Add, IRType.getUnsignedLongType(), new IRVirtualRegister(tempRegister), new IRConstant(constant16Index), new IRVirtualRegister(sizeRegister)));
         String placeRegister = allocateVirtualRegister();
         addInstruction(new IRMalloc(new IRVirtualRegister(sizeRegister), new IRVirtualRegister(placeRegister)));
 

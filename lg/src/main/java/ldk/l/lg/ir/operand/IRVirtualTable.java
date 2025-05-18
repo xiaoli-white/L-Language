@@ -4,7 +4,7 @@ import ldk.l.lg.ir.IRVisitor;
 
 import java.util.Arrays;
 
-public class IRVirtualTable extends IROperand {
+public final class IRVirtualTable extends IROperand {
     public final String[] functions;
 
     public IRVirtualTable(String[] functions) {

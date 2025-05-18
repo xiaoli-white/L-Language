@@ -3,11 +3,7 @@ package ldk.l.lg.ir.operand;
 import ldk.l.lg.ir.IRVisitor;
 import ldk.l.lg.ir.type.IRType;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-public class IRPhi extends IROperand {
+public final class IRPhi extends IROperand {
     public final IRType type;
     public final String[] labels;
     public final IROperand[] operands;

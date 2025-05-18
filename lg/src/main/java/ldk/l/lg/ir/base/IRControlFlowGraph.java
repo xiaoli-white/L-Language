@@ -54,7 +54,7 @@ public final class IRControlFlowGraph {
 
     public static class BasicBlock implements Comparable<BasicBlock> {
         public final String name;
-        public List<IRInstruction> instructions;
+        public final List<IRInstruction> instructions;
 
         public BasicBlock(String name) {
             this.name = name;

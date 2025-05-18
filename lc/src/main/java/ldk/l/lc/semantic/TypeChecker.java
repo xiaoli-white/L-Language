@@ -662,53 +662,9 @@ public final class TypeChecker extends LCAstVisitor {
         Object condition = this.visit(lcIf.condition, additional);
         if (condition instanceof LCExpression expression) lcIf.condition = expression;
         this.inIfCondition = lastInIfCondition;
-/*
-        if (lcIf.condition instanceof LCVariable) {
-            if (ranges == null)
-                ranges = new HashMap<>();
-
-            VariableSymbol variableSymbol = (VariableSymbol) ((LCVariable) lcIf.condition).aSymbol;
-            Type t = TypeUtil.getTruthfulConditions(variableSymbol.theType);
-            ranges.put(variableSymbol, t);
-        } else if (lcIf.condition instanceof LCUnary && ((LCUnary) lcIf.condition)._operator == Tokens.Operator.Not
-                && ((LCUnary) lcIf.condition).expression instanceof LCVariable) {
-            if (ranges == null) ranges = new HashMap<>();
-            VariableSymbol variableSymbol = (VariableSymbol) ((LCVariable) ((LCUnary) lcIf.condition).expression).aSymbol;
-            Type t = TypeUtil.getTruthfulConditions(variableSymbol.theType);
-            // TODO 取反
-            ranges.put(variableSymbol, t);
-        }
-
-        if (ranges != null) {
-            for (VariableSymbol variableSymbol : ranges.keySet()) {
-                if (!this.varRange.containsKey(variableSymbol)) {
-                    this.varRange.put(variableSymbol, variableSymbol.theType);
-                }
-            }
-
-            this.varRange = this.intersectRanges(this.varRange, ranges);
-
-            if (this.options.getBooleanVar("traceTypeChecker")) {
-                System.out.println("in visitIfExpression, before entering Then LCBlock, this.varRanges=");
-                this.dumpRange(this.varRange);
-            }
-        }
-        */
         this.visit(lcIf.then, additional);
 
         if (lcIf._else != null) {
-        /*
-            if (ranges != null) {
-                HashMap<VariableSymbol, Type> ranges1 = this.getComplementRanges(ranges);
-
-                this.varRange = this.intersectRanges(lastVarRanges, ranges1);
-
-                if (this.options.getBooleanVar("traceTypeChecker")) {
-                    System.out.println("in visitIfExpression, before entering Else LCBlock, this.varRanges=");
-                    System.out.println(this.varRange);
-                }
-            }
-*/
             this.visit(lcIf._else, additional);
         }
         if (lcIf.then instanceof LCExpressionStatement lcExpressionStatement) {

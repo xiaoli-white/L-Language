@@ -78,14 +78,6 @@ public abstract class IRVisitor {
         return null;
     }
 
-    public Object visitConstant(IRConstant irConstant, Object additional) {
-        return null;
-    }
-
-    public Object visitVirtualRegister(IRVirtualRegister irVirtualRegister, Object additional) {
-        return null;
-    }
-
     public Object visitAttributeGroupDeclaration(IRAttributeGroupDeclaration irAttributeGroupDeclaration, Object additional) {
         return null;
     }
@@ -124,7 +116,7 @@ public abstract class IRVisitor {
     public Object visitNegate(IRNegate irNegate, Object additional) {
         this.visit(irNegate.type, additional);
         this.visit(irNegate.operand, additional);
-        this.visitVirtualRegister(irNegate.result, additional);
+        this.visitVirtualRegister(irNegate.target, additional);
         return null;
     }
 
@@ -155,7 +147,7 @@ public abstract class IRVisitor {
 
     public Object visitSet(IRSet irSet, Object additional) {
         this.visit(irSet.type, additional);
-        this.visit(irSet.source, additional);
+        this.visit(irSet.value, additional);
         this.visit(irSet.address, additional);
         return null;
     }
@@ -231,6 +223,14 @@ public abstract class IRVisitor {
             this.visit(irAsm.types[i], additional);
             this.visit(irAsm.resources[i], additional);
         }
+        return null;
+    }
+
+    public Object visitConstant(IRConstant irConstant, Object additional) {
+        return null;
+    }
+
+    public Object visitVirtualRegister(IRVirtualRegister irVirtualRegister, Object additional) {
         return null;
     }
 

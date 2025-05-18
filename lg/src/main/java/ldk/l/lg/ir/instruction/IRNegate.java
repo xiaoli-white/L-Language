@@ -9,13 +9,13 @@ public class IRNegate extends IRInstruction {
     public boolean isAtomic;
     public IRType type;
     public IROperand operand;
-    public IRVirtualRegister result;
+    public IRVirtualRegister target;
 
-    public IRNegate(boolean isAtomic, IRType type, IROperand operand, IRVirtualRegister result) {
+    public IRNegate(boolean isAtomic, IRType type, IROperand operand, IRVirtualRegister target) {
         this.isAtomic = isAtomic;
         this.type = type;
         this.operand = operand;
-        this.result = result;
+        this.target = target;
     }
 
     @Override
@@ -25,6 +25,6 @@ public class IRNegate extends IRInstruction {
 
     @Override
     public String toString() {
-        return result + " = " + (isAtomic ? "atomic_" : "") + "negate " + type + operand;
+        return target + " = " + (isAtomic ? "atomic_" : "") + "negate " + type + operand;
     }
 }

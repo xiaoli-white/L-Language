@@ -18,10 +18,7 @@ import ldk.l.lg.ir.operand.*;
 import ldk.l.lg.ir.instruction.*;
 import ldk.l.lg.ir.structure.IRField;
 import ldk.l.lg.ir.structure.IRStructure;
-import ldk.l.lg.ir.type.IRFloatType;
-import ldk.l.lg.ir.type.IRIntegerType;
-import ldk.l.lg.ir.type.IRPointerType;
-import ldk.l.lg.ir.type.IRType;
+import ldk.l.lg.ir.type.*;
 import ldk.l.lvm.module.Module;
 import ldk.l.lvm.vm.ByteCode;
 import ldk.l.util.option.Options;
@@ -412,12 +409,12 @@ public final class ByteCodeGenerator extends Generator {
             this.virtualRegisterCount = 0;
 
             long currentFunctionArgumentsSize = 0;
-            for (int i = (int) (irFunction.argumentsCount - 1); i >= 0; i--) {
+            for (int i = (int) (irFunction.argumentCount - 1); i >= 0; i--) {
                 this.argumentOffsets.put(irFunction.fields[i].name, currentFunctionArgumentsSize);
                 currentFunctionArgumentsSize += IRType.getLength(irFunction.fields[i].type);
             }
             long currentFunctionLocalVarSize = 0;
-            for (int i = (int) irFunction.argumentsCount; i < irFunction.fields.length; i++) {
+            for (int i = (int) irFunction.argumentCount; i < irFunction.fields.length; i++) {
                 currentFunctionLocalVarSize += IRType.getLength(irFunction.fields[i].type);
                 this.localVarOffsets.put(irFunction.fields[i].name, currentFunctionLocalVarSize);
             }
@@ -519,7 +516,7 @@ public final class ByteCodeGenerator extends Generator {
         public Object visitNegate(IRNegate irNegate, Object additional) {
             this.visit(irNegate.operand, additional);
             BCRegister operand = registerStack.pop();
-            this.visitVirtualRegister(irNegate.result, additional);
+            this.visitVirtualRegister(irNegate.target, additional);
             BCRegister result = registerStack.pop();
 
             if (irNegate.type instanceof IRIntegerType irIntegerType) {
@@ -574,8 +571,8 @@ public final class ByteCodeGenerator extends Generator {
 
         @Override
         public Object visitSet(IRSet irSet, Object additional) {
-            this.visit(irSet.source, additional);
-            BCRegister source = registerStack.pop();
+            this.visit(irSet.value, additional);
+            BCRegister value = registerStack.pop();
             this.visit(irSet.address, additional);
             BCRegister address = registerStack.pop();
             addInstruction(new BCInstruction(switch ((int) IRType.getLength(irSet.type)) {
@@ -584,7 +581,7 @@ public final class ByteCodeGenerator extends Generator {
                 case 4 -> ByteCode.STORE_4;
                 case 8 -> ByteCode.STORE_8;
                 default -> throw new RuntimeException("Unknown type size");
-            }, address, source));
+            }, address, value));
             return null;
         }
 
@@ -843,7 +840,7 @@ public final class ByteCodeGenerator extends Generator {
                     BCInstruction instruction = setRegister(new BCImmediate8(((boolean) entry.value) ? 1L : 0L));
                     addInstruction(instruction);
                 } else if (entry.value instanceof Character charValue) {
-                    byte[] bytes = Character.toString(charValue).getBytes(StandardCharsets.UTF_8);
+                    byte[] bytes = charValue.toString().getBytes(StandardCharsets.UTF_8);
                     int value = 0;
                     for (byte b : bytes) {
                         value <<= 8;
@@ -852,37 +849,40 @@ public final class ByteCodeGenerator extends Generator {
                     BCInstruction instruction = setRegister(new BCImmediate4(value));
                     addInstruction(instruction);
                 } else {
-                    long value = switch (entry.value) {
-                        case Byte byteValue -> byteValue;
-                        case Short shortValue -> shortValue;
-                        case Integer integerValue -> integerValue;
-                        case Long longValue -> longValue;
-                        default -> throw new RuntimeException("Unknown integer size");
-                    };
+                    long value;
+                    if (entry.value instanceof Number number) {
+                        value = number.longValue();
+                    } else {
+                        throw new IllegalArgumentException("Unknown type");
+                    }
                     BCInstruction instruction = setRegister(new BCImmediate8(value));
                     addInstruction(instruction);
                 }
             } else if (entry.type instanceof IRFloatType) {
-                if (entry.value instanceof Double doubleValue) {
-                    addInstruction(setRegister(new BCImmediate8(Double.doubleToLongBits(doubleValue))));
-                } else if (entry.value instanceof Float floatValue) {
-                    addInstruction(setRegister(new BCImmediate4(Float.floatToIntBits(floatValue))));
+                if (entry.value instanceof Number number) {
+                    addInstruction(setRegister(new BCImmediate4(Float.floatToIntBits(number.floatValue()))));
                 } else {
                     throw new RuntimeException("Unknown float size");
+                }
+            } else if (entry.type instanceof IRDoubleType) {
+                if (entry.value instanceof Number number) {
+                    addInstruction(setRegister(new BCImmediate8(Double.doubleToLongBits(number.doubleValue()))));
+                } else {
+                    throw new RuntimeException("Unknown double size");
                 }
             } else if (entry.type instanceof IRPointerType irPointerType) {
                 BCRegister register = allocateVirtualRegister();
                 if (entry.value instanceof String) {
                     addInstruction(new BCInstruction(ByteCode.MOV_IMMEDIATE8, new BCImmediate8(module.constantIndex2RodataSectionOffset.get(irConstant.index), "<add_rodata_section_entry_point>"), register));
                 } else {
-                    long value = switch (entry.value) {
-                        case Byte byteValue -> byteValue;
-                        case Short shortValue -> shortValue;
-                        case Integer integerValue -> integerValue;
-                        case Long longValue -> longValue;
-                        case null -> 0L;
-                        default -> throw new RuntimeException("Unknown type");
-                    };
+                    long value;
+                    if (entry.value == null) {
+                        value = 0;
+                    } else if (entry.value instanceof Number number) {
+                        value = number.longValue();
+                    } else {
+                        throw new IllegalArgumentException("Unknown type");
+                    }
                     addInstruction(new BCInstruction(ByteCode.MOV_IMMEDIATE8, new BCImmediate8(value), register));
                 }
                 registerStack.push(new BCRegister(register.virtualRegister));
@@ -974,7 +974,6 @@ public final class ByteCodeGenerator extends Generator {
 
         @Override
         public Object visitPhi(IRPhi irPhi, Object additional) {
-            // TODO 实现phi
             return super.visitPhi(irPhi, additional);
         }
 

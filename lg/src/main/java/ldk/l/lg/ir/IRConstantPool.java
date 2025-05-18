@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class IRConstantPool extends IRNode {
+public final class IRConstantPool extends IRNode {
     public final List<Entry> entries = new ArrayList<>();
 
     public IRConstantPool() {
@@ -37,7 +37,7 @@ public class IRConstantPool extends IRNode {
         return this.entries.get(index);
     }
 
-    public static class Entry extends IRNode {
+    public static final class Entry extends IRNode {
         public final IRType type;
         public final Object value;
 

@@ -4,7 +4,7 @@ import ldk.l.lg.ir.IRVisitor;
 
 import java.util.Objects;
 
-public class IRIntegerType extends IRType {
+public final class IRIntegerType extends IRType {
     public final Size size;
     public final boolean isUnsigned;
 

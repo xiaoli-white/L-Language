@@ -72,38 +72,4 @@ public final class ClosureAnalyzer extends LCAstVisitor {
 
         return null;
     }
-
-    public Object visitVariable(LCVariable lcVariable) {
-        // TODO 变量如果引用的是内部的函数，就不管了。但有没有可能引用的是外部的函数呢？
-        // 如果引用消解不成功，这里也不管
-        if (lcVariable.aSymbol instanceof VariableSymbol && this.getCurrentMethodSymbol() != null) {
-            if (!List.of(this.getCurrentMethodSymbol().vars).contains((VariableSymbol) lcVariable.aSymbol)) {
-                // 查找变量所在的函数
-                boolean found = false;
-                for (int i = this.methodSymbols.size() - 1; i >= 0; i--) {
-                    MethodSymbol methodSymbol = this.methodSymbols.get(i);
-                    if (methodSymbol != null &&
-                            List.of(methodSymbol.vars).contains((VariableSymbol) lcVariable.aSymbol)) {
-                        ArrayList<VariableSymbol> tempArrayList1 = new ArrayList<>(List.of(this.getCurrentClosure().vars));
-                        tempArrayList1.add((VariableSymbol) lcVariable.aSymbol);
-                        this.getCurrentClosure().vars = tempArrayList1.toArray(new VariableSymbol[0]);
-
-                        ArrayList<MethodSymbol> tempArrayList2 = new ArrayList<>(List.of(this.getCurrentClosure().methods));
-                        tempArrayList2.add(methodSymbol);
-                        this.getCurrentClosure().methods = tempArrayList2.toArray(new MethodSymbol[0]);
-
-                        found = true;
-                        break;
-                    }
-                }
-
-                if (!found) {
-                    // 理论上不可能发生
-//                    this.addError("Cannot find VarSymbol: '" + lcVariable.sym.name + "' in Closure Analysis.", lcVariable);
-                }
-            }
-        }
-
-        return null;
-    }
 }

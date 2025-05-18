@@ -4,7 +4,7 @@ import ldk.l.lg.ir.IRVisitor;
 
 import java.util.Objects;
 
-public class IRDoubleType extends IRType {
+public final class IRDoubleType extends IRType {
     public static final IRDoubleType INSTANCE = new IRDoubleType();
 
     private IRDoubleType() {

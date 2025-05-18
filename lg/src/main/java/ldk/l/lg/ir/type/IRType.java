@@ -2,7 +2,7 @@ package ldk.l.lg.ir.type;
 
 import ldk.l.lg.ir.base.IRNode;
 
-public abstract class IRType extends IRNode {
+public abstract sealed class IRType extends IRNode permits IRIntegerType, IRFloatType, IRDoubleType, IRPointerType, IRVoidType {
     @Override
     public abstract boolean equals(Object o);
 

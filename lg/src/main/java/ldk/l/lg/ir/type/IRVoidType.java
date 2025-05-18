@@ -4,7 +4,7 @@ import ldk.l.lg.ir.IRVisitor;
 
 import java.util.Objects;
 
-public class IRVoidType extends IRType {
+public final class IRVoidType extends IRType {
     public static final IRVoidType INSTANCE = new IRVoidType();
 
     private IRVoidType() {

@@ -5,7 +5,7 @@ import ldk.l.lg.ir.base.IRCondition;
 import ldk.l.lg.ir.operand.IROperand;
 import ldk.l.lg.ir.type.IRType;
 
-public class IRConditionalJump extends IRInstruction {
+public final class IRConditionalJump extends IRInstruction {
     public final boolean isAtomic;
     public final IRType type;
     public final IRCondition condition;
@@ -27,6 +27,7 @@ public class IRConditionalJump extends IRInstruction {
     }
 
     @Override
+
     public Object accept(IRVisitor visitor, Object additional) {
         return visitor.visitConditionalJump(this, additional);
     }

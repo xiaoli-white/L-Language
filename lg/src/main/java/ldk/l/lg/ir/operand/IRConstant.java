@@ -2,9 +2,7 @@ package ldk.l.lg.ir.operand;
 
 import ldk.l.lg.ir.IRVisitor;
 
-import java.util.Objects;
-
-public class IRConstant extends IROperand {
+public final class IRConstant extends IROperand {
     public final int index;
 
     public IRConstant(int index) {

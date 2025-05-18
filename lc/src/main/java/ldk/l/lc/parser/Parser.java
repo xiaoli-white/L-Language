@@ -2307,15 +2307,17 @@ public final class Parser {
             LCMethodDeclaration setter = null;
             if (this.peek().code() == Tokens.Separator.OpenBrace) {
                 this.tokenIndex++;
+                LCModifier getterModifier = parseModifier();
                 if ("get".equals(this.peek().text())) {
                     getter = this.parseMethodDeclaration(MethodKind.Getter, 0);
                     getter.name = "<" + getter.name + "_" + varName + ">";
-                    getter.setModifier(new LCModifier(Position.origin));
+                    getter.setModifier(getterModifier);
                 }
+                LCModifier setterModifier = getter != null ? parseModifier() : getterModifier;
                 if ("set".equals(this.peek().text())) {
                     setter = this.parseMethodDeclaration(MethodKind.Setter, 0);
                     setter.name = "<" + setter.name + "_" + varName + ">";
-                    setter.setModifier(new LCModifier(Position.origin));
+                    setter.setModifier(setterModifier);
                 }
                 if (this.peek().code() == Tokens.Separator.CloseBrace) {
                     this.tokenIndex++;
