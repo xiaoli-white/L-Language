@@ -692,18 +692,24 @@ public final class IRGenerator extends LCAstVisitor {
                 createBasicBlock();
                 this.visit(lcBinary.expression2, additional);
                 IROperand operand2 = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
+
+                int constant1Index = module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 1));
+                String tempRegister = allocateVirtualRegister();
+                addInstruction(new IRStackAllocate(new IRConstant(constant1Index), new IRVirtualRegister(tempRegister)));
+
                 IRConditionalJump irConditionalJump2 = new IRConditionalJump(operand2Type, IRCondition.NotEqual, operand2, new IRConstant(constantTrueIndex), null);
                 addInstruction(irConditionalJump2);
                 createBasicBlock();
-                addInstruction(new IRPush(IRType.getBooleanType(), new IRConstant(constantTrueIndex)));
+
+                addInstruction(new IRSet(IRType.getBooleanType(), new IRVirtualRegister(tempRegister), new IRConstant(constantTrueIndex)));
                 IRGoto irGoto = new IRGoto(null);
                 addInstruction(irGoto);
                 IRControlFlowGraph.BasicBlock bb = createBasicBlock();
-                addInstruction(new IRPush(IRType.getBooleanType(), new IRConstant(constantFalseIndex)));
+                addInstruction(new IRSet(IRType.getBooleanType(), new IRVirtualRegister(tempRegister), new IRConstant(constantFalseIndex)));
                 irConditionalJump.target = bb.name;
+                irConditionalJump2.target = bb.name;
                 IRControlFlowGraph.BasicBlock end = createBasicBlock();
-                end.instructions.add(new IRPop(IRType.getBooleanType(), new IRVirtualRegister(result)));
-                irConditionalJump2.target = end.name;
+                end.instructions.add(new IRGet(IRType.getBooleanType(), new IRVirtualRegister(tempRegister), new IRVirtualRegister(result)));
                 irGoto.target = end.name;
             } else if (lcBinary._operator == Tokens.Operator.Or) {
                 this.visit(lcBinary.expression1, additional);
@@ -715,16 +721,20 @@ public final class IRGenerator extends LCAstVisitor {
                 IROperand operand2 = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
                 IRConditionalJump irConditionalJump2 = new IRConditionalJump(operand2Type, IRCondition.NotEqual, operand2, new IRConstant(constantTrueIndex), null);
                 addInstruction(irConditionalJump2);
+                int constant1Index = module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 1));
+                String tempRegister = allocateVirtualRegister();
+                addInstruction(new IRStackAllocate(new IRConstant(constant1Index), new IRVirtualRegister(tempRegister)));
+
                 IRControlFlowGraph.BasicBlock bb = createBasicBlock();
                 irConditionalJump.target = bb.name;
-                addInstruction(new IRPush(IRType.getBooleanType(), new IRConstant(constantTrueIndex)));
+                addInstruction(new IRSet(IRType.getBooleanType(), new IRVirtualRegister(tempRegister), new IRConstant(constantTrueIndex)));
                 IRGoto irGoto = new IRGoto(null);
                 addInstruction(irGoto);
                 IRControlFlowGraph.BasicBlock bb2 = createBasicBlock();
                 irConditionalJump2.target = bb2.name;
-                addInstruction(new IRPush(IRType.getBooleanType(), new IRConstant(constantFalseIndex)));
+                addInstruction(new IRSet(IRType.getBooleanType(), new IRVirtualRegister(tempRegister), new IRConstant(constantFalseIndex)));
                 IRControlFlowGraph.BasicBlock end = createBasicBlock();
-                end.instructions.add(new IRPop(IRType.getBooleanType(), new IRVirtualRegister(result)));
+                end.instructions.add(new IRGet(IRType.getBooleanType(), new IRVirtualRegister(tempRegister), new IRVirtualRegister(result)));
                 irGoto.target = end.name;
             }
             operandStack.push(new IRVirtualRegister(result));
@@ -762,6 +772,10 @@ public final class IRGenerator extends LCAstVisitor {
                 }
                 operandStack.push(new IRVirtualRegister(resultRegister));
             } else if (Token.isRelationOperator(lcBinary._operator)) {
+                int constant1Index = module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 1));
+                String tempRegister = allocateVirtualRegister();
+                addInstruction(new IRStackAllocate(new IRConstant(constant1Index), new IRVirtualRegister(tempRegister)));
+
                 IRConditionalJump irConditionalJump = new IRConditionalJump(operandType, this.negatesCondition(this.parseRelationOperator(lcBinary._operator)), operand1, operand2, null);
                 addInstruction(irConditionalJump);
 
@@ -770,15 +784,15 @@ public final class IRGenerator extends LCAstVisitor {
                 int constantTrueIndex = module.constantPool.put(new IRConstantPool.Entry(IRType.getBooleanType(), true));
                 int constantFalseIndex = module.constantPool.put(new IRConstantPool.Entry(IRType.getBooleanType(), false));
 
-                addInstruction(new IRPush(IRType.getBooleanType(), new IRConstant(constantTrueIndex)));
+                addInstruction(new IRSet(IRType.getBooleanType(), new IRVirtualRegister(tempRegister), new IRConstant(constantTrueIndex)));
                 IRGoto irGoto = new IRGoto(null);
                 addInstruction(irGoto);
                 IRControlFlowGraph.BasicBlock bb = createBasicBlock();
                 irConditionalJump.target = bb.name;
-                addInstruction(new IRPush(IRType.getBooleanType(), new IRConstant(constantFalseIndex)));
+                addInstruction(new IRSet(IRType.getBooleanType(), new IRVirtualRegister(tempRegister), new IRConstant(constantFalseIndex)));
                 var end = createBasicBlock();
                 String resultRegister = allocateVirtualRegister();
-                end.instructions.add(new IRPop(IRType.getBooleanType(), new IRVirtualRegister(resultRegister)));
+                end.instructions.add(new IRGet(IRType.getBooleanType(), new IRVirtualRegister(tempRegister), new IRVirtualRegister(resultRegister)));
                 irGoto.target = end.name;
                 operandStack.push(new IRVirtualRegister(resultRegister));
             } else if (Token.isArithmeticOperator(lcBinary._operator)) {
@@ -1367,22 +1381,26 @@ public final class IRGenerator extends LCAstVisitor {
 
         IRType type = parseType(TypeUtil.getUpperBound(lcIs.expression1.theType, lcIs.expression2.theType));
 
+        int constant1Index = module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 1));
+        String tempRegister = allocateVirtualRegister();
+        addInstruction(new IRStackAllocate(new IRConstant(constant1Index), new IRVirtualRegister(tempRegister)));
+
         int constantTrueIndex = this.module.constantPool.put(new IRConstantPool.Entry(IRType.getBooleanType(), true));
         int constantFalseIndex = this.module.constantPool.put(new IRConstantPool.Entry(IRType.getBooleanType(), false));
         IRConditionalJump irConditionalJump = new IRConditionalJump(type, IRCondition.NotEqual, operand1, operand2, "");
         addInstruction(irConditionalJump);
 
         createBasicBlock();
-        addInstruction(new IRPush(IRType.getBooleanType(), new IRConstant(constantTrueIndex)));
+        addInstruction(new IRSet(IRType.getBooleanType(), new IRVirtualRegister(tempRegister), new IRConstant(constantTrueIndex)));
         IRGoto irGoto = new IRGoto("");
         addInstruction(irGoto);
 
         IRControlFlowGraph.BasicBlock falseBlock = createBasicBlock();
-        addInstruction(new IRPush(IRType.getBooleanType(), new IRConstant(constantFalseIndex)));
+        addInstruction(new IRSet(IRType.getBooleanType(), new IRVirtualRegister(tempRegister), new IRConstant(constantFalseIndex)));
 
         IRControlFlowGraph.BasicBlock end = createBasicBlock();
         String result = allocateVirtualRegister();
-        addInstruction(new IRPop(IRType.getBooleanType(), new IRVirtualRegister(result)));
+        addInstruction(new IRGet(IRType.getBooleanType(), new IRVirtualRegister(tempRegister), new IRVirtualRegister(result)));
 
         irConditionalJump.target = falseBlock.name;
         irGoto.target = end.name;
@@ -1495,8 +1513,14 @@ public final class IRGenerator extends LCAstVisitor {
 
     @Override
     public Object visitTernary(LCTernary lcTernary, Object additional) {
+        IRType type = parseType(lcTernary.theType);
+
         this.visit(lcTernary.condition, additional);
         IROperand result = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
+
+        int constant1Index = module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), IRType.getLength(type)));
+        String tempRegister = allocateVirtualRegister();
+        addInstruction(new IRStackAllocate(new IRConstant(constant1Index), new IRVirtualRegister(tempRegister)));
 
         int constantTrueIndex = module.constantPool.put(new IRConstantPool.Entry(IRType.getBooleanType(), true));
         IRConditionalJump irConditionalJump = new IRConditionalJump(IRType.getBooleanType(), IRCondition.NotEqual, result, new IRConstant(constantTrueIndex), "");
@@ -1506,9 +1530,8 @@ public final class IRGenerator extends LCAstVisitor {
         this.visit(lcTernary.then, additional);
         IROperand thenResult = operandStack.isEmpty() ? null : operandStack.pop();
 
-        IRType type = parseType(lcTernary.theType);
 
-        addInstruction(new IRPush(type, thenResult));
+        addInstruction(new IRSet(type, new IRVirtualRegister(tempRegister), thenResult));
         IRGoto irGoto = new IRGoto("");
         addInstruction(irGoto);
 
@@ -1517,11 +1540,11 @@ public final class IRGenerator extends LCAstVisitor {
         this.visit(lcTernary._else, additional);
         IROperand elseResult = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
 
-        addInstruction(new IRPush(type, elseResult));
+        addInstruction(new IRSet(type, new IRVirtualRegister(tempRegister), elseResult));
 
         IRControlFlowGraph.BasicBlock end = createBasicBlock();
         String resultRegister = allocateVirtualRegister();
-        addInstruction(new IRPop(type, new IRVirtualRegister(resultRegister)));
+        addInstruction(new IRGet(type, new IRVirtualRegister(tempRegister), new IRVirtualRegister(resultRegister)));
 
         irConditionalJump.target = elseBlock.name;
         irGoto.target = end.name;

@@ -192,18 +192,6 @@ public abstract class IRVisitor {
         return null;
     }
 
-    public Object visitPush(IRPush irPush, Object additional) {
-        this.visit(irPush.type, additional);
-        this.visit(irPush.operand, additional);
-        return null;
-    }
-
-    public Object visitPop(IRPop irPop, Object additional) {
-        this.visit(irPop.type, additional);
-        this.visitVirtualRegister(irPop.target, additional);
-        return null;
-    }
-
     public Object visitStackAllocate(IRStackAllocate irStackAllocate, Object additional) {
         this.visit(irStackAllocate.size, additional);
         this.visitVirtualRegister(irStackAllocate.target, additional);

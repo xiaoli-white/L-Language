@@ -697,34 +697,6 @@ public final class ByteCodeGenerator extends Generator {
         }
 
         @Override
-        public Object visitPush(IRPush irPush, Object additional) {
-            this.visit(irPush.operand, additional);
-            BCRegister operand = registerStack.pop();
-            addInstruction(new BCInstruction(switch ((int) IRType.getLength(irPush.type)) {
-                case 1 -> ByteCode.PUSH_1;
-                case 2 -> ByteCode.PUSH_2;
-                case 4 -> ByteCode.PUSH_4;
-                case 8 -> ByteCode.PUSH_8;
-                default -> throw new RuntimeException("Unknown type size");
-            }, operand));
-            return null;
-        }
-
-        @Override
-        public Object visitPop(IRPop irPop, Object additional) {
-            this.visitVirtualRegister(irPop.target, additional);
-            BCRegister target = registerStack.pop();
-            addInstruction(new BCInstruction(switch ((int) IRType.getLength(irPop.type)) {
-                case 1 -> ByteCode.POP_1;
-                case 2 -> ByteCode.POP_2;
-                case 4 -> ByteCode.POP_4;
-                case 8 -> ByteCode.POP_8;
-                default -> throw new RuntimeException("Unknown type size");
-            }, target));
-            return null;
-        }
-
-        @Override
         public Object visitTypeCast(IRTypeCast irTypeCast, Object additional) {
             this.visit(irTypeCast.source, additional);
             BCRegister source = registerStack.pop();
