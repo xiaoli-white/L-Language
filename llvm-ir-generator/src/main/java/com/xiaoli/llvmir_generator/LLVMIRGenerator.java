@@ -5,7 +5,6 @@ import ldk.l.lg.ir.IRModule;
 import ldk.l.lg.ir.IRVisitor;
 import ldk.l.lg.ir.base.IRControlFlowGraph;
 import ldk.l.lg.ir.base.IRFunction;
-import ldk.l.lg.ir.base.IRNode;
 import ldk.l.lg.ir.instruction.*;
 import ldk.l.lg.ir.operand.IRConstant;
 import ldk.l.lg.ir.operand.IRMacro;

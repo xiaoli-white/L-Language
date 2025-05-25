@@ -3,15 +3,12 @@ package ldk.l.lc.semantic;
 import ldk.l.lc.ast.LCAst;
 import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.ast.statement.declaration.LCMethodDeclaration;
-import ldk.l.lc.ast.expression.LCVariable;
 import ldk.l.lc.util.error.ErrorStream;
 import ldk.l.lc.util.symbol.Closure;
 import ldk.l.lc.util.symbol.MethodSymbol;
-import ldk.l.lc.util.symbol.VariableSymbol;
 import ldk.l.util.option.Options;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public final class ClosureAnalyzer extends LCAstVisitor {
     private final ErrorStream errorStream;
@@ -33,7 +30,7 @@ public final class ClosureAnalyzer extends LCAstVisitor {
     }
 
     public Object visitAst(LCAst ast, Object additional) {
-        if (this.options.getBooleanVar("verbose")) {
+        if (this.options.get("verbose",boolean.class)) {
             System.out.println("闭包分析...");
         }
 
@@ -60,7 +57,7 @@ public final class ClosureAnalyzer extends LCAstVisitor {
         if (lcMethodDeclaration.symbol != null)
             lcMethodDeclaration.symbol.closure = this.getCurrentClosure();
 
-        if (this.options.getBooleanVar("verbose")) {
+        if (this.options.get("verbose",boolean.class)) {
             if (this.getCurrentClosure().vars.length > 0) {
                 System.out.println("    Closure of method:" + (lcMethodDeclaration.symbol != null ? lcMethodDeclaration.symbol.name : "Unknown"));
                 System.out.println("    " + this.getCurrentClosure().toString());

@@ -20,8 +20,8 @@ import ldk.l.lc.token.TokenKind;
 import ldk.l.lc.token.Tokens;
 import ldk.l.lc.util.Position;
 import ldk.l.lc.util.error.ErrorStream;
-import ldk.l.util.option.Options;
 import ldk.l.lc.util.symbol.MethodKind;
+import ldk.l.util.option.Options;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -2962,7 +2962,7 @@ public final class Parser {
             expression = new LCGetAddress(lcTypeExpression, name.text(), paramTypeExpressions, position, isErrorNode);
         } else if (t.code() == Tokens.Keyword.__Platform__) {
             this.tokenIndex++;
-            expression = new LCPlatform(this.options.getStringVar("platform"), t.position(), false);
+            expression = new LCPlatform(this.options.get("platform", String.class), t.position(), false);
         } else if (t.code() == Tokens.Keyword.__Field__) {
             this.tokenIndex++;
             expression = new LCField(t.position(), false);

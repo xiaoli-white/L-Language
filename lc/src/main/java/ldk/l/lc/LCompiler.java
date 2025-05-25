@@ -1,7 +1,6 @@
 package ldk.l.lc;
 
 import com.xiaoli.bcg.ByteCodeGenerator;
-import com.xiaoli.llvmir_generator.LLVMIRGenerator;
 import ldk.l.lc.ast.LCAst;
 import ldk.l.lc.ast.LCAstDumper;
 import ldk.l.lc.ir.IRGenerator;
@@ -26,6 +25,7 @@ import ldk.l.util.Util;
 import ldk.l.util.Language;
 import ldk.l.util.option.Options;
 import ldk.l.util.option.OptionsParser;
+import ldk.l.util.option.Type;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,9 +38,8 @@ public class LCompiler {
     }
 
     public static void parse(Options options) {
-        String sourceFile = options.getArgs()[0];
-        boolean verbose = options.getBooleanVar("verbose");
-        int optimizeLevel = (int) options.getIntVar("optimizeLevel");
+        String sourceFile = options.args().getFirst();
+        boolean verbose = options.get("verbose",boolean.class);
         if (sourceFile != null) {
             if (!sourceFile.endsWith(".l")) {
                 // TODO dump error
@@ -178,14 +177,14 @@ public class LCompiler {
         }
     }
 
-    public static ldk.l.util.option.OptionsParser getOptionsParser() {
+    public static OptionsParser getOptionsParser() {
         return new OptionsParser()
-                .addVar("help", "--help", false).addVar("help", "-h", false)
-                .addVar("version", "--version", false).addBooleanVar("version", "-version", false)
-                .addVar("verbose", "--verbose", false).addVar("verbose", "-verbose", false)
-                .addVar("traceTypeChecker", "--traceTypeChecker", false).addVar("rootpath", "--rootpath", ".")
-                .addVar("optimizeLevel", "--optimizeLevel", 0)
-                .addVar("platform", "--platform", "lvm")
-                .addVar("output", "--output", "").addVar("output", "-o", "");
+                .add(List.of("--help", "-h"), "help", Type.Boolean, false)
+                .add(List.of("--version", "-v"), "version", Type.Boolean, false)
+                .add(List.of("--verbose", "-verbose"), "verbose", Type.Boolean, false)
+                .add(List.of("traceTypeChecker"), "traceTypeChecker", Type.Boolean, false)
+                .add(List.of("--rootpath"), "rootpath", Type.String, ".")
+                .add(List.of("--platform"), "platform", Type.String, "lvm")
+                .add(List.of("--output", "-o"), "--output", Type.String, "");
     }
 }

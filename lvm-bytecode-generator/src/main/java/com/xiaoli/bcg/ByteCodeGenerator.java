@@ -31,7 +31,7 @@ import java.util.*;
 public final class ByteCodeGenerator extends Generator {
     @Override
     public void generate(IRModule module, Options options) {
-        boolean verbose = options.getBooleanVar("verbose");
+        boolean verbose = options.get("verbose", boolean.class);
 
         ByteCodeModule byteCodeModule = new ByteCodeModule();
         ByteCodeModuleGenerator generator = new ByteCodeModuleGenerator(module, byteCodeModule, options);
@@ -86,7 +86,7 @@ public final class ByteCodeGenerator extends Generator {
 
         Module vmModule = toModule(byteCodeModule);
         byte[] raw = vmModule.raw();
-        String output = options.getStringVar("output");
+        String output = options.get("output", String.class);
         if (output.isEmpty()) output = "a.lvme";
         try (FileOutputStream fos = new FileOutputStream(output)) {
             fos.write(raw);

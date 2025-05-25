@@ -10,6 +10,8 @@ repositories {
 }
 
 dependencies {
+    implementation(project(":lutil"))
+    implementation(project(":lg"))
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
 }

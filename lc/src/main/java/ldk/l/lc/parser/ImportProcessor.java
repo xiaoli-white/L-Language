@@ -62,7 +62,7 @@ public final class ImportProcessor extends LCAstVisitor {
                 for (LCImport lcImport : lcSourceCodeFile.getImportStatements()) {
                     proxies.addAll(this.visitImport(lcImport, additional));
                 }
-                for (LCSourceFile source : this.ast.getSourceFileByParent(this.options.getStringVar("rootpath") + "/l/lang")) {
+                for (LCSourceFile source : this.ast.getSourceFileByParent(this.options.get("rootpath",String.class) + "/l/lang")) {
                     LCSourceFileProxy proxy = new LCSourceFileProxy(source, false);
                     if (!source.equals(lcSourceCodeFile) && !proxies.contains(proxy))
                         proxies.add(proxy);
@@ -85,7 +85,7 @@ public final class ImportProcessor extends LCAstVisitor {
         switch (lcImport.kind) {
             case Normal -> {
                 if (lcImport.getName().equals("*")) {
-                    String path = this.options.getStringVar("rootpath") + "/" + lcImport.getPackageName().replaceAll("\\.", "/");
+                    String path = this.options.get("rootpath",String.class) + "/" + lcImport.getPackageName().replaceAll("\\.", "/");
                     File f = new File(path);
                     if (f.isDirectory()) {
                         File[] files = f.listFiles();
@@ -110,7 +110,7 @@ public final class ImportProcessor extends LCAstVisitor {
                         // TODO dump error
                     }
                 } else {
-                    File f = new File(this.options.getStringVar("rootpath") + "/" + lcImport.name.replaceAll("\\.", "/") + ".l");
+                    File f = new File(this.options.get("rootpath",String.class) + "/" + lcImport.name.replaceAll("\\.", "/") + ".l");
                     if (!this.ast.containsSourceFile(f.getPath())) {
                         this.parseFile(f);
                     }
