@@ -391,8 +391,12 @@ public final class ByteCodeGenerator extends Generator {
                             for (IRInterfaceTable.Entry entry : irInterfaceTable.entries) {
                                 module.dataSection.add(new BCImmediate8(dataSectionLength, "<add_data_section_entry_point>"));
                                 list.add(new BCImmediate8(0, "<global_data_address><class_instance " + entry.name() + ">"));
-                                for (String function : entry.functions())
-                                    list.add(new BCImmediate8(0, "<function_address>" + function));
+                                for (String function : entry.functions()) {
+                                    if (function.isEmpty())
+                                        list.add(new BCImmediate8(0));
+                                    else
+                                        list.add(new BCImmediate8(0, "<function_address>" + function));
+                                }
                                 dataSectionLength += 8L * entry.functions().length + 8;
                             }
                             module.dataSection.addAll(list);

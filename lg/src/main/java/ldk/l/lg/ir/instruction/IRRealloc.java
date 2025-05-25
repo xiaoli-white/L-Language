@@ -4,7 +4,7 @@ import ldk.l.lg.ir.IRVisitor;
 import ldk.l.lg.ir.operand.IROperand;
 import ldk.l.lg.ir.operand.IRVirtualRegister;
 
-public class IRRealloc extends IRInstruction {
+public final class IRRealloc extends IRInstruction {
     public final IROperand ptr;
     public final IROperand size;
     public final IRVirtualRegister result;

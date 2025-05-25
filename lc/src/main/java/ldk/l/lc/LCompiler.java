@@ -168,11 +168,11 @@ public class LCompiler {
             if (!errorStream.checkErrorNum(""))
                 return;
 
-//            ByteCodeGenerator byteCodeGenerator = new ByteCodeGenerator();
-//            byteCodeGenerator.generate(irModule, options);
+            ByteCodeGenerator byteCodeGenerator = new ByteCodeGenerator();
+            byteCodeGenerator.generate(irModule, options);
 
-            LLVMIRGenerator llvmIRGenerator = new LLVMIRGenerator();
-            llvmIRGenerator.generate(irModule, options);
+//            LLVMIRGenerator llvmIRGenerator = new LLVMIRGenerator();
+//            llvmIRGenerator.generate(irModule, options);
 
             errorStream.dumpErrorsAndWarnings("");
         }

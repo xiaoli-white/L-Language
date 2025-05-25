@@ -4,7 +4,6 @@ import ldk.l.lg.ir.IRVisitor;
 import ldk.l.lg.ir.base.IRNode;
 
 import java.util.Arrays;
-import java.util.Objects;
 
 public class IRAttributeGroupDeclaration extends IRNode {
     public final String name;

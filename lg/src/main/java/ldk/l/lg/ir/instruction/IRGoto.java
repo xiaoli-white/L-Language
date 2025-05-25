@@ -2,7 +2,7 @@ package ldk.l.lg.ir.instruction;
 
 import ldk.l.lg.ir.IRVisitor;
 
-public class IRGoto extends IRInstruction {
+public final class IRGoto extends IRInstruction {
     public String target;
 
     public IRGoto(String target) {

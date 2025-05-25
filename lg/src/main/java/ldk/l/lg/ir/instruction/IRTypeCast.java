@@ -5,7 +5,7 @@ import ldk.l.lg.ir.operand.IROperand;
 import ldk.l.lg.ir.operand.IRVirtualRegister;
 import ldk.l.lg.ir.type.IRType;
 
-public class IRTypeCast extends IRInstruction {
+public final class IRTypeCast extends IRInstruction {
     public final Kind kind;
     public final IRType originalType;
     public final IROperand source;

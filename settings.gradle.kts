@@ -5,3 +5,5 @@ include("lvm-bytecode-generator")
 include("lg")
 include("lc")
 include("llvm-ir-generator")
+
+include("litec")

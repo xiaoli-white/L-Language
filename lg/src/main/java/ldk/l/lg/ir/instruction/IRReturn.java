@@ -3,7 +3,7 @@ package ldk.l.lg.ir.instruction;
 import ldk.l.lg.ir.IRVisitor;
 import ldk.l.lg.ir.operand.IROperand;
 
-public class IRReturn extends IRInstruction {
+public final class IRReturn extends IRInstruction {
     public final IROperand value;
 
     public IRReturn(IROperand value) {

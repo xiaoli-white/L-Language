@@ -2,7 +2,7 @@ package ldk.l.lg.ir.instruction;
 
 import ldk.l.lg.ir.IRVisitor;
 
-public class IRNoOperate extends IRInstruction {
+public final class IRNoOperate extends IRInstruction {
     public IRNoOperate() {
 
     }

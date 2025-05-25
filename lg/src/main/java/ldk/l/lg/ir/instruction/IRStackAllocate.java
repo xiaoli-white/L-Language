@@ -4,7 +4,7 @@ import ldk.l.lg.ir.IRVisitor;
 import ldk.l.lg.ir.operand.IROperand;
 import ldk.l.lg.ir.operand.IRVirtualRegister;
 
-public class IRStackAllocate extends IRInstruction {
+public final class IRStackAllocate extends IRInstruction {
     public final IROperand size;
     public final IRVirtualRegister target;
 

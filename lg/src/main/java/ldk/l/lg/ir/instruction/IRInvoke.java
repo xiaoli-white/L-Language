@@ -5,7 +5,7 @@ import ldk.l.lg.ir.operand.IROperand;
 import ldk.l.lg.ir.operand.IRVirtualRegister;
 import ldk.l.lg.ir.type.IRType;
 
-public class IRInvoke extends IRInstruction {
+public final class IRInvoke extends IRInstruction {
     public IRType returnType;
     public IROperand address;
     public IRType[] argumentTypes;

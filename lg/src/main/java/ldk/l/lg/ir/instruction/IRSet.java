@@ -4,7 +4,7 @@ import ldk.l.lg.ir.IRVisitor;
 import ldk.l.lg.ir.operand.IROperand;
 import ldk.l.lg.ir.type.IRType;
 
-public class IRSet extends IRInstruction {
+public final class IRSet extends IRInstruction {
     public final IRType type;
     public final IROperand address;
     public final IROperand value;

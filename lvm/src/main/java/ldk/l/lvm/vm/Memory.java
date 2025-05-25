@@ -31,7 +31,7 @@ public final class Memory {
         long address = 0;
 
         setMemoryPageIfAbsent(address, MemoryPage.MP_READ | MemoryPage.MP_EXEC | MemoryPage.MP_WRITE);
-        MemoryPage currentPage = getMemoryPage(address);
+        MemoryPage currentPage = getMemoryPageSafely(address);
         address += PAGE_SIZE;
 
         long offset = 0;
@@ -41,7 +41,7 @@ public final class Memory {
             if (offset == PAGE_SIZE) {
                 currentPage.flags &= ~MemoryPage.MP_WRITE;
                 setMemoryPageIfAbsent(address, MemoryPage.MP_READ | MemoryPage.MP_EXEC | MemoryPage.MP_WRITE);
-                currentPage = getMemoryPage(address);
+                currentPage = getMemoryPageSafely(address);
                 address += PAGE_SIZE;
                 offset = 0;
             }
@@ -55,7 +55,7 @@ public final class Memory {
             if (offset == PAGE_SIZE) {
                 currentPage.flags &= ~MemoryPage.MP_WRITE;
                 setMemoryPageIfAbsent(address, MemoryPage.MP_READ | MemoryPage.MP_WRITE);
-                currentPage = getMemoryPage(address);
+                currentPage = getMemoryPageSafely(address);
                 address += PAGE_SIZE;
                 offset = 0;
             }
@@ -66,7 +66,7 @@ public final class Memory {
             offset++;
             if (offset == PAGE_SIZE) {
                 setMemoryPageIfAbsent(address, MemoryPage.MP_READ | MemoryPage.MP_WRITE);
-                currentPage = getMemoryPage(address);
+                currentPage = getMemoryPageSafely(address);
                 address += PAGE_SIZE;
                 offset = 0;
             }
@@ -156,6 +156,11 @@ public final class Memory {
         }
     }
 
+    private MemoryPage getMemoryPageSafely(long address) {
+        MemoryPage memoryPage = getMemoryPage(address);
+        if (memoryPage == null) throw new RuntimeException("Illegal address");
+        return memoryPage;
+    }
     private MemoryPage getMemoryPage(long address) {
         int pgdOffset = (int) ((address >> 39) & 0x1ff);
         MemoryPage[][][] pud = memoryPageTable[pgdOffset];
@@ -174,7 +179,7 @@ public final class Memory {
         if ((address & PAGE_OFFSET_MASK) != 0) {
             throw new RuntimeException("Invalid memory address: 0x" + Long.toHexString(address));
         }
-        MemoryPage memoryPage = getMemoryPage(address);
+        MemoryPage memoryPage = getMemoryPageSafely(address);
         memoryPage.release();
         if (memoryPage.refCount == 0) resetMemoryPageIfAbsent(address);
     }
@@ -227,24 +232,24 @@ public final class Memory {
     }
 
     public byte getByte(long address) {
-        return getMemoryPage(address).getByte(address & PAGE_OFFSET_MASK);
+        return getMemoryPageSafely(address).getByte(address & PAGE_OFFSET_MASK);
     }
 
     public short getShort(long address) {
         if (((address & PAGE_OFFSET_MASK) + 2) < PAGE_SIZE) {
-            return getMemoryPage(address).getShort(address & PAGE_OFFSET_MASK);
+            return getMemoryPageSafely(address).getShort(address & PAGE_OFFSET_MASK);
         } else {
-            return (short) (getMemoryPage(address).getByte(address & PAGE_OFFSET_MASK) | (getMemoryPage(address + 1).getByte(0) << 8));
+            return (short) (getMemoryPageSafely(address).getByte(address & PAGE_OFFSET_MASK) | (getMemoryPageSafely(address + 1).getByte(0) << 8));
         }
     }
 
     public int getInt(long address) {
         if (((address & PAGE_OFFSET_MASK) + 4) < PAGE_SIZE) {
-            return getMemoryPage(address).getInt(address & PAGE_OFFSET_MASK);
+            return getMemoryPageSafely(address).getInt(address & PAGE_OFFSET_MASK);
         } else {
             int value = 0;
             for (int i = 0; i < 4; i++) {
-                value |= (getMemoryPage(address).getByte(address & PAGE_OFFSET_MASK) & 0xff) << (i * 8);
+                value |= (getMemoryPageSafely(address).getByte(address & PAGE_OFFSET_MASK) & 0xff) << (i * 8);
                 address++;
             }
             return value;
@@ -253,11 +258,11 @@ public final class Memory {
 
     public long getLong(long address) {
         if (((address & PAGE_OFFSET_MASK) + 8) < PAGE_SIZE) {
-            return getMemoryPage(address).getLong(address & PAGE_OFFSET_MASK);
+            return getMemoryPageSafely(address).getLong(address & PAGE_OFFSET_MASK);
         } else {
             long value = 0;
             for (int i = 0; i < 8; i++) {
-                value |= (getMemoryPage(address).getByte(address & PAGE_OFFSET_MASK) & 0xffL) << (i * 8);
+                value |= (getMemoryPageSafely(address).getByte(address & PAGE_OFFSET_MASK) & 0xffL) << (i * 8);
                 address++;
             }
             return value;
@@ -266,11 +271,11 @@ public final class Memory {
 
     public float getFloat(long address) {
         if (((address & PAGE_OFFSET_MASK) + 4) < PAGE_SIZE) {
-            return getMemoryPage(address).getFloat(address & PAGE_OFFSET_MASK);
+            return getMemoryPageSafely(address).getFloat(address & PAGE_OFFSET_MASK);
         } else {
             int value = 0;
             for (int i = 0; i < 4; i++) {
-                value |= (getMemoryPage(address).getByte(address & PAGE_OFFSET_MASK) & 0xff) << (i * 8);
+                value |= (getMemoryPageSafely(address).getByte(address & PAGE_OFFSET_MASK) & 0xff) << (i * 8);
                 address++;
             }
             return Float.intBitsToFloat(value);
@@ -279,11 +284,11 @@ public final class Memory {
 
     public double getDouble(long address) {
         if (((address & PAGE_OFFSET_MASK) + 8) < PAGE_SIZE) {
-            return getMemoryPage(address).getDouble(address & PAGE_OFFSET_MASK);
+            return getMemoryPageSafely(address).getDouble(address & PAGE_OFFSET_MASK);
         } else {
             long value = 0;
             for (int i = 0; i < 8; i++) {
-                value |= (getMemoryPage(address).getByte(address & PAGE_OFFSET_MASK) & 0xffL) << (i * 8);
+                value |= (getMemoryPageSafely(address).getByte(address & PAGE_OFFSET_MASK) & 0xffL) << (i * 8);
                 address++;
             }
             return Double.longBitsToDouble(value);
@@ -291,24 +296,24 @@ public final class Memory {
     }
 
     public void setByte(long address, byte value) {
-        getMemoryPage(address).setByte(address & PAGE_OFFSET_MASK, value);
+        getMemoryPageSafely(address).setByte(address & PAGE_OFFSET_MASK, value);
     }
 
     public void setShort(long address, short value) {
         if (((address & PAGE_OFFSET_MASK) + 2) < PAGE_SIZE) {
-            getMemoryPage(address).setShort(address & PAGE_OFFSET_MASK, value);
+            getMemoryPageSafely(address).setShort(address & PAGE_OFFSET_MASK, value);
         } else {
-            getMemoryPage(address).setByte(address & PAGE_OFFSET_MASK, (byte) (value & 0xff));
-            getMemoryPage(address + 1).setByte(0, (byte) (value >> 8));
+            getMemoryPageSafely(address).setByte(address & PAGE_OFFSET_MASK, (byte) (value & 0xff));
+            getMemoryPageSafely(address + 1).setByte(0, (byte) (value >> 8));
         }
     }
 
     public void setInt(long address, int value) {
         if (((address & PAGE_OFFSET_MASK) + 4) < PAGE_SIZE) {
-            getMemoryPage(address).setInt(address & PAGE_OFFSET_MASK, value);
+            getMemoryPageSafely(address).setInt(address & PAGE_OFFSET_MASK, value);
         } else {
             for (int i = 0; i < 4; i++) {
-                getMemoryPage(address).setByte(address & PAGE_OFFSET_MASK, (byte) (value >> (i * 8)));
+                getMemoryPageSafely(address).setByte(address & PAGE_OFFSET_MASK, (byte) (value >> (i * 8)));
                 address++;
             }
         }
@@ -316,10 +321,10 @@ public final class Memory {
 
     public void setLong(long address, long value) {
         if (((address & PAGE_OFFSET_MASK) + 8) < PAGE_SIZE) {
-            getMemoryPage(address).setLong(address & PAGE_OFFSET_MASK, value);
+            getMemoryPageSafely(address).setLong(address & PAGE_OFFSET_MASK, value);
         } else {
             for (int i = 0; i < 8; i++) {
-                getMemoryPage(address).setByte(address & PAGE_OFFSET_MASK, (byte) (value >> (i * 8)));
+                getMemoryPageSafely(address).setByte(address & PAGE_OFFSET_MASK, (byte) (value >> (i * 8)));
                 address++;
             }
         }
@@ -327,11 +332,11 @@ public final class Memory {
 
     public void setFloat(long address, float value) {
         if (((address & PAGE_OFFSET_MASK) + 4) < PAGE_SIZE) {
-            getMemoryPage(address).setFloat(address & PAGE_OFFSET_MASK, value);
+            getMemoryPageSafely(address).setFloat(address & PAGE_OFFSET_MASK, value);
         } else {
             int bits = Float.floatToRawIntBits(value);
             for (int i = 0; i < 4; i++) {
-                getMemoryPage(address).setByte(address & PAGE_OFFSET_MASK, (byte) (bits >> (i * 8)));
+                getMemoryPageSafely(address).setByte(address & PAGE_OFFSET_MASK, (byte) (bits >> (i * 8)));
                 address++;
             }
         }
@@ -339,11 +344,11 @@ public final class Memory {
 
     public void setDouble(long address, double value) {
         if (((address & PAGE_OFFSET_MASK) + 8) < PAGE_SIZE) {
-            getMemoryPage(address).setDouble(address & PAGE_OFFSET_MASK, value);
+            getMemoryPageSafely(address).setDouble(address & PAGE_OFFSET_MASK, value);
         } else {
             long bits = Double.doubleToRawLongBits(value);
             for (int i = 0; i < 8; i++) {
-                getMemoryPage(address).setByte(address & PAGE_OFFSET_MASK, (byte) (bits >> (i * 8)));
+                getMemoryPageSafely(address).setByte(address & PAGE_OFFSET_MASK, (byte) (bits >> (i * 8)));
             }
         }
     }

@@ -46,7 +46,7 @@ public class VirtualMachine {
     public ExecutionUnit initThread(long entryPoint) {
         ExecutionUnit executionUnit = new ExecutionUnit(this);
         long stackStart = memory.allocateMemory(this.stackSize);
-        executionUnit.init(stackStart + stackSize-1, entryPoint);
+        executionUnit.init(stackStart + this.stackSize - 1, entryPoint);
         return executionUnit;
     }
 
