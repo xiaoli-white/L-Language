@@ -7,7 +7,6 @@ import ldk.l.lc.ast.base.LCStatementWithScope;
 import ldk.l.lc.util.Position;
 
 import java.util.Arrays;
-import java.util.Objects;
 
 public class LCNative extends LCStatementWithScope {
     public LCResourceForNative[] resources;

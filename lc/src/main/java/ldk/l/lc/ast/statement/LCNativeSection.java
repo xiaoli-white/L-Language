@@ -5,8 +5,6 @@ import ldk.l.lc.ast.base.LCAstNode;
 import ldk.l.lc.ast.expression.literal.LCIntegerLiteral;
 import ldk.l.lc.util.Position;
 
-import java.util.Objects;
-
 public abstract class LCNativeSection extends LCAstNode {
     public String code;
 

@@ -60,6 +60,8 @@ public final class Parser {
         List<LCStatement> statements = new ArrayList<>();
         boolean isErrorNode = false;
 
+        boolean hasMethod = false;
+
         Token t = peek();
         if (t.code() == Tokens.Keyword.Package) {
             this.tokenIndex++;
@@ -117,6 +119,8 @@ public final class Parser {
             }
             t = this.peek();
         }
+        Position mainBeginPosition = this.getPos();
+        int mainBeginIndex = statements.size();
         while (t.kind() != TokenKind.EOF) {
             LCAnnotationDeclaration.LCAnnotation[] annotations = this.parseAnnotations();
             LCModifier modifier = this.parseModifier();
@@ -138,8 +142,8 @@ public final class Parser {
                     objectDeclaration = this.parseRecordDeclaration();
                 }
                 case Tokens.Keyword.Struct -> objectDeclaration = this.parseStructDeclaration();
-                case null, default -> {
-                    if (t.code() == Tokens.Operator.At && this.peek2().code() == Tokens.Keyword.Interface) {
+                case Tokens.Operator.At -> {
+                    if (this.peek2().code() == Tokens.Keyword.Interface) {
                         modifier.flags |= LCFlags.ANNOTATION;
                         objectDeclaration = this.parseAnnotationDeclaration();
                     } else {
@@ -147,6 +151,19 @@ public final class Parser {
                         // TODO dump error
                         this.skip();
                     }
+                }
+                case Tokens.Keyword.Method -> {
+                    objectDeclaration = null;
+                    modifier.flags |= (LCFlags.PUBLIC | LCFlags.STATIC);
+                    LCMethodDeclaration methodDeclaration = this.parseMethodDeclaration(MethodKind.Method, modifier.flags);
+                    methodDeclaration.setModifier(modifier);
+                    methodDeclaration.setAnnotations(annotations);
+                    hasMethod = true;
+                }
+                case null, default -> {
+                    objectDeclaration = null;
+                    // TODO dump error
+                    this.skip();
                 }
             }
             if (objectDeclaration != null) {
@@ -165,7 +182,14 @@ public final class Parser {
 
         Position endPosition = this.getPos();
         Position position = new Position(beginPosition.beginPos(), endPosition.endPos(), beginPosition.beginLine(), endPosition.endLine(), beginPosition.beginCol(), endPosition.endCol());
-        return new LCBlock(statements, position, isErrorNode);
+
+        if (!hasMethod) return new LCBlock(statements, position, isErrorNode);
+
+        Position mainPosition = new Position(mainBeginPosition.beginPos(), endPosition.endPos(), mainBeginPosition.beginLine(), endPosition.endLine(), mainBeginPosition.beginCol(), endPosition.endCol());
+        List<LCStatement> body = new ArrayList<>(statements.subList(0, mainBeginIndex));
+        body.add(new LCClassDeclaration(fileNameWithoutExtension, new LCTypeParameter[0], null, new LCTypeReferenceExpression[0], new LCTypeReferenceExpression[0], null,
+                new LCBlock(statements.subList(mainBeginIndex, statements.size()), mainPosition, isErrorNode), mainPosition, isErrorNode));
+        return new LCBlock(body, position, isErrorNode);
     }
 
     private LCImport parseImport() {
