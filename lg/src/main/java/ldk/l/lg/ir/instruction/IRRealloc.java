@@ -7,12 +7,12 @@ import ldk.l.lg.ir.operand.IRVirtualRegister;
 public final class IRRealloc extends IRInstruction {
     public final IROperand ptr;
     public final IROperand size;
-    public final IRVirtualRegister result;
+    public final IRVirtualRegister target;
 
-    public IRRealloc(IROperand ptr, IROperand size, IRVirtualRegister result) {
+    public IRRealloc(IROperand ptr, IROperand size, IRVirtualRegister target) {
         this.ptr = ptr;
         this.size = size;
-        this.result = result;
+        this.target = target;
     }
 
     @Override
@@ -22,6 +22,6 @@ public final class IRRealloc extends IRInstruction {
 
     @Override
     public String toString() {
-        return result + " = realloc " + ptr + ", " + size;
+        return target + " = realloc " + ptr + ", " + size;
     }
 }

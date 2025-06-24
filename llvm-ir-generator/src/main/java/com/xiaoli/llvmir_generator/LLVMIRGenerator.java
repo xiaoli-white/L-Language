@@ -8,6 +8,7 @@ import ldk.l.lg.ir.base.IRFunction;
 import ldk.l.lg.ir.instruction.*;
 import ldk.l.lg.ir.operand.IRConstant;
 import ldk.l.lg.ir.operand.IRMacro;
+import ldk.l.lg.ir.operand.IRPhi;
 import ldk.l.lg.ir.operand.IRVirtualRegister;
 import ldk.l.util.option.Options;
 
@@ -130,6 +131,18 @@ public final class LLVMIRGenerator extends Generator {
         public Object visitNoOperate(IRNoOperate irNoOperate, Object additional) {
             return super.visitNoOperate(irNoOperate, additional);
         }
+
+        @Override
+        public native Object visitMalloc(IRMalloc irMalloc, Object additional);
+
+        @Override
+        public native Object visitFree(IRFree irFree, Object additional);
+
+        @Override
+        public native Object visitRealloc(IRRealloc irRealloc, Object additional);
+
+        @Override
+        public native Object visitPhi(IRPhi irPhi, Object additional);
 
         @Override
         public native Object visitConstant(IRConstant irConstant, Object additional);

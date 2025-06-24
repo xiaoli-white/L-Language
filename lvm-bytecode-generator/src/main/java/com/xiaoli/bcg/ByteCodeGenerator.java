@@ -31,7 +31,7 @@ import java.util.*;
 public final class ByteCodeGenerator extends Generator {
     @Override
     public void generate(IRModule module, Options options) {
-        boolean verbose = options.get("verbose", boolean.class);
+        boolean verbose = options.get("verbose", Boolean.class);
 
         ByteCodeModule byteCodeModule = new ByteCodeModule();
         ByteCodeModuleGenerator generator = new ByteCodeModuleGenerator(module, byteCodeModule, options);
@@ -161,11 +161,13 @@ public final class ByteCodeGenerator extends Generator {
         private long rodataSectionLength = 0;
         private long dataSectionLength = 0;
         private long virtualRegisterCount = 0;
+        private final Map<String, String> irBasicBlock2BCBasicBlock = new HashMap<>();
         private final Map<String, Long> virtualRegisterMap = new HashMap<>();
         private final Stack<BCRegister> registerStack = new Stack<>();
         private final Map<String, Long> argumentOffsets = new HashMap<>();
         private final Map<String, Long> localVarOffsets = new HashMap<>();
         private final List<Long> allocatedRegisters = new ArrayList<>();
+        private IRControlFlowGraph currentIRCFG = null;
         private BCControlFlowGraph currentCFG = null;
         private BCControlFlowGraph.BasicBlock currentBasicBlock = null;
 
@@ -229,6 +231,7 @@ public final class ByteCodeGenerator extends Generator {
             this.currentCFG = initCFG;
             createBasicBlock();
             createPrologue(0);
+            this.currentIRCFG = irModule.globalInitSection;
             for (IRControlFlowGraph.BasicBlock block : irModule.globalInitSection.basicBlocks.values()) {
                 BCControlFlowGraph.BasicBlock basicBlock = createBasicBlock();
                 irBasicBlock2BCBasicBlock.put(block.name, basicBlock.name);
@@ -423,11 +426,11 @@ public final class ByteCodeGenerator extends Generator {
                 this.localVarOffsets.put(irFunction.fields[i].name, currentFunctionLocalVarSize);
             }
 
-            Map<String, String> irBasicBlock2BCBasicBlock = new HashMap<>();
             BCControlFlowGraph cfg = new BCControlFlowGraph();
             this.currentCFG = cfg;
             createBasicBlock();
             createPrologue(currentFunctionLocalVarSize);
+            this.currentIRCFG = irFunction.controlFlowGraph;
             for (IRControlFlowGraph.BasicBlock block : irFunction.controlFlowGraph.basicBlocks.values()) {
                 BCControlFlowGraph.BasicBlock basicBlock = createBasicBlock();
                 irBasicBlock2BCBasicBlock.put(block.name, basicBlock.name);
@@ -453,6 +456,7 @@ public final class ByteCodeGenerator extends Generator {
             }
             module.functionName2CFG.put(irFunction.name, cfg);
 
+            this.irBasicBlock2BCBasicBlock.clear();
             this.virtualRegisterMap.clear();
             this.argumentOffsets.clear();
             this.localVarOffsets.clear();
@@ -603,7 +607,7 @@ public final class ByteCodeGenerator extends Generator {
         public Object visitMalloc(IRMalloc irMalloc, Object additional) {
             this.visit(irMalloc.size, additional);
             BCRegister size = registerStack.pop();
-            this.visitVirtualRegister(irMalloc.result, additional);
+            this.visitVirtualRegister(irMalloc.target, additional);
             BCRegister result = registerStack.pop();
             addInstruction(new BCInstruction(ByteCode.MALLOC, size, result));
             return null;
@@ -623,7 +627,7 @@ public final class ByteCodeGenerator extends Generator {
             BCRegister ptr = registerStack.pop();
             this.visit(irRealloc.size, additional);
             BCRegister size = registerStack.pop();
-            this.visitVirtualRegister(irRealloc.result, additional);
+            this.visitVirtualRegister(irRealloc.target, additional);
             BCRegister result = registerStack.pop();
             addInstruction(new BCInstruction(ByteCode.REALLOC, ptr, size, result));
             return null;
@@ -906,7 +910,7 @@ public final class ByteCodeGenerator extends Generator {
                 BCRegister register = allocateVirtualRegister();
                 addInstruction(new BCInstruction(ByteCode.MOV_IMMEDIATE8, new BCImmediate8(this.irModule.structures.get(irMacro.args[0]).getLength()), register));
                 registerStack.push(new BCRegister(register.virtualRegister));
-            } else if ("field_offset".equals(irMacro.name)) {
+            } else if ("structure_field_offset".equals(irMacro.name)) {
                 irMacro.setType(IRType.getUnsignedLongType());
                 IRStructure structure = this.irModule.structures.get(irMacro.args[0]);
                 long length = 0;
@@ -950,7 +954,19 @@ public final class ByteCodeGenerator extends Generator {
 
         @Override
         public Object visitPhi(IRPhi irPhi, Object additional) {
-            return super.visitPhi(irPhi, additional);
+            BCRegister temp = allocateVirtualRegister();
+            for (int i = 0; i < irPhi.labels.length; i++) {
+                BCControlFlowGraph.BasicBlock bb = this.currentCFG.basicBlocks.get(this.irBasicBlock2BCBasicBlock.get(this.currentIRCFG.basicBlocks.get(irPhi.labels[i]).name));
+                this.visit(irPhi.operands[i], null);
+                BCRegister operand = registerStack.pop();
+                BCInstruction instruction = new BCInstruction(ByteCode.MOV, new BCRegister(operand.virtualRegister), new BCRegister(temp.virtualRegister));
+                if (ByteCode.isJump(bb.instructions.getLast().code))
+                    bb.instructions.add(bb.instructions.size() - 1, instruction);
+                else
+                    bb.instructions.add(instruction);
+            }
+            registerStack.push(temp);
+            return null;
         }
 
         private void createPrologue(long currentFunctionLocalVarSize) {

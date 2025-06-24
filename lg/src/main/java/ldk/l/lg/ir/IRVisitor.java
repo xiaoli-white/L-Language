@@ -122,7 +122,7 @@ public abstract class IRVisitor {
 
     public Object visitMalloc(IRMalloc irMalloc, Object additional) {
         this.visit(irMalloc.size, additional);
-        this.visitVirtualRegister(irMalloc.result, additional);
+        this.visitVirtualRegister(irMalloc.target, additional);
         return null;
     }
 
@@ -134,7 +134,7 @@ public abstract class IRVisitor {
     public Object visitRealloc(IRRealloc irRealloc, Object additional) {
         this.visit(irRealloc.ptr, additional);
         this.visit(irRealloc.size, additional);
-        this.visitVirtualRegister(irRealloc.result, additional);
+        this.visitVirtualRegister(irRealloc.target, additional);
         return null;
     }
 

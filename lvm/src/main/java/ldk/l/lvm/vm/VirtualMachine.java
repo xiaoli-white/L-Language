@@ -8,7 +8,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-public class VirtualMachine {
+public final class VirtualMachine {
     public static final long LVM_VERSION = 0;
 
     public final long stackSize;

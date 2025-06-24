@@ -28,7 +28,7 @@ public record Module(byte[] text, byte[] rodata, byte[] data, long bssSectionLen
         if (byteBuffer.get() != 'l' || byteBuffer.get() != 'v' || byteBuffer.get() != 'm' || byteBuffer.get() != 'e') {
             throw new RuntimeException("Invalid module format");
         }
-        if (byteBuffer.getLong() < VirtualMachine.LVM_VERSION) {
+        if (byteBuffer.getLong() > VirtualMachine.LVM_VERSION) {
             throw new RuntimeException("Unsupported module version");
         }
         long textLength = byteBuffer.getLong();

@@ -137,7 +137,7 @@ public final class TypeChecker extends LCAstVisitor {
 
     @Override
     public Object visitAst(LCAst ast, Object additional) {
-        if (this.options.get("traceTypeChecker", boolean.class)) {
+        if (this.options.get("traceTypeChecker", Boolean.class)) {
             System.out.println("Enter type checker for main program:");
         }
 
@@ -146,7 +146,7 @@ public final class TypeChecker extends LCAstVisitor {
         if (ast.mainMethod == null && ast.mainObjectDeclaration != null)
             ast.mainMethod = LCAstUtil.getMainMethod(ast.mainObjectDeclaration);
 
-        if (this.options.get("traceTypeChecker", boolean.class)) {
+        if (this.options.get("traceTypeChecker", Boolean.class)) {
             System.out.println("Exit type checker for main program.");
             System.out.println("The end.");
         }
@@ -156,7 +156,7 @@ public final class TypeChecker extends LCAstVisitor {
 
     @Override
     public Object visitSourceCodeFile(LCSourceCodeFile lcSourceCodeFile, Object additional) {
-        if (this.options.get("traceTypeChecker", boolean.class)) {
+        if (this.options.get("traceTypeChecker", Boolean.class)) {
             System.out.println("Enter type checker for source file '" + lcSourceCodeFile.filepath + "':");
         }
 
@@ -164,7 +164,7 @@ public final class TypeChecker extends LCAstVisitor {
         super.visitSourceCodeFile(lcSourceCodeFile, additional);
         this.popMaps();
 
-        if (this.options.get("traceTypeChecker", boolean.class)) {
+        if (this.options.get("traceTypeChecker", Boolean.class)) {
             System.out.println("Exit type checker for source file '" + lcSourceCodeFile.filepath + "'.");
         }
 
@@ -173,7 +173,7 @@ public final class TypeChecker extends LCAstVisitor {
 
     @Override
     public Object visitClassDeclaration(LCClassDeclaration lcClassDeclaration, Object additional) {
-        if (this.options.get("traceTypeChecker", boolean.class)) {
+        if (this.options.get("traceTypeChecker", Boolean.class)) {
             System.out.println("Enter type checker for class '" + lcClassDeclaration.getFullName() + "':");
         }
 
@@ -181,7 +181,7 @@ public final class TypeChecker extends LCAstVisitor {
         super.visitClassDeclaration(lcClassDeclaration, additional);
         this.popMaps();
 
-        if (this.options.get("traceTypeChecker", boolean.class)) {
+        if (this.options.get("traceTypeChecker", Boolean.class)) {
             System.out.println("Exit type checker for class '" + lcClassDeclaration.getFullName() + "'.");
         }
 
@@ -190,7 +190,7 @@ public final class TypeChecker extends LCAstVisitor {
 
     @Override
     public Object visitInterfaceDeclaration(LCInterfaceDeclaration lcInterfaceDeclaration, Object additional) {
-        if (this.options.get("traceTypeChecker", boolean.class)) {
+        if (this.options.get("traceTypeChecker", Boolean.class)) {
             System.out.println("Enter type checker for interface '" + lcInterfaceDeclaration.getFullName() + "':");
         }
 
@@ -198,7 +198,7 @@ public final class TypeChecker extends LCAstVisitor {
         super.visitInterfaceDeclaration(lcInterfaceDeclaration, additional);
         this.popMaps();
 
-        if (this.options.get("traceTypeChecker", boolean.class)) {
+        if (this.options.get("traceTypeChecker", Boolean.class)) {
             System.out.println("Exit type checker for interface '" + lcInterfaceDeclaration.getFullName() + "'.");
         }
 
@@ -207,7 +207,7 @@ public final class TypeChecker extends LCAstVisitor {
 
     @Override
     public Object visitAnnotationDeclaration(LCAnnotationDeclaration lcAnnotationDeclaration, Object additional) {
-        if (this.options.get("traceTypeChecker", boolean.class)) {
+        if (this.options.get("traceTypeChecker", Boolean.class)) {
             System.out.println("Enter type checker for annotation '" + lcAnnotationDeclaration.getFullName() + "':");
         }
 
@@ -220,7 +220,7 @@ public final class TypeChecker extends LCAstVisitor {
 
     @Override
     public Object visitEnumDeclaration(LCEnumDeclaration lcEnumDeclaration, Object additional) {
-        if (this.options.get("traceTypeChecker", boolean.class)) {
+        if (this.options.get("traceTypeChecker", Boolean.class)) {
             System.out.println("Enter type checker for enum '" + lcEnumDeclaration.getFullName() + "':");
         }
 
@@ -228,7 +228,7 @@ public final class TypeChecker extends LCAstVisitor {
         super.visitEnumDeclaration(lcEnumDeclaration, additional);
         this.popMaps();
 
-        if (this.options.get("traceTypeChecker", boolean.class)) {
+        if (this.options.get("traceTypeChecker", Boolean.class)) {
             System.out.println("Exit type checker for enum '" + lcEnumDeclaration.getFullName() + "'.");
         }
 
@@ -237,7 +237,7 @@ public final class TypeChecker extends LCAstVisitor {
 
     @Override
     public Object visitRecordDeclaration(LCRecordDeclaration lcRecordDeclaration, Object additional) {
-        if (this.options.get("traceTypeChecker", boolean.class)) {
+        if (this.options.get("traceTypeChecker", Boolean.class)) {
             System.out.println("Enter type checker for record '" + lcRecordDeclaration.getFullName() + "':");
         }
 
@@ -245,7 +245,7 @@ public final class TypeChecker extends LCAstVisitor {
         super.visitRecordDeclaration(lcRecordDeclaration, additional);
         this.popMaps();
 
-        if (this.options.get("traceTypeChecker", boolean.class)) {
+        if (this.options.get("traceTypeChecker", Boolean.class)) {
             System.out.println("Exit type checker for record '" + lcRecordDeclaration.getFullName() + "'.");
         }
 
@@ -254,7 +254,7 @@ public final class TypeChecker extends LCAstVisitor {
 
     @Override
     public Object visitStructDeclaration(LCStructDeclaration lcStructDeclaration, Object additional) {
-        if (this.options.get("traceTypeChecker", boolean.class)) {
+        if (this.options.get("traceTypeChecker", Boolean.class)) {
             System.out.println("Enter type checker for struct '" + lcStructDeclaration.getFullName() + "':");
         }
 
@@ -262,7 +262,7 @@ public final class TypeChecker extends LCAstVisitor {
         super.visitStructDeclaration(lcStructDeclaration, additional);
         this.popMaps();
 
-        if (this.options.get("traceTypeChecker", boolean.class)) {
+        if (this.options.get("traceTypeChecker", Boolean.class)) {
             System.out.println("Exit type checker for struct '" + lcStructDeclaration.getFullName() + "'.");
         }
 
@@ -271,7 +271,7 @@ public final class TypeChecker extends LCAstVisitor {
 
     @Override
     public Object visitMethodDeclaration(LCMethodDeclaration lcMethodDeclaration, Object additional) {
-        if (this.options.get("traceTypeChecker", boolean.class)) {
+        if (this.options.get("traceTypeChecker", Boolean.class)) {
             System.out.println("Enter type checker for method '" + lcMethodDeclaration.name + "':");
         }
 
@@ -279,7 +279,7 @@ public final class TypeChecker extends LCAstVisitor {
         super.visitMethodDeclaration(lcMethodDeclaration, additional);
         this.popMaps();
 
-        if (this.options.get("traceTypeChecker", boolean.class)) {
+        if (this.options.get("traceTypeChecker", Boolean.class)) {
             System.out.println("Exit type checker for method '" + lcMethodDeclaration.name + "'.");
         }
 
@@ -343,7 +343,7 @@ public final class TypeChecker extends LCAstVisitor {
                 Type tRight = this.getDynamicType(lcVariableDeclaration.init);
                 this.setExpressionType(this.makeVariableBySymbol(lcVariableDeclaration.symbol), tRight);
 
-                if (this.options.get("traceTypeChecker", boolean.class)) {
+                if (this.options.get("traceTypeChecker", Boolean.class)) {
                     System.out.println("in lcVariableDecl '" + lcVariableDeclaration.name + "'");
                     this.dumpRange();
                 }
@@ -428,7 +428,7 @@ public final class TypeChecker extends LCAstVisitor {
                     if (lcBinary.expression1 instanceof LCVariable) {
                     }
 
-                    if (this.options.get("traceTypeChecker", boolean.class)) {
+                    if (this.options.get("traceTypeChecker", Boolean.class)) {
                         System.out.println("in visitBinary, assignOP:");
                         this.dumpRange();
                     }

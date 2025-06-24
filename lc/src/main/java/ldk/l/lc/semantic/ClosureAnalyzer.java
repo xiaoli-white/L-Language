@@ -30,7 +30,7 @@ public final class ClosureAnalyzer extends LCAstVisitor {
     }
 
     public Object visitAst(LCAst ast, Object additional) {
-        if (this.options.get("verbose",boolean.class)) {
+        if (this.options.get("verbose",Boolean.class)) {
             System.out.println("闭包分析...");
         }
 
@@ -57,7 +57,7 @@ public final class ClosureAnalyzer extends LCAstVisitor {
         if (lcMethodDeclaration.symbol != null)
             lcMethodDeclaration.symbol.closure = this.getCurrentClosure();
 
-        if (this.options.get("verbose",boolean.class)) {
+        if (this.options.get("verbose",Boolean.class)) {
             if (this.getCurrentClosure().vars.length > 0) {
                 System.out.println("    Closure of method:" + (lcMethodDeclaration.symbol != null ? lcMethodDeclaration.symbol.name : "Unknown"));
                 System.out.println("    " + this.getCurrentClosure().toString());

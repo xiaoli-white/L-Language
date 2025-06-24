@@ -1,6 +1,7 @@
 package ldk.l.lc;
 
 import com.xiaoli.bcg.ByteCodeGenerator;
+import com.xiaoli.llvmir_generator.LLVMIRGenerator;
 import ldk.l.lc.ast.LCAst;
 import ldk.l.lc.ast.LCAstDumper;
 import ldk.l.lc.ir.IRGenerator;
@@ -39,7 +40,7 @@ public class LCompiler {
 
     public static void parse(Options options) {
         String sourceFile = options.args().getFirst();
-        boolean verbose = options.get("verbose",boolean.class);
+        boolean verbose = options.get("verbose",Boolean.class);
         if (sourceFile != null) {
             if (!sourceFile.endsWith(".l")) {
                 // TODO dump error
@@ -167,11 +168,11 @@ public class LCompiler {
             if (!errorStream.checkErrorNum(""))
                 return;
 
-            ByteCodeGenerator byteCodeGenerator = new ByteCodeGenerator();
-            byteCodeGenerator.generate(irModule, options);
+//            ByteCodeGenerator byteCodeGenerator = new ByteCodeGenerator();
+//            byteCodeGenerator.generate(irModule, options);
 
-//            LLVMIRGenerator llvmIRGenerator = new LLVMIRGenerator();
-//            llvmIRGenerator.generate(irModule, options);
+            LLVMIRGenerator llvmIRGenerator = new LLVMIRGenerator();
+            llvmIRGenerator.generate(irModule, options);
 
             errorStream.dumpErrorsAndWarnings("");
         }
@@ -182,9 +183,9 @@ public class LCompiler {
                 .add(List.of("--help", "-h"), "help", Type.Boolean, false)
                 .add(List.of("--version", "-v"), "version", Type.Boolean, false)
                 .add(List.of("--verbose", "-verbose"), "verbose", Type.Boolean, false)
-                .add(List.of("traceTypeChecker"), "traceTypeChecker", Type.Boolean, false)
+                .add(List.of("--traceTypeChecker"), "traceTypeChecker", Type.Boolean, false)
                 .add(List.of("--rootpath"), "rootpath", Type.String, ".")
                 .add(List.of("--platform"), "platform", Type.String, "lvm")
-                .add(List.of("--output", "-o"), "--output", Type.String, "");
+                .add(List.of("--output", "-o"), "output", Type.String, "");
     }
 }

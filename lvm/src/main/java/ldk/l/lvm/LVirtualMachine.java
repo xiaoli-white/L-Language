@@ -15,7 +15,7 @@ public final class LVirtualMachine {
 
     public static void main(String[] args) {
         Options options = LVirtualMachine.getOptionsParser().parse(args);
-        VirtualMachine virtualMachine = new VirtualMachine(options.get("stackSize", long.class));
+        VirtualMachine virtualMachine = new VirtualMachine(options.get("stackSize", Long.class));
         String file = options.args().getFirst();
         byte[] raw;
         try (FileInputStream fileInputStream = new FileInputStream(file)) {

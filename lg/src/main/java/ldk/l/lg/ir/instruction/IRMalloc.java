@@ -6,11 +6,11 @@ import ldk.l.lg.ir.operand.IRVirtualRegister;
 
 public final class IRMalloc extends IRInstruction {
     public final IROperand size;
-    public final IRVirtualRegister result;
+    public final IRVirtualRegister target;
 
-    public IRMalloc(IROperand size, IRVirtualRegister result) {
+    public IRMalloc(IROperand size, IRVirtualRegister target) {
         this.size = size;
-        this.result = result;
+        this.target = target;
     }
 
     @Override
@@ -20,6 +20,6 @@ public final class IRMalloc extends IRInstruction {
 
     @Override
     public String toString() {
-        return result + " = malloc " + size;
+        return target + " = malloc " + size;
     }
 }

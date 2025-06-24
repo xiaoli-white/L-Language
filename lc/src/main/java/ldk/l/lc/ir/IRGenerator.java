@@ -334,7 +334,7 @@ public final class IRGenerator extends LCAstVisitor {
                 if (this.currentCFG == null) {
                     this.currentCFG = initCFG;
 
-                    IRMacro offset = new IRMacro("field_offset", new String[]{lcVariableDeclaration.symbol.objectSymbol.getFullName(), lcVariableDeclaration.name});
+                    IRMacro offset = new IRMacro("structure_field_offset", new String[]{lcVariableDeclaration.symbol.objectSymbol.getFullName(), lcVariableDeclaration.name});
                     this.getThisInstance();
                     IROperand op = operandStack.pop();
                     String addressRegister = allocateVirtualRegister();
@@ -1002,7 +1002,7 @@ public final class IRGenerator extends LCAstVisitor {
                     operandStack.push(new IRVirtualRegister(register));
                 }
             } else {
-                IRMacro offset = new IRMacro("field_offset", new String[]{lcVariable.symbol.objectSymbol.getFullName(), lcVariable.name});
+                IRMacro offset = new IRMacro("structure_field_offset", new String[]{lcVariable.symbol.objectSymbol.getFullName(), lcVariable.name});
                 if (operandStack.isEmpty()) this.getThisInstance();
                 IROperand op = operandStack.pop();
                 String address = allocateVirtualRegister();
@@ -1791,7 +1791,7 @@ public final class IRGenerator extends LCAstVisitor {
                 String classInstanceAddressRegister = allocateVirtualRegister();
                 addInstruction(new IRGet(new IRPointerType(IRType.getVoidType()), arguments.getFirst(), new IRVirtualRegister(classInstanceAddressRegister)));
                 String vtableAddressRegister = allocateVirtualRegister();
-                addInstruction(new IRCalculate(IRCalculate.Operator.Add, new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(classInstanceAddressRegister), new IRMacro("field_offset", new String[]{SystemTypes.Class_Type.name, "vtable"}), new IRVirtualRegister(vtableAddressRegister)));
+                addInstruction(new IRCalculate(IRCalculate.Operator.Add, new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(classInstanceAddressRegister), new IRMacro("structure_field_offset", new String[]{SystemTypes.Class_Type.name, "vtable"}), new IRVirtualRegister(vtableAddressRegister)));
                 String temp1 = allocateVirtualRegister();
                 addInstruction(new IRGet(new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(vtableAddressRegister), new IRVirtualRegister(temp1)));
                 String temp2 = allocateVirtualRegister();
@@ -1960,7 +1960,7 @@ public final class IRGenerator extends LCAstVisitor {
             addInstruction(new IRGet(new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(temp), new IRVirtualRegister(destructorAddress)));
         } else {
             String vtableAddressRegister = allocateVirtualRegister();
-            addInstruction(new IRCalculate(IRCalculate.Operator.Add, new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(classInstanceAddressRegister), new IRMacro("field_offset", new String[]{SystemTypes.Class_Type.name, "vtable"}), new IRVirtualRegister(vtableAddressRegister)));
+            addInstruction(new IRCalculate(IRCalculate.Operator.Add, new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(classInstanceAddressRegister), new IRMacro("structure_field_offset", new String[]{SystemTypes.Class_Type.name, "vtable"}), new IRVirtualRegister(vtableAddressRegister)));
             String temp1 = allocateVirtualRegister();
             addInstruction(new IRGet(new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(vtableAddressRegister), new IRVirtualRegister(temp1)));
             String temp2 = allocateVirtualRegister();
