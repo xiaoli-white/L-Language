@@ -415,6 +415,16 @@ public final class Scanner {
                 } else if (ch == '~') {
                     this.stream.addPos(1);
                     tokens.add(new Token(TokenKind.Operator, "~", beginPosition, Tokens.Operator.BitNot, hasNewLine));
+                } else if (ch == '`') {
+                    this.stream.addPos(1);
+                    StringBuilder builder = new StringBuilder(String.valueOf(this.stream.next()));
+
+                    while (!this.stream.eof() && this.stream.peek() != '`') {
+                        builder.append(this.stream.next());
+                    }
+
+                    Position position = new Position(beginPosition.beginPos(), this.stream.pos, beginPosition.beginLine(), this.stream.line, beginPosition.beginCol(), this.stream.col);
+                    tokens.add(new Token(TokenKind.Identifier, builder.toString(), position));
                 } else {
                     tokens.add(this.parseIdentifier().setNewLine(hasNewLine));
                 }
