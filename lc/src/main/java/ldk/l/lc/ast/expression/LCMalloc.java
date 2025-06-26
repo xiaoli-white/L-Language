@@ -5,9 +5,7 @@ import ldk.l.lc.ast.base.LCExpression;
 import ldk.l.lc.semantic.types.SystemTypes;
 import ldk.l.lc.util.Position;
 
-import java.util.Objects;
-
-public class LCMalloc extends LCExpression {
+public final class LCMalloc extends LCExpression {
     public LCExpression size;
 
     public LCMalloc(LCExpression size, Position pos, boolean isErrorNode) {

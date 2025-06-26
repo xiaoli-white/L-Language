@@ -13,7 +13,7 @@ import ldk.l.lc.util.symbol.object.RecordSymbol;
 import java.util.Arrays;
 import java.util.Objects;
 
-public class LCRecordDeclaration extends LCObjectDeclaration {
+public final class LCRecordDeclaration extends LCObjectDeclaration {
     public Scope scope;
     public RecordSymbol symbol = null;
     public LCVariableDeclaration[] fields;

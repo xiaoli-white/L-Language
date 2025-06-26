@@ -141,7 +141,6 @@ public final class Parser {
                     modifier.flags |= LCFlags.RECORD;
                     objectDeclaration = this.parseRecordDeclaration();
                 }
-                case Tokens.Keyword.Struct -> objectDeclaration = this.parseStructDeclaration();
                 case Tokens.Operator.At -> {
                     if (this.peek2().code() == Tokens.Keyword.Interface) {
                         modifier.flags |= LCFlags.ANNOTATION;
@@ -970,42 +969,6 @@ public final class Parser {
         return new LCRecordDeclaration(name.text(), typeParameters, fields, implementedInterfaces.toArray(new LCTypeReferenceExpression[0]), delegated, body, position, isErrorNode);
     }
 
-    private LCStructDeclaration parseStructDeclaration() {
-        Position beginPos = this.getPos();
-        boolean isErrorNode = false;
-
-        this.tokenIndex++;
-
-        Token name = this.next();
-        if (name.kind() != TokenKind.Identifier) {
-            isErrorNode = true;
-            this.errorStream.printError(true, this.getPos(), 6);
-        }
-
-        LCTypeParameter[] typeParameters;
-        if (this.peek().code() == Tokens.Operator.Less) {
-            typeParameters = this.parseGenericParameters();
-        } else {
-            typeParameters = new LCTypeParameter[0];
-        }
-
-        LCBlock body;
-        Token t1 = this.peek();
-        if (t1.code() == Tokens.Separator.OpenBrace) { // '{'
-            body = this.parseClassBody();
-            if (body.isErrorNode)
-                isErrorNode = true;
-        } else {
-            this.errorStream.printError(true, this.getPos(), 8);
-            this.skip();
-            body = new LCBlock(List.of(), t1.position(), true);
-        }
-
-        Position endPos = this.getPos();
-        Position position = new Position(beginPos.beginPos(), endPos.endPos(), beginPos.beginLine(), endPos.endLine(), beginPos.beginCol(), endPos.endCol());
-        return new LCStructDeclaration(name.text(), typeParameters, body, position, isErrorNode);
-    }
-
     public LCTypeParameter[] parseGenericParameters() {
         this.tokenIndex++;
 
@@ -1136,11 +1099,6 @@ public final class Parser {
                     LCRecordDeclaration lcRecordDeclaration = this.parseRecordDeclaration();
                     lcRecordDeclaration.setModifier(modifier);
                     statement = lcRecordDeclaration;
-                }
-                case Tokens.Keyword.Struct -> {
-                    LCStructDeclaration lcStructDeclaration = this.parseStructDeclaration();
-                    lcStructDeclaration.setModifier(modifier);
-                    statement = lcStructDeclaration;
                 }
                 case Tokens.Keyword.Var -> {
                     LCVariableDeclaration lcVariableDeclaration = this.parseVariableDeclaration(false);

@@ -10,7 +10,7 @@ import ldk.l.lc.util.symbol.object.ClassSymbol;
 
 import java.util.Arrays;
 
-public class LCClassDeclaration extends LCObjectDeclaration {
+public final class LCClassDeclaration extends LCObjectDeclaration {
     public LCTypeReferenceExpression extended;
     public LCTypeReferenceExpression[] implementedInterfaces;
     public LCTypeReferenceExpression[] permittedClasses;

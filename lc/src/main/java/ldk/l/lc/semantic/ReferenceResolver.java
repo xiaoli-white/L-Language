@@ -165,23 +165,6 @@ public final class ReferenceResolver extends LCAstVisitor {
         this.scope = oldScope;
         return null;
     }
-
-    @Override
-    public Object visitStructDeclaration(LCStructDeclaration lcStructDeclaration, Object additional) {
-        Scope oldScope = this.scope;
-        this.scope = lcStructDeclaration.scope;
-        if (this.scope == null) {
-            this.errorStream.printError(true, Position.origin, -1);
-            return null;
-        }
-
-        this.declaredVarsMap.put(this.scope, new HashMap<>());
-        super.visitStructDeclaration(lcStructDeclaration, additional);
-
-        this.scope = oldScope;
-        return null;
-    }
-
     @Override
     public Object visitFor(LCFor lcFor, Object additional) {
         Scope oldScope = this.scope;
@@ -452,7 +435,7 @@ public final class ReferenceResolver extends LCAstVisitor {
                 lcSuper.symbol = this.objectSymbolStack.pop();
             } else if (symbol instanceof ClassSymbol classSymbol) {
                 lcSuper.symbol = classSymbol.extended;
-            } else if (!(symbol instanceof AnnotationSymbol) && !(symbol instanceof StructSymbol)) {
+            } else if (!(symbol instanceof AnnotationSymbol)) {
                 // TODO dump error
             }
             if (lcSuper.symbol != null) {
@@ -696,6 +679,13 @@ public final class ReferenceResolver extends LCAstVisitor {
             lcNotNullAssert.isErrorNode = true;
             System.err.println("The base of not-null assert is not nullable type.");
         }
+        return null;
+    }
+
+    @Override
+    public Object visitFree(LCFree lcFree, Object additional) {
+        super.visitFree(lcFree, additional);
+        lcFree.theType = lcFree.expression.theType;
         return null;
     }
 
@@ -953,26 +943,6 @@ public final class ReferenceResolver extends LCAstVisitor {
                 }
                 return methodSymbol;
             }
-            case StructSymbol structSymbol -> {
-                if ("<deinit>".equals(name)) {
-                    if (paramTypes.length == 0) {
-                        return structSymbol.destructor;
-                    } else {
-                        // TODO dump error
-                    }
-                }
-                MethodSymbol[] methods = "<init>".equals(name) ? structSymbol.constructors : structSymbol.methods;
-                MethodSymbol methodSymbol = null;
-                for (MethodSymbol method : methods) {
-                    if (method.name.equals(name) && checkTypesOfMethod(method, paramTypes)) {
-                        if (methodSymbol == null || isSubMethod(method, methodSymbol)) {
-                            methodSymbol = method;
-                        }
-                    }
-                }
-                return methodSymbol;
-            }
-            default -> throw new IllegalStateException("Unexpected value: " + objectSymbol);
         }
         return null;
     }

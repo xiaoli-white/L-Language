@@ -47,13 +47,10 @@ public class MethodSymbol extends Symbol {
     @Override
     public String toString() {
         return "MethodSymbol{" +
-                "declaration=" + declaration +
-                ", lambdaDeclaration=" + lambdaDeclaration +
-                ", parameterTypes=" + parameterTypes +
+                "parameterTypes=" + parameterTypes +
                 ", returnType=" + returnType +
                 ", vars=" + vars +
                 ", methodKind=" + methodKind +
-                ", objectSymbol=" + objectSymbol +
                 ", closure=" + closure +
                 ", flags=" + flags +
                 ", attributes=" + Arrays.toString(attributes) +

@@ -4,9 +4,7 @@ import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.ast.base.LCExpression;
 import ldk.l.lc.util.Position;
 
-import java.util.Objects;
-
-public class LCRealloc extends LCExpression {
+public final class LCRealloc extends LCExpression {
     public LCExpression expression;
     public LCExpression size;
 

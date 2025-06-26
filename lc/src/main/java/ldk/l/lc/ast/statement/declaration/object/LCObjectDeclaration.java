@@ -8,7 +8,7 @@ import ldk.l.lc.ast.statement.declaration.LCDeclaration;
 import ldk.l.lc.util.Position;
 import ldk.l.lc.util.scope.Scope;
 
-public abstract class LCObjectDeclaration extends LCDeclaration {
+public abstract sealed class LCObjectDeclaration extends LCDeclaration permits LCClassDeclaration, LCInterfaceDeclaration,LCEnumDeclaration, LCAnnotationDeclaration,LCRecordDeclaration {
     public Scope scope = null;
     public LCModifier modifier = null;
     public String name;

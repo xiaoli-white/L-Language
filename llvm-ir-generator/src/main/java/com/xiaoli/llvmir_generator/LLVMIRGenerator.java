@@ -5,6 +5,8 @@ import ldk.l.lg.ir.IRModule;
 import ldk.l.lg.ir.IRVisitor;
 import ldk.l.lg.ir.base.IRControlFlowGraph;
 import ldk.l.lg.ir.base.IRFunction;
+import ldk.l.lg.ir.base.IRGlobalDataSection;
+import ldk.l.lg.ir.base.IRNode;
 import ldk.l.lg.ir.instruction.*;
 import ldk.l.lg.ir.operand.IRConstant;
 import ldk.l.lg.ir.operand.IRMacro;
@@ -44,6 +46,8 @@ public final class LLVMIRGenerator extends Generator {
 
     private static native void dumpLLVMModule(long llvmModule);
 
+    private static native void compile(long llvmModule, Options options);
+
     private static final class LLVMModuleGenerator extends IRVisitor {
         private final IRModule module;
         private final long llvmContext;
@@ -68,16 +72,20 @@ public final class LLVMIRGenerator extends Generator {
 
         public void generate() {
             module.functions.values().forEach(this::createFunction);
+            this.visitGlobalDataSection(module.globalDataSection, null);
             for (IRFunction irFunction : module.functions.values()) this.visitFunction(irFunction, null);
         }
 
         private native void createFunction(IRFunction irFunction);
 
-//        @Override
-//        public Object visit(IRNode irNode, Object additional) {
-//            System.out.println("visiting node " + irNode);
-//            return super.visit(irNode, additional);
-//        }
+        @Override
+        public Object visit(IRNode irNode, Object additional) {
+            System.out.println("visiting node " + irNode);
+            return super.visit(irNode, additional);
+        }
+
+        @Override
+        public native Object visitGlobalData(IRGlobalDataSection.GlobalData globalData, Object additional);
 
         @Override
         public native Object visitFunction(IRFunction irFunction, Object additional);

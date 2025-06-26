@@ -253,23 +253,6 @@ public final class TypeChecker extends LCAstVisitor {
     }
 
     @Override
-    public Object visitStructDeclaration(LCStructDeclaration lcStructDeclaration, Object additional) {
-        if (this.options.get("traceTypeChecker", Boolean.class)) {
-            System.out.println("Enter type checker for struct '" + lcStructDeclaration.getFullName() + "':");
-        }
-
-        this.pushNewMaps();
-        super.visitStructDeclaration(lcStructDeclaration, additional);
-        this.popMaps();
-
-        if (this.options.get("traceTypeChecker", Boolean.class)) {
-            System.out.println("Exit type checker for struct '" + lcStructDeclaration.getFullName() + "'.");
-        }
-
-        return null;
-    }
-
-    @Override
     public Object visitMethodDeclaration(LCMethodDeclaration lcMethodDeclaration, Object additional) {
         if (this.options.get("traceTypeChecker", Boolean.class)) {
             System.out.println("Enter type checker for method '" + lcMethodDeclaration.name + "':");

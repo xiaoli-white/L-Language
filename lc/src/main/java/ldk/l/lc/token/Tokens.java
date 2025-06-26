@@ -22,7 +22,6 @@ public class Tokens {
         Interface("interface"),
         Enum("enum"),
         Record("record"),
-        Struct("struct"),
 
         Var("var"),
         Val("val"),

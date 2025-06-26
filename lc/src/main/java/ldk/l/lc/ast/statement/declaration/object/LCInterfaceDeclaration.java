@@ -10,7 +10,7 @@ import ldk.l.lc.util.symbol.object.InterfaceSymbol;
 import java.util.Arrays;
 import java.util.Objects;
 
-public class LCInterfaceDeclaration extends LCObjectDeclaration {
+public final class LCInterfaceDeclaration extends LCObjectDeclaration {
     public LCTypeReferenceExpression[] extendedInterfaces;
     public InterfaceSymbol symbol = null;
     public InterfaceSymbol[] superInterfaceSymbols = null;

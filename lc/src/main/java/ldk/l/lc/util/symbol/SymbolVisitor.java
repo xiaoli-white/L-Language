@@ -25,8 +25,6 @@ public abstract class SymbolVisitor {
 
     public abstract Object visitRecordSymbol(RecordSymbol recordSymbol, Object additional);
 
-    public abstract Object visitStructSymbol(StructSymbol structSymbol, Object additional);
-
     public abstract Object visitResourceForNativeSymbol(ResourceForNativeSymbol resourceForNativeSymbol, Object additional);
 
     public abstract Object visitTypeParameterSymbol(TypeParameterSymbol typeParameterSymbol, Object additional);

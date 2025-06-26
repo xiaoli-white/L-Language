@@ -128,8 +128,6 @@ public class LCAstUtil {
             case LCEnumDeclaration lcEnumDeclaration -> lcEnumDeclaration.symbol;
             case LCRecordDeclaration lcRecordDeclaration -> lcRecordDeclaration.symbol;
             case LCAnnotationDeclaration lcAnnotationDeclaration -> lcAnnotationDeclaration.symbol;
-            case LCStructDeclaration lcStructDeclaration -> lcStructDeclaration.symbol;
-            default -> null;
         };
     }
 
@@ -140,8 +138,6 @@ public class LCAstUtil {
             case EnumSymbol enumSymbol -> enumSymbol.declaration;
             case RecordSymbol recordSymbol -> recordSymbol.declaration;
             case AnnotationSymbol annotationSymbol -> annotationSymbol.declaration;
-            case StructSymbol structSymbol -> structSymbol.declaration;
-            default -> null;
         };
     }
 
@@ -152,8 +148,6 @@ public class LCAstUtil {
             case LCEnumDeclaration lcEnumDeclaration -> lcEnumDeclaration.body.scope;
             case LCRecordDeclaration lcRecordDeclaration -> lcRecordDeclaration.body.scope;
             case LCAnnotationDeclaration lcAnnotationDeclaration -> lcAnnotationDeclaration.annotationBody.scope;
-            case LCStructDeclaration lcStructDeclaration -> lcStructDeclaration.body.scope;
-            default -> null;
         };
     }
 

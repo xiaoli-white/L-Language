@@ -12,7 +12,7 @@ import ldk.l.lc.util.symbol.object.AnnotationSymbol;
 import java.util.Arrays;
 import java.util.Objects;
 
-public class LCAnnotationDeclaration extends LCObjectDeclaration {
+public final class LCAnnotationDeclaration extends LCObjectDeclaration {
     public AnnotationSymbol symbol = null;
     public LCAnnotationBody annotationBody;
 

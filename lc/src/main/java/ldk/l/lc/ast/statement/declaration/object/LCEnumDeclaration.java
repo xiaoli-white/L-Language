@@ -11,9 +11,8 @@ import ldk.l.lc.util.scope.Scope;
 import ldk.l.lc.util.symbol.object.EnumSymbol;
 
 import java.util.Arrays;
-import java.util.Objects;
 
-public class LCEnumDeclaration extends LCObjectDeclaration {
+public final class LCEnumDeclaration extends LCObjectDeclaration {
     public Scope scope;
     public EnumSymbol symbol = null;
     public LCTypeReferenceExpression[] implementedInterfaces;

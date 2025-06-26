@@ -139,17 +139,6 @@ public final class TypeParameterEnter extends LCAstVisitor {
     }
 
     @Override
-    public Object visitStructDeclaration(LCStructDeclaration lcStructDeclaration, Object additional) {
-        Scope oldScope = this.scope;
-        this.scope = lcStructDeclaration.scope;
-
-        super.visitStructDeclaration(lcStructDeclaration, additional);
-
-        this.scope = oldScope;
-        return null;
-    }
-
-    @Override
     public Object visitMethodDeclaration(LCMethodDeclaration lcMethodDeclaration, Object additional) {
         Scope oldScope = this.scope;
         this.scope = lcMethodDeclaration.scope;

@@ -887,28 +887,6 @@ public final class LCAstDumper extends LCAstVisitor {
     }
 
     @Override
-    public Object visitStructDeclaration(LCStructDeclaration lcStructDeclaration, Object prefix) {
-        System.out.println(prefix + "-LCStructDecl" + (lcStructDeclaration.isErrorNode ? " **E**" : ""));
-        if (lcStructDeclaration.annotations.length != 0) {
-            System.out.println(prefix + "   |-annotations:");
-            for (LCAnnotationDeclaration.LCAnnotation lcAnnotation : lcStructDeclaration.annotations) {
-                this.visitAnnotation(lcAnnotation, prefix + "   |   |");
-            }
-        }
-        this.visitModifier(lcStructDeclaration.modifier, prefix + "   |");
-        System.out.println(prefix + "   |-name: '" + lcStructDeclaration.name + "'");
-        if (lcStructDeclaration.typeParameters.length != 0) {
-            System.out.println(prefix + "   |-typeParameters:");
-            for (LCTypeParameter lcTypeParameter : lcStructDeclaration.typeParameters) {
-                this.visit(lcTypeParameter, prefix + "   |   |");
-            }
-        }
-        System.out.println(prefix + "   |-body:");
-        this.visit(lcStructDeclaration.body, prefix + "       |");
-        return null;
-    }
-
-    @Override
     public Object visitAnnotation(LCAnnotationDeclaration.LCAnnotation lcAnnotation, Object prefix) {
         System.out.println(prefix + "-LCAnnotation(name: '" + lcAnnotation.name + "')" + (lcAnnotation.isErrorNode ? " **E**" : ""));
         if (lcAnnotation.arguments.length == 0) {

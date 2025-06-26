@@ -3,7 +3,7 @@ package ldk.l.lc.util.symbol.object;
 import ldk.l.lc.semantic.types.Type;
 import ldk.l.lc.util.symbol.*;
 
-public abstract sealed class ObjectSymbol extends Symbol permits ClassSymbol, InterfaceSymbol, EnumSymbol, RecordSymbol, StructSymbol, AnnotationSymbol{
+public abstract sealed class ObjectSymbol extends Symbol permits ClassSymbol, InterfaceSymbol, EnumSymbol, RecordSymbol, AnnotationSymbol {
     public String _package;
     public TemplateTypeParameterSymbol[] templateTypeParameters;
     public TypeParameterSymbol[] typeParameters;

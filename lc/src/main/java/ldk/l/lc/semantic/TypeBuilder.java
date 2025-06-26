@@ -46,13 +46,6 @@ public final class TypeBuilder extends LCAstVisitor {
     }
 
     @Override
-    public Object visitStructDeclaration(LCStructDeclaration lcStructDeclaration, Object additional) {
-        String fullName = lcStructDeclaration.getFullName();
-        this.getAST(lcStructDeclaration).name2Type.put(fullName, new NamedType(fullName));
-        return super.visitStructDeclaration(lcStructDeclaration, additional);
-    }
-
-    @Override
     public Object visitRecordDeclaration(LCRecordDeclaration lcRecordDeclaration, Object additional) {
         String fullName = lcRecordDeclaration.getFullName();
         this.getAST(lcRecordDeclaration).name2Type.put(fullName, new NamedType(fullName));

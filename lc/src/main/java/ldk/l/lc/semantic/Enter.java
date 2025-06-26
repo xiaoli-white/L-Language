@@ -321,58 +321,6 @@ public final class Enter extends LCAstVisitor {
     }
 
     @Override
-    public Object visitStructDeclaration(LCStructDeclaration lcStructDeclaration, Object additional) {
-        Scope currentScope = this.scope;
-        Scope scope = new Scope(lcStructDeclaration, currentScope);
-        lcStructDeclaration.scope = scope;
-        this.scope = scope;
-
-        super.visitStructDeclaration(lcStructDeclaration, additional);
-
-        if (currentScope.hasSymbol(lcStructDeclaration.name)) {
-            System.err.println("Duplicate symbol: " + lcStructDeclaration.name);
-        }
-
-        LCAst ast = this.getAST(lcStructDeclaration);
-
-        ArrayList<TemplateTypeParameterSymbol> templateTypeParameters = new ArrayList<>();
-        ArrayList<TypeParameterSymbol> typeParameters = new ArrayList<>();
-        ArrayList<VariableSymbol> props = new ArrayList<>();
-        ArrayList<MethodSymbol> constructors = new ArrayList<>();
-        ArrayList<MethodSymbol> methods = new ArrayList<>();
-        MethodSymbol destructor = null;
-
-        Scope structScope = lcStructDeclaration.body.scope;
-        for (Symbol symbol : scope.name2symbol.values()) {
-            if (symbol instanceof TypeParameterSymbol typeParameterSymbol) {
-                typeParameters.add(typeParameterSymbol);
-            } else if (symbol instanceof TemplateTypeParameterSymbol templateTypeParameterSymbol) {
-                templateTypeParameters.add(templateTypeParameterSymbol);
-            }
-        }
-        for (Symbol symbol : structScope.name2symbol.values()) {
-            if (symbol instanceof VariableSymbol variableSymbol) {
-                props.add(variableSymbol);
-            } else if (symbol instanceof MethodSymbol methodSymbol) {
-                if (methodSymbol.methodKind == MethodKind.Constructor) {
-                    constructors.add(methodSymbol);
-                } else if (methodSymbol.methodKind == MethodKind.Destructor) {
-                    destructor = methodSymbol;
-                } else {
-                    methods.add(methodSymbol);
-                }
-            }
-        }
-
-        StructSymbol structSymbol = new StructSymbol(lcStructDeclaration, ast.getType(lcStructDeclaration.getFullName()), templateTypeParameters.toArray(new TemplateTypeParameterSymbol[0]), typeParameters.toArray(new TypeParameterSymbol[0]), lcStructDeclaration.modifier.flags, lcStructDeclaration.modifier.attributes, props.toArray(new VariableSymbol[0]), constructors.toArray(new MethodSymbol[0]), methods.toArray(new MethodSymbol[0]), destructor);
-        lcStructDeclaration.symbol = structSymbol;
-        currentScope.enter(lcStructDeclaration.name, structSymbol);
-
-        this.scope = currentScope;
-        return null;
-    }
-
-    @Override
     public Object visitMethodDeclaration(LCMethodDeclaration lcMethodDeclaration, Object additional) {
         Scope currentScope = this.scope;
 

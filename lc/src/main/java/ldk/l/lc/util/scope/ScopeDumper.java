@@ -126,21 +126,6 @@ public class ScopeDumper extends LCAstVisitor {
     }
 
     @Override
-    public Object visitStructDeclaration(LCStructDeclaration lcStructDeclaration, Object prefix) {
-        System.out.println(prefix + "Scope of LCStructDecl: " + lcStructDeclaration.getFullName());
-
-        if (lcStructDeclaration.body.scope != null) {
-            this.dumpScope(lcStructDeclaration.body.scope, prefix + "\t");
-        } else {
-            System.out.println(prefix + "\t{null}");
-        }
-
-        super.visitBlock(lcStructDeclaration.body, prefix + "\t");
-
-        return null;
-    }
-
-    @Override
     public Object visitBlock(LCBlock lcBlock, Object prefix) {
         System.out.println(prefix + "Scope of LCBlock");
 

@@ -45,6 +45,20 @@ public abstract class LCAstVisitor {
         return null;
     }
 
+    public LCInit getEnclosingInit(LCAstNode node) {
+        LCAstNode parent = node.parentNode;
+        while (parent != null) {
+            if (parent instanceof LCInit) {
+                return (LCInit) parent;
+            } else if (parent instanceof LCObjectDeclaration) {
+                return null;
+            } else {
+                parent = parent.parentNode;
+            }
+        }
+        return null;
+    }
+
     public LCObjectDeclaration getEnclosingObjectDeclaration(LCAstNode node) {
         LCAstNode parent = node.parentNode;
         while (parent != null) {
@@ -71,14 +85,16 @@ public abstract class LCAstVisitor {
 
     public Scope getEnclosingScope(LCAstNode node) {
         LCAstNode parent = node.parentNode;
-        while (parent != null && !(parent instanceof LCStatementWithScope)) {
+        while (parent != null) {
+            if (parent instanceof LCStatementWithScope lcStatementWithScope) {
+                return lcStatementWithScope.scope;
+            } else if (parent instanceof LCExpressionWithScope lcExpressionWithScope) {
+                return lcExpressionWithScope.scope;
+            }
             parent = parent.parentNode;
         }
-        if (parent == null) {
-            System.err.println("getEnclosingScope()中，parent不应该是null");
-            return null;
-        }
-        return ((LCStatementWithScope) parent).scope;
+        System.err.println("getEnclosingScope()中，parent不应该是null");
+        return null;
     }
 
     public Object visitAst(LCAst ast, Object additional) {
@@ -142,17 +158,6 @@ public abstract class LCAstVisitor {
             this.visit(lcRecordDeclaration.delegated, additional);
         }
         this.visitBlock(lcRecordDeclaration.body, additional);
-        return null;
-    }
-
-    public Object visitStructDeclaration(LCStructDeclaration lcStructDeclaration, Object additional) {
-        for (LCAnnotationDeclaration.LCAnnotation lcAnnotation : lcStructDeclaration.annotations) {
-            this.visitAnnotation(lcAnnotation, additional);
-        }
-        for (LCTypeParameter lcTypeParameter : lcStructDeclaration.typeParameters) {
-            this.visitTypeParameter(lcTypeParameter, additional);
-        }
-        this.visitBlock(lcStructDeclaration.body, additional);
         return null;
     }
 

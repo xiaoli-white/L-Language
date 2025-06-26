@@ -288,40 +288,6 @@ public class SymbolDumper extends SymbolVisitor {
     }
 
     @Override
-    public Object visitStructSymbol(StructSymbol structSymbol, Object prefix) {
-        StringBuilder str = new StringBuilder((String) prefix);
-        str.append("StructSymbol{name: '").append(structSymbol.getFullName()).append("'");
-
-        if (structSymbol.properties.length > 0) {
-            str.append(", props:[");
-            for (int i = 0; i < structSymbol.properties.length; i++) {
-                VariableSymbol property = structSymbol.properties[i];
-                str.append("'").append(property.name).append("'");
-
-                if (i < structSymbol.properties.length - 1) {
-                    str.append(", ");
-                }
-            }
-            str.append("]");
-        }
-        if (structSymbol.methods.length > 0) {
-            str.append(", methods:[");
-            for (int i = 0; i < structSymbol.methods.length; i++) {
-                MethodSymbol method = structSymbol.methods[i];
-                str.append("'").append(method.name).append("'");
-                if (i < structSymbol.methods.length - 1) {
-                    str.append(", ");
-                }
-            }
-            str.append("]");
-        }
-        str.append("}");
-
-        System.out.println(str);
-        return null;
-    }
-
-    @Override
     public Object visitResourceForNativeSymbol(ResourceForNativeSymbol resourceForNativeSymbol, Object prefix) {
         System.out.println(prefix + "ResourceForNativeSymbol{name: '" + resourceForNativeSymbol.name + "'}");
         return null;
