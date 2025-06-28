@@ -61,6 +61,7 @@ public final class LLVMIRGenerator extends Generator {
         private long basicBlockMap;
         private long field2LocalVar;
         private long virtualRegister2Value;
+        private long queue;
 
         public LLVMModuleGenerator(IRModule module, long llvmContext, long llvmModule, long llvmBuilder, Options options) {
             this.module = module;
@@ -72,17 +73,20 @@ public final class LLVMIRGenerator extends Generator {
 
         public void generate() {
             module.functions.values().forEach(this::createFunction);
+            initializeQueue();
             this.visitGlobalDataSection(module.globalDataSection, null);
+            initializeITableInitializer();
             for (IRFunction irFunction : module.functions.values()) this.visitFunction(irFunction, null);
         }
-
+        private native void initializeQueue();
+        private native void initializeITableInitializer();
         private native void createFunction(IRFunction irFunction);
 
-        @Override
-        public Object visit(IRNode irNode, Object additional) {
-            System.out.println("visiting node " + irNode);
-            return super.visit(irNode, additional);
-        }
+        //        @Override
+//        public Object visit(IRNode irNode, Object additional) {
+//            System.out.println("visiting node " + irNode);
+//            return super.visit(irNode, additional);
+//        }
 
         @Override
         public native Object visitGlobalData(IRGlobalDataSection.GlobalData globalData, Object additional);
