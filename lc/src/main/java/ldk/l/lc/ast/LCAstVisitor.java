@@ -244,7 +244,7 @@ public abstract class LCAstVisitor {
         for (LCTypeParameter typeParameter : lcMethodDeclaration.typeParameters) {
             this.visitTypeParameter(typeParameter, additional);
         }
-        this.visitCallSignature(lcMethodDeclaration.callSignature, additional);
+        this.visitParameterList(lcMethodDeclaration.parameterList, additional);
         if (lcMethodDeclaration.returnTypeExpression != null) {
             this.visit(lcMethodDeclaration.returnTypeExpression, additional);
         }
@@ -256,13 +256,6 @@ public abstract class LCAstVisitor {
         }
         if (lcMethodDeclaration.body != null) {
             this.visit(lcMethodDeclaration.body, additional);
-        }
-        return null;
-    }
-
-    public Object visitCallSignature(LCMethodDeclaration.LCCallSignature lcCallSignature, Object additional) {
-        if (lcCallSignature.parameterList != null) {
-            this.visit(lcCallSignature.parameterList, additional);
         }
         return null;
     }
@@ -745,7 +738,7 @@ public abstract class LCAstVisitor {
         for (LCTypeParameter typeParameter : lcLambda.typeParameters) {
             this.visitTypeParameter(typeParameter, additional);
         }
-        this.visitCallSignature(lcLambda.callSignature, additional);
+        this.visitParameterList(lcLambda.parameterList, additional);
         if (lcLambda.returnTypeExpression != null) {
             this.visit(lcLambda.returnTypeExpression, additional);
         }

@@ -25,7 +25,7 @@ public class LCAstUtil {
         MethodSymbol methodSymbol = null;
         for (MethodSymbol method : Objects.requireNonNull(LCAstUtil.getObjectSymbol(lcObjectDeclaration)).getMethods()) {
             if (LCFlags.hasPublic(method.flags) && LCFlags.hasStatic(method.flags) && method.name.equals("main") && method.getNumParams() == 1
-                    && (method.declaration.callSignature.parameterList.parameters[0].theType.equals(new ArrayType(SystemTypes.String_Type)))
+                    && (method.declaration.parameterList.parameters[0].theType.equals(new ArrayType(SystemTypes.String_Type)))
                     && method.declaration.returnType.equals(SystemTypes.VOID)) {
                 if (methodSymbol == null) {
                     methodSymbol = method;

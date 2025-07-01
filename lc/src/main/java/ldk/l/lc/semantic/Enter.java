@@ -329,8 +329,8 @@ public final class Enter extends LCAstVisitor {
         }
 
         List<Type> paramTypes = new ArrayList<>();
-        if (lcMethodDeclaration.callSignature.parameterList != null) {
-            for (LCVariableDeclaration p : lcMethodDeclaration.callSignature.parameterList.parameters)
+        if (lcMethodDeclaration.parameterList != null) {
+            for (LCVariableDeclaration p : lcMethodDeclaration.parameterList.parameters)
                 paramTypes.add(p.theType);
         }
         MethodSymbol symbol = new MethodSymbol(lcMethodDeclaration.name, new ArrayList<>(paramTypes), lcMethodDeclaration.returnType, new MethodPointerType(paramTypes.toArray(new Type[0]), lcMethodDeclaration.returnType), lcMethodDeclaration.methodKind, lcMethodDeclaration.modifier.flags, lcMethodDeclaration.modifier.attributes);
@@ -498,8 +498,8 @@ public final class Enter extends LCAstVisitor {
         Scope currentScope = this.scope;
 
         ArrayList<Type> paramTypes = new ArrayList<>();
-        if (lcLambda.callSignature.parameterList != null) {
-            for (LCVariableDeclaration p : lcLambda.callSignature.parameterList.parameters)
+        if (lcLambda.parameterList != null) {
+            for (LCVariableDeclaration p : lcLambda.parameterList.parameters)
                 paramTypes.add(p.theType);
         }
         MethodSymbol symbol = new MethodSymbol(new ArrayList<>(paramTypes), lcLambda.returnType, new MethodPointerType(paramTypes.toArray(new Type[0]), lcLambda.returnType), MethodKind.Method, lcLambda.modifier.flags, lcLambda.modifier.attributes);

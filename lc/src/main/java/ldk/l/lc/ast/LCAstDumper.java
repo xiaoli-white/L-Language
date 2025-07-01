@@ -81,7 +81,7 @@ public final class LCAstDumper extends LCAstVisitor {
         this.visitModifier(lcMethodDeclaration.modifier, prefix + "   |   |");
         System.out.println(prefix + "   |-name: '" + lcMethodDeclaration.name + "'");
         System.out.println(prefix + "   |-callSignature:");
-        this.visitCallSignature(lcMethodDeclaration.callSignature, prefix + "   |   |");
+        this.visitParameterList(lcMethodDeclaration.parameterList, prefix + "   |   |");
         if (lcMethodDeclaration.returnTypeExpression != null) {
             System.out.println(prefix + "   |-returnTypeExpression:");
             this.visit(lcMethodDeclaration.returnTypeExpression, prefix + "   |   |");
@@ -99,16 +99,6 @@ public final class LCAstDumper extends LCAstVisitor {
         if (lcMethodDeclaration.body != null) {
             System.out.println(prefix + "   |-body:");
             this.visitBlock(lcMethodDeclaration.body, prefix + "       |");
-        }
-        return null;
-    }
-
-    @Override
-    public Object visitCallSignature(LCMethodDeclaration.LCCallSignature lcCallSignature, Object prefix) {
-        System.out.println(prefix + "-LCCallSignature" + (lcCallSignature.isErrorNode ? " **E**" : ""));
-        if (lcCallSignature.parameterList != null) {
-            System.out.println(prefix + "   |-parameterList:");
-            this.visitParameterList(lcCallSignature.parameterList, prefix + "       |");
         }
         return null;
     }
@@ -1191,7 +1181,7 @@ public final class LCAstDumper extends LCAstVisitor {
         System.out.println(prefix + "   |-modifier:");
         this.visitModifier(lcLambda.modifier, prefix + "   |   |");
         System.out.println(prefix + "   |-callSignature:");
-        this.visitCallSignature(lcLambda.callSignature, prefix + "   |   |");
+        this.visitParameterList(lcLambda.parameterList, prefix + "   |   |");
         if (lcLambda.returnTypeExpression != null) {
             System.out.println(prefix + "   |-returnTypeExpression:");
             this.visit(lcLambda.returnTypeExpression, prefix + "   |   |");

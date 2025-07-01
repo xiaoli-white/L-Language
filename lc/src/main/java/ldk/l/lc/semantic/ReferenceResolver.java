@@ -948,10 +948,10 @@ public final class ReferenceResolver extends LCAstVisitor {
     }
 
     private static boolean checkTypesOfMethod(MethodSymbol methodSymbol, Type[] parameterTypes) {
-        if (methodSymbol.declaration.callSignature.parameterList.parameters.length != parameterTypes.length)
+        if (methodSymbol.declaration.parameterList.parameters.length != parameterTypes.length)
             return false;
         for (int i = 0; i < parameterTypes.length; i++) {
-            Type parameterTypeOfMethod = methodSymbol.declaration.callSignature.parameterList.parameters[i].theType;
+            Type parameterTypeOfMethod = methodSymbol.declaration.parameterList.parameters[i].theType;
             if (parameterTypeOfMethod == null || !TypeUtil.LE(parameterTypes[i], parameterTypeOfMethod))
                 return false;
         }

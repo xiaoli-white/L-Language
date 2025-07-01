@@ -7,7 +7,6 @@ import ldk.l.lc.ast.base.LCTypeParameter;
 import ldk.l.lc.ast.expression.type.LCTypeReferenceExpression;
 import ldk.l.lc.semantic.types.SystemTypes;
 import ldk.l.lc.semantic.types.Type;
-import ldk.l.lc.token.Tokens;
 import ldk.l.lc.util.Position;
 import ldk.l.lc.util.scope.Scope;
 import ldk.l.lc.util.symbol.MethodKind;
@@ -56,16 +55,16 @@ public class LCMethodDeclaration extends LCDeclaration {
     public MethodKind methodKind;
     public String name;
     public LCTypeParameter[] typeParameters;
-    public LCCallSignature callSignature;
+    public LCParameterList parameterList;
     public LCTypeExpression returnTypeExpression;
-    public long initialFlags;
+    public boolean hasThisReadonly;
     public LCTypeReferenceExpression[] threwExceptions;
     public LCTypeReferenceExpression extended;
     public LCBlock body;
     public MethodSymbol symbol = null;
     public Type returnType = SystemTypes.AUTO;
 
-    public LCMethodDeclaration(MethodKind methodKind, String name, LCTypeParameter[] typeParameters, LCCallSignature callSignature, LCTypeExpression returnTypeExpression, long initialFlags, LCTypeReferenceExpression[] threwExceptions, LCTypeReferenceExpression extended) {
+    public LCMethodDeclaration(MethodKind methodKind, String name, LCTypeParameter[] typeParameters, LCParameterList parameterList, LCTypeExpression returnTypeExpression, boolean hasThisReadonly, LCTypeReferenceExpression[] threwExceptions, LCTypeReferenceExpression extended) {
         super(Position.origin, true);
         this.methodKind = methodKind;
         this.name = name;
@@ -73,13 +72,13 @@ public class LCMethodDeclaration extends LCDeclaration {
         this.typeParameters = typeParameters;
         for (LCTypeParameter typeParameter : this.typeParameters) typeParameter.parentNode = this;
 
-        this.callSignature = callSignature;
-        this.callSignature.parentNode = this;
+        this.parameterList = parameterList;
+        this.parameterList.parentNode = this;
 
         this.returnTypeExpression = returnTypeExpression;
         if (this.returnTypeExpression != null) this.returnTypeExpression.parentNode = this;
 
-        this.initialFlags = initialFlags;
+        this.hasThisReadonly = hasThisReadonly;
 
         this.threwExceptions = threwExceptions;
         for (LCTypeExpression LCTypeExpression : this.threwExceptions) LCTypeExpression.parentNode = this;
@@ -98,7 +97,7 @@ public class LCMethodDeclaration extends LCDeclaration {
 
     public final void setModifier(LCModifier modifier) {
         this.modifier = modifier;
-        this.modifier.flags |= this.initialFlags;
+        if (hasThisReadonly) this.modifier.flags |= LCFlags.THIS_READONLY;
         this.modifier.parentNode = this;
     }
 
@@ -115,9 +114,8 @@ public class LCMethodDeclaration extends LCDeclaration {
                 ", methodKind=" + methodKind +
                 ", name='" + name + '\'' +
                 ", typeParameters=" + Arrays.toString(typeParameters) +
-                ", callSignature=" + callSignature +
+                ", callSignature=" + parameterList +
                 ", returnTypeExpression=" + returnTypeExpression +
-                ", initialFlags=" + initialFlags +
                 ", threwExceptions=" + Arrays.toString(threwExceptions) +
                 ", extended=" + extended +
                 ", body=" + body +
@@ -131,41 +129,8 @@ public class LCMethodDeclaration extends LCDeclaration {
 
     @Override
     public LCMethodDeclaration clone() throws CloneNotSupportedException {
-        LCMethodDeclaration lcMethodDeclaration = new LCMethodDeclaration(this.methodKind, this.name, Arrays.copyOf(this.typeParameters, this.typeParameters.length), this.callSignature.clone(), this.returnTypeExpression != null ? this.returnTypeExpression.clone() : null, this.initialFlags, Arrays.copyOf(this.threwExceptions, this.threwExceptions.length), this.extended.clone());
+        LCMethodDeclaration lcMethodDeclaration = new LCMethodDeclaration(this.methodKind, this.name, Arrays.copyOf(this.typeParameters, this.typeParameters.length), this.parameterList.clone(), this.returnTypeExpression != null ? this.returnTypeExpression.clone() : null, LCFlags.hasThisReadonly(this.modifier.flags), Arrays.copyOf(this.threwExceptions, this.threwExceptions.length), this.extended.clone());
         lcMethodDeclaration.init(this.body.clone(), this.position, this.isErrorNode);
         return lcMethodDeclaration;
-    }
-
-    public static class LCCallSignature extends LCAstNode {
-        public LCParameterList parameterList;
-
-        public LCCallSignature(LCParameterList parameterList, Position pos) {
-            this(parameterList, pos, false);
-        }
-
-        public LCCallSignature(LCParameterList parameterList, Position pos, boolean isErrorNode) {
-            super(pos, isErrorNode);
-            this.parameterList = parameterList;
-            if (this.parameterList != null) this.parameterList.parentNode = this;
-        }
-
-        @Override
-        public Object accept(LCAstVisitor visitor, Object additional) {
-            return visitor.visitCallSignature(this, additional);
-        }
-
-        @Override
-        public String toString() {
-            return "LCCallSignature{" +
-                    "parameterList=" + parameterList +
-                    ", position=" + position +
-                    ", isErrorNode=" + isErrorNode +
-                    '}';
-        }
-
-        @Override
-        public LCCallSignature clone() throws CloneNotSupportedException {
-            return new LCCallSignature(parameterList.clone(), position.clone(), isErrorNode);
-        }
     }
 }

@@ -22,9 +22,7 @@ public class LCFlags {
     public static final long INTERNAl = 1 << 18;
     public static final long EXTERN = 1 << 19;
     public static final long LATEINIT = 1 << 20;
-    public static final long THIS_CONST = 1 << 21;
     public static final long THIS_READONLY = 1 << 22;
-    public static final long THIS_FINAL = 1 << 23;
     public static final long INTERFACE = 1 << 24;
     public static final long ANNOTATION = 1 << 25;
     public static final long ENUM = 1 << 26;
@@ -39,8 +37,7 @@ public class LCFlags {
         stringBuilder.append(LCFlags.hasVolatile(flags) ? ", VOLATILE" : "").append(LCFlags.hasVararg(flags) ? ", VARARG" : "");
         stringBuilder.append(LCFlags.hasSynchronized(flags) ? ", SYNCHRONIZED" : "").append(LCFlags.hasSynthetic(flags) ? ", SYNTHETIC" : "").append(LCFlags.hasBridge(flags) ? ", BRIDGE" : "");
         stringBuilder.append(LCFlags.hasOperator(flags) ? ", OPERATOR" : "").append(LCFlags.hasSealed(flags) ? ", SEALED" : "").append(LCFlags.hasNonSealed(flags) ? ", NON_SEALED" : "").append(LCFlags.hasInternal(flags) ? ", INTERNAL" : "");
-        stringBuilder.append(LCFlags.hasExtern(flags) ? ", EXTERN" : "").append(LCFlags.hasLateinit(flags) ? ", LATEINIT" : "");
-        stringBuilder.append(LCFlags.hasThisConst(flags) ? ", THIS_CONST" : "").append(LCFlags.hasThisFinal(flags) ? ", THIS_FINAL" : "").append(LCFlags.hasThisReadonly(flags) ? ", THIS_READONLY" : "");
+        stringBuilder.append(LCFlags.hasExtern(flags) ? ", EXTERN" : "").append(LCFlags.hasLateinit(flags) ? ", LATEINIT" : "").append(LCFlags.hasThisReadonly(flags) ? ", THIS_READONLY" : "");
         stringBuilder.append(LCFlags.hasInterface(flags) ? ", INTERFACE" : "").append(LCFlags.hasAnnotation(flags) ? ", ANNOTATION" : "").append(LCFlags.hasEnum(flags) ? ", ENUM" : "").append(LCFlags.hasRecord(flags) ? ", RECORD" : "");
 
         return stringBuilder.isEmpty() ? "" : stringBuilder.substring(2);
@@ -134,16 +131,8 @@ public class LCFlags {
         return (flags & LCFlags.LATEINIT) != 0;
     }
 
-    public static boolean hasThisConst(long flags) {
-        return (flags & LCFlags.THIS_CONST) != 0;
-    }
-
     public static boolean hasThisReadonly(long flags) {
         return (flags & LCFlags.THIS_READONLY) != 0;
-    }
-
-    public static boolean hasThisFinal(long flags) {
-        return (flags & LCFlags.THIS_FINAL) != 0;
     }
 
     public static boolean hasInterface(long flags) {

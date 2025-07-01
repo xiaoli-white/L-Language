@@ -119,7 +119,7 @@ public final class TypeResolver extends LCAstVisitor {
             this.visitTypeReferenceExpression(threwException, additional);
 
         ArrayList<Type> paramTypes = new ArrayList<>();
-        for (LCVariableDeclaration lcVariableDeclaration : lcLambda.callSignature.parameterList.parameters) {
+        for (LCVariableDeclaration lcVariableDeclaration : lcLambda.parameterList.parameters) {
             paramTypes.add((Type) this.visit(lcVariableDeclaration.typeExpression, additional));
         }
         lcLambda.theType = new MethodPointerType(paramTypes.toArray(new Type[0]), lcLambda.returnType);

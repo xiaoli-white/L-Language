@@ -710,30 +710,14 @@ public final class ByteCodeGenerator extends Generator {
             switch (irTypeCast.kind) {
                 case IRTypeCast.Kind.ZeroExtend -> addInstruction(new BCInstruction(ByteCode.MOV, source, target));
                 case IRTypeCast.Kind.SignExtend -> {
-                    byte code1;
-                    if (irTypeCast.originalType.equals(IRType.getByteType())) code1 = ByteCode.BYTE_TO_LONG;
-                    else if (irTypeCast.originalType.equals(IRType.getShortType())) code1 = ByteCode.SHORT_TO_LONG;
-                    else if (irTypeCast.originalType.equals(IRType.getIntType())) code1 = ByteCode.INT_TO_LONG;
-                    else if (irTypeCast.originalType.equals(IRType.getLongType())) code1 = ByteCode.MOV;
-                    else throw new RuntimeException("Unknown type size");
-                    var tempRegister = allocateVirtualRegister();
-                    addInstruction(new BCInstruction(code1, source, tempRegister));
-                    byte code2 = 0;
-                    if (irTypeCast.targetType.equals(IRType.getByteType())) code2 = ByteCode.LONG_TO_BYTE;
-                    else if (irTypeCast.targetType.equals(IRType.getShortType())) code2 = ByteCode.LONG_TO_SHORT;
-                    else if (irTypeCast.targetType.equals(IRType.getIntType())) code2 = ByteCode.LONG_TO_INT;
-                    else if (irTypeCast.targetType.equals(IRType.getLongType())) code2 = ByteCode.MOV;
-                    addInstruction(new BCInstruction(code2, new BCRegister(tempRegister.virtualRegister), target));
+                    byte code1 = getBCType(irTypeCast.originalType);
+                    byte code2 = getBCType(irTypeCast.targetType);
+                    addInstruction(new BCInstruction(ByteCode.TYPE_CAST, new BCImmediate1((byte) (((code1 << 4) | code2) & 0xff)), source, target));
                 }
                 case IRTypeCast.Kind.IntToFloat -> {
-                    byte code1;
-                    if (irTypeCast.originalType.equals(IRType.getByteType())) code1 = ByteCode.BYTE_TO_LONG;
-                    else if (irTypeCast.originalType.equals(IRType.getShortType())) code1 = ByteCode.SHORT_TO_LONG;
-                    else if (irTypeCast.originalType.equals(IRType.getIntType())) code1 = ByteCode.INT_TO_LONG;
-                    else if (irTypeCast.originalType.equals(IRType.getLongType())) code1 = ByteCode.MOV;
-                    else throw new RuntimeException("Unknown type");
+                    byte code1 = getBCType(irTypeCast.originalType);
                     var tempRegister = allocateVirtualRegister();
-                    addInstruction(new BCInstruction(code1, source, tempRegister));
+                    addInstruction(new BCInstruction(ByteCode.TYPE_CAST, new BCImmediate1((byte) (((code1 << 4) | ByteCode.LONG_TYPE) & 0xff)), source, tempRegister));
                     var tempRegister2 = allocateVirtualRegister();
                     addInstruction(new BCInstruction(ByteCode.LONG_TO_DOUBLE, new BCRegister(tempRegister.virtualRegister), tempRegister2));
                     byte code2;
@@ -751,13 +735,8 @@ public final class ByteCodeGenerator extends Generator {
                     addInstruction(new BCInstruction(code1, source, tempRegister));
                     var tempRegister2 = allocateVirtualRegister();
                     addInstruction(new BCInstruction(ByteCode.DOUBLE_TO_LONG, new BCRegister(tempRegister.virtualRegister), tempRegister2));
-                    byte code2;
-                    if (irTypeCast.targetType.equals(IRType.getByteType())) code2 = ByteCode.LONG_TO_BYTE;
-                    else if (irTypeCast.targetType.equals(IRType.getShortType())) code2 = ByteCode.LONG_TO_SHORT;
-                    else if (irTypeCast.targetType.equals(IRType.getIntType())) code2 = ByteCode.LONG_TO_INT;
-                    else if (irTypeCast.targetType.equals(IRType.getLongType())) code2 = ByteCode.MOV;
-                    else throw new RuntimeException("Unknown type");
-                    addInstruction(new BCInstruction(code2, new BCRegister(tempRegister2.virtualRegister), target));
+                    byte code2 = getBCType(irTypeCast.targetType);
+                    addInstruction(new BCInstruction(ByteCode.TYPE_CAST, new BCImmediate1((byte) (((ByteCode.LONG_TYPE << 4) | code2) & 0xff)), new BCRegister(tempRegister2.virtualRegister), target));
                 }
                 case IRTypeCast.Kind.FloatExtend -> {
                     byte code;
@@ -1094,7 +1073,12 @@ public final class ByteCodeGenerator extends Generator {
             return null;
         }
 
-        private record FieldDeclaration(String name, long offset) {
+        private byte getBCType(IRType type) {
+            if (type.equals(IRType.getByteType())) return ByteCode.BYTE_TYPE;
+            else if (type.equals(IRType.getShortType())) return ByteCode.SHORT_TYPE;
+            else if (type.equals(IRType.getIntType())) return ByteCode.INT_TYPE;
+            else if (type.equals(IRType.getLongType())) return ByteCode.LONG_TYPE;
+            else throw new RuntimeException("Unsupported type: " + type);
         }
     }
 

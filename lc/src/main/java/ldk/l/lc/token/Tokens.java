@@ -84,8 +84,6 @@ public class Tokens {
         Permits("permits"),
         As("as"),
         __Dynamic__("__dynamic__"),
-        __System_dynamic_library__("__system_dynamic_library__"),
-        __System_static_library__("__system_static_library__"),
         Is("is"),
         Classof("classof"),
         Method_address_of("method_address_of"),

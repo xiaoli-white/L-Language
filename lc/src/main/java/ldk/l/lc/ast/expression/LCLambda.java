@@ -4,7 +4,6 @@ import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.ast.base.*;
 import ldk.l.lc.ast.expression.type.LCTypeExpression;
 import ldk.l.lc.ast.expression.type.LCTypeReferenceExpression;
-import ldk.l.lc.ast.statement.declaration.LCMethodDeclaration;
 import ldk.l.lc.ast.base.LCTypeParameter;
 import ldk.l.lc.semantic.types.SystemTypes;
 import ldk.l.lc.semantic.types.Type;
@@ -12,30 +11,28 @@ import ldk.l.lc.util.Position;
 import ldk.l.lc.util.symbol.MethodSymbol;
 
 import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.Objects;
 
 public class LCLambda extends LCExpressionWithScope {
     public MethodSymbol symbol = null;
     public LCModifier modifier;
     public LCTypeParameter[] typeParameters;
-    public LCMethodDeclaration.LCCallSignature callSignature;
+    public LCParameterList parameterList;
     public LCTypeExpression returnTypeExpression;
     public LCTypeReferenceExpression[] threwExceptions;
     public LCStatement body;
     public Type returnType = SystemTypes.AUTO;
 
-    public LCLambda(LCTypeParameter[] typeParameters, LCMethodDeclaration.LCCallSignature callSignature, LCTypeExpression returnTypeExpression, long initialFlags, LCTypeReferenceExpression[] threwExceptions, LCStatement body, Position pos, boolean isErrorNode) {
+    public LCLambda(LCTypeParameter[] typeParameters, LCParameterList parameterList, LCTypeExpression returnTypeExpression, boolean hasThisReadonly, LCTypeReferenceExpression[] threwExceptions, LCStatement body, Position pos, boolean isErrorNode) {
         super(pos, isErrorNode);
         this.typeParameters = typeParameters;
         for (LCTypeParameter typeParameter : this.typeParameters) typeParameter.parentNode = this;
 
-        this.callSignature = callSignature;
-        this.callSignature.parentNode = this;
+        this.parameterList = parameterList;
+        this.parameterList.parentNode = this;
         this.returnTypeExpression = returnTypeExpression;
         if (this.returnTypeExpression != null) this.returnTypeExpression.parentNode = this;
 
-        this.modifier = new LCModifier(initialFlags, Position.origin);
+        this.modifier = new LCModifier(hasThisReadonly ? LCFlags.THIS_READONLY : 0, Position.origin);
 
         this.threwExceptions = threwExceptions;
         for (LCTypeExpression LCTypeExpression : this.threwExceptions) LCTypeExpression.parentNode = this;
@@ -55,7 +52,7 @@ public class LCLambda extends LCExpressionWithScope {
                 "symbol=" + symbol +
                 ", modifier=" + modifier +
                 ", typeParameters=" + Arrays.toString(typeParameters) +
-                ", callSignature=" + callSignature +
+                ", callSignature=" + parameterList +
                 ", returnTypeExpression=" + returnTypeExpression +
                 ", threwExceptions=" + Arrays.toString(threwExceptions) +
                 ", body=" + body +
@@ -72,14 +69,6 @@ public class LCLambda extends LCExpressionWithScope {
 
     @Override
     public LCLambda clone() throws CloneNotSupportedException {
-        byte constOrFinal;
-        if (LCFlags.hasThisConst(modifier.flags)) {
-            constOrFinal = 1;
-        } else if (LCFlags.hasThisFinal(modifier.flags)) {
-            constOrFinal = 2;
-        } else {
-            constOrFinal = 0;
-        }
-        return new LCLambda(Arrays.copyOf(typeParameters, typeParameters.length), callSignature.clone(), returnTypeExpression != null ? returnTypeExpression.clone() : null, constOrFinal, Arrays.copyOf(threwExceptions, threwExceptions.length), body.clone(), position.clone(), isErrorNode);
+        return new LCLambda(Arrays.copyOf(typeParameters, typeParameters.length), parameterList.clone(), returnTypeExpression != null ? returnTypeExpression.clone() : null, LCFlags.hasThisReadonly(modifier.flags), Arrays.copyOf(threwExceptions, threwExceptions.length), body.clone(), position.clone(), isErrorNode);
     }
 }

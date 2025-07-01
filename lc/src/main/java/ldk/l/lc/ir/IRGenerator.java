@@ -222,7 +222,7 @@ public final class IRGenerator extends LCAstVisitor {
 
         this.currentCFG = createControlFlowGraph();
 
-        int argumentsCount = lcMethodDeclaration.callSignature.parameterList.parameters.length;
+        int argumentsCount = lcMethodDeclaration.parameterList.parameters.length;
 
         List<IRField> fields = new ArrayList<>();
         boolean hasStatic = LCFlags.hasStatic(lcMethodDeclaration.modifier.flags);
@@ -874,7 +874,6 @@ public final class IRGenerator extends LCAstVisitor {
                     case null, default -> throw new RuntimeException("Unsupported operator: " + lcBinary._operator);
                 }
                 addInstruction(new IRSet(operandType, operand1, result));
-                retain(result, lcBinary.theType);
                 operandStack.push(result);
             }
         }

@@ -7,6 +7,10 @@ public class ByteCode {
     public static final byte PC_REGISTER = 39;
     public static final byte SP_REGISTER = 38;
     public static final byte BP_REGISTER = 37;
+    public static final byte BYTE_TYPE = 0;
+    public static final byte SHORT_TYPE = 1;
+    public static final byte INT_TYPE = 2;
+    public static final byte LONG_TYPE = 3;
 
     public static final byte NOP = 0x00;
     public static final byte PUSH_1 = 0x01;
@@ -113,24 +117,19 @@ public class ByteCode {
     public static final byte RETURN = 0x66;
     public static final byte GET_RESULT = 0x67;
     public static final byte SET_RESULT = 0x68;
-    public static final byte LONG_TO_BYTE = 0x69;
-    public static final byte LONG_TO_SHORT = 0x6a;
-    public static final byte LONG_TO_INT = 0x6b;
-    public static final byte BYTE_TO_LONG = 0x6c;
-    public static final byte SHORT_TO_LONG = 0x6d;
-    public static final byte INT_TO_LONG = 0x6e;
-    public static final byte LONG_TO_DOUBLE = 0x6f;
-    public static final byte DOUBLE_TO_LONG = 0x70;
-    public static final byte DOUBLE_TO_FLOAT = 0x71;
-    public static final byte FLOAT_TO_DOUBLE = 0x72;
-    public static final byte OPEN = 0x73;
-    public static final byte CLOSE = 0x74;
-    public static final byte READ = 0x75;
-    public static final byte WRITE = 0x76;
-    public static final byte CREATE_FRAME = 0x77;
-    public static final byte DESTROY_FRAME = 0x78;
-    public static final byte EXIT = 0x79;
-    public static final byte EXIT_IMMEDIATE = 0x7a;
+    public static final byte TYPE_CAST = 0x69;
+    public static final byte LONG_TO_DOUBLE = 0x6a;
+    public static final byte DOUBLE_TO_LONG = 0x6b;
+    public static final byte DOUBLE_TO_FLOAT = 0x6c;
+    public static final byte FLOAT_TO_DOUBLE = 0x6d;
+    public static final byte OPEN = 0x6e;
+    public static final byte CLOSE = 0x6f;
+    public static final byte READ = 0x70;
+    public static final byte WRITE = 0x71;
+    public static final byte CREATE_FRAME = 0x72;
+    public static final byte DESTROY_FRAME = 0x73;
+    public static final byte EXIT = 0x74;
+    public static final byte EXIT_IMMEDIATE = 0x75;
 
     public static String getInstructionName(byte code) {
         return switch (code) {
@@ -239,12 +238,7 @@ public class ByteCode {
             case RETURN -> "return";
             case GET_RESULT -> "get_result";
             case SET_RESULT -> "set_result";
-            case LONG_TO_BYTE -> "long_to_byte";
-            case LONG_TO_SHORT -> "long_to_short";
-            case LONG_TO_INT -> "long_to_int";
-            case BYTE_TO_LONG -> "byte_to_long";
-            case SHORT_TO_LONG -> "short_to_long";
-            case INT_TO_LONG -> "int_to_long";
+            case TYPE_CAST -> "type_cast";
             case LONG_TO_DOUBLE -> "long_to_double";
             case DOUBLE_TO_LONG -> "double_to_long";
             case DOUBLE_TO_FLOAT -> "double_to_float";
@@ -368,12 +362,7 @@ public class ByteCode {
             case "return" -> RETURN;
             case "get_result" -> GET_RESULT;
             case "set_result" -> SET_RESULT;
-            case "long_to_byte" -> LONG_TO_BYTE;
-            case "long_to_short" -> LONG_TO_SHORT;
-            case "long_to_int" -> LONG_TO_INT;
-            case "byte_to_long" -> BYTE_TO_LONG;
-            case "short_to_long" -> SHORT_TO_LONG;
-            case "int_to_long" -> INT_TO_LONG;
+            case "type_cast" -> TYPE_CAST;
             case "long_to_double" -> LONG_TO_DOUBLE;
             case "double_to_long" -> DOUBLE_TO_LONG;
             case "double_to_float" -> DOUBLE_TO_FLOAT;

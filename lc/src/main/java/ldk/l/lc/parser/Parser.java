@@ -212,14 +212,6 @@ public final class Parser {
                 this.tokenIndex++;
                 kind = LCImport.LCImportKind.Native;
             }
-            case Tokens.Keyword.__System_dynamic_library__ -> {
-                this.tokenIndex++;
-                kind = LCImport.LCImportKind.SystemDynamicLibrary;
-            }
-            case Tokens.Keyword.__System_static_library__ -> {
-                this.tokenIndex++;
-                kind = LCImport.LCImportKind.SystemStaticLibrary;
-            }
             case null, default -> kind = LCImport.LCImportKind.Normal;
         }
 
@@ -564,32 +556,27 @@ public final class Parser {
                             typeParameters = new LCTypeParameter[0];
                         }
 
-                        LCMethodDeclaration.LCCallSignature callSignature;
+                        LCParameterList parameterList;
                         Token t1 = this.peek();
                         if (t1.code() == Tokens.Separator.OpenParen) {
-                            callSignature = this.parseCallSignature();
+                            parameterList = this.parseParameterList(false);
                         } else {
                             t_isErrorNode = true;
                             this.errorStream.printError(true, this.getPos(), 12);
                             this.skip();
                             Position endPos = this.getPos();
                             Position thePos = new Position(t_beginPos.beginPos(), endPos.endPos(), t_beginPos.beginLine(), endPos.endLine(), t_beginPos.beginCol(), endPos.endCol());
-                            callSignature = new LCMethodDeclaration.LCCallSignature(null, thePos, true);
+                            parameterList = new LCParameterList(new LCVariableDeclaration[0], thePos, true);
                         }
 
-                        long initialFlags = 0;
-                        if (this.peek().code() == Tokens.Keyword.Const) {
-                            this.tokenIndex++;
-                            initialFlags |= LCFlags.THIS_CONST;
-                        }
+                        boolean hasThisReadonly;
                         if (this.peek().code() == Tokens.Keyword.Readonly) {
                             this.tokenIndex++;
-                            initialFlags |= LCFlags.THIS_READONLY;
+                            hasThisReadonly = true;
+                        }else {
+                            hasThisReadonly = false;
                         }
-                        if (this.peek().code() == Tokens.Keyword.Final) {
-                            this.tokenIndex++;
-                            initialFlags |= LCFlags.THIS_FINAL;
-                        }
+
 
                         LCTypeExpression returnTypeExpression;
                         if (this.peek().code() == Tokens.Separator.Colon) {
@@ -634,7 +621,7 @@ public final class Parser {
                             extendsObject = null;
                         }
 
-                        lcMethodDeclaration = new LCMethodDeclaration(MethodKind.Method, tName.text(), typeParameters, callSignature, returnTypeExpression, initialFlags, throwsExceptions.toArray(new LCTypeReferenceExpression[0]), extendsObject);
+                        lcMethodDeclaration = new LCMethodDeclaration(MethodKind.Method, tName.text(), typeParameters, parameterList, returnTypeExpression, hasThisReadonly, throwsExceptions.toArray(new LCTypeReferenceExpression[0]), extendsObject);
 
                         Position endPos = this.getPos();
                         Position pos = new Position(t_beginPos.beginPos(), endPos.endPos(), t_beginPos.beginLine(), endPos.endLine(), t_beginPos.beginCol(), endPos.endCol());
@@ -911,8 +898,8 @@ public final class Parser {
         Token t1 = this.peek();
         if (t1.code() == Tokens.Separator.OpenParen) {
             this.tokenIndex++;
-            LCMethodDeclaration.LCCallSignature lcCallSignature = this.parseCallSignature();
-            fields = lcCallSignature.parameterList.parameters;
+            LCParameterList parameterList = this.parseParameterList(false);
+            fields = parameterList.parameters;
         } else {
             fields = new LCVariableDeclaration[0];
             isErrorNode = true;
@@ -1331,36 +1318,30 @@ public final class Parser {
             typeParameters = new LCTypeParameter[0];
         }
 
-        LCMethodDeclaration.LCCallSignature callSignature;
+        LCParameterList parameterList;
         Token t1 = this.peek();
         if (t1.code() == Tokens.Separator.OpenParen) {
-            callSignature = this.parseCallSignature();
+            parameterList = this.parseParameterList(false);
         } else {
             isErrorNode = true;
             this.errorStream.printError(true, this.getPos(), 12);
             this.skip();
             Position endPos = this.getPos();
             Position thePos = new Position(beginPos.beginPos(), endPos.endPos(), beginPos.beginLine(), endPos.endLine(), beginPos.beginCol(), endPos.endCol());
-            callSignature = new LCMethodDeclaration.LCCallSignature(null, thePos, true);
+            parameterList = new LCParameterList(new LCVariableDeclaration[0], thePos, true);
         }
 
-        if (methodKind == MethodKind.Destructor && callSignature.parameterList != null && callSignature.parameterList.parameters != null && callSignature.parameterList.parameters.length != 0) {
+        if (methodKind == MethodKind.Destructor && parameterList.parameters != null && parameterList.parameters.length != 0) {
             isErrorNode = true;
             // TODO dump error
         }
 
-        long initialFlags = 0;
-        if (this.peek().code() == Tokens.Keyword.Const) {
-            this.tokenIndex++;
-            initialFlags |= LCFlags.THIS_CONST;
-        }
+        boolean hasThisReadonly;
         if (this.peek().code() == Tokens.Keyword.Readonly) {
             this.tokenIndex++;
-            initialFlags |= LCFlags.THIS_READONLY;
-        }
-        if (this.peek().code() == Tokens.Keyword.Final) {
-            this.tokenIndex++;
-            initialFlags |= LCFlags.THIS_FINAL;
+            hasThisReadonly = true;
+        }else {
+            hasThisReadonly = false;
         }
 
         LCTypeExpression returnTypeExpression;
@@ -1413,7 +1394,7 @@ public final class Parser {
             extendsObject = null;
         }
 
-        LCMethodDeclaration lcMethodDeclaration = new LCMethodDeclaration(methodKind, name, typeParameters, callSignature, returnTypeExpression, initialFlags, throwsExceptions.toArray(new LCTypeReferenceExpression[0]), extendsObject);
+        LCMethodDeclaration lcMethodDeclaration = new LCMethodDeclaration(methodKind, name, typeParameters, parameterList, returnTypeExpression, hasThisReadonly, throwsExceptions.toArray(new LCTypeReferenceExpression[0]), extendsObject);
 
         LCBlock methodBody;
         if (LCFlags.hasAbstract(flags) || LCFlags.hasExtern(flags)) {
@@ -2159,28 +2140,6 @@ public final class Parser {
         Position endPos = getPos();
         Position pos = new Position(beginPos.beginPos(), endPos.endPos(), beginPos.beginLine(), endPos.endLine(), beginPos.beginCol(), endPos.endCol());
         return new LCLoop(body, pos, false);
-    }
-
-    private LCMethodDeclaration.LCCallSignature parseCallSignature() {
-        Position beginPos = getPos();
-        this.tokenIndex++;
-
-        LCParameterList parameterList = this.parseParameterList(false);
-
-        Token t = peek();
-        if (t.code() == Tokens.Separator.CloseParen) {
-            this.tokenIndex++;
-
-            Position endPos = getPos();
-            Position pos = new Position(beginPos.beginPos(), endPos.endPos(), beginPos.beginLine(), endPos.endLine(), beginPos.beginCol(), endPos.endCol());
-            return new LCMethodDeclaration.LCCallSignature(parameterList, pos);
-        } else {
-            this.errorStream.printError(true, getPos(), 12);
-            this.skip();
-            Position endPos = getPos();
-            Position pos = new Position(beginPos.beginPos(), endPos.endPos(), beginPos.beginLine(), endPos.endLine(), beginPos.beginCol(), endPos.endCol());
-            return new LCMethodDeclaration.LCCallSignature(parameterList, pos, true);
-        }
     }
 
     private LCParameterList parseParameterList(boolean isMethodTypeExpression) {
@@ -3058,30 +3017,24 @@ public final class Parser {
         } else {
             typeParameters = new LCTypeParameter[0];
         }
-        LCMethodDeclaration.LCCallSignature callSignature;
+        LCParameterList parameterList;
         Token t1 = this.peek();
         if (t1.code() == Tokens.Separator.OpenParen) {
-            callSignature = this.parseCallSignature();
+            parameterList = this.parseParameterList(false);
         } else {
             isErrorNode = true;
             this.errorStream.printError(true, getPos(), 12);
             this.skip();
             Position endPosition = getPos();
             Position position = new Position(beginPosition.beginPos(), endPosition.endPos(), beginPosition.beginLine(), endPosition.endLine(), beginPosition.beginCol(), endPosition.endCol());
-            callSignature = new LCMethodDeclaration.LCCallSignature(null, position, true);
+            parameterList = new LCParameterList(new LCVariableDeclaration[0], position, true);
         }
-        long initialFlags = 0;
-        if (this.peek().code() == Tokens.Keyword.Const) {
-            this.tokenIndex++;
-            initialFlags |= LCFlags.THIS_CONST;
-        }
+        boolean hasThisReadonly;
         if (this.peek().code() == Tokens.Keyword.Readonly) {
             this.tokenIndex++;
-            initialFlags |= LCFlags.THIS_READONLY;
-        }
-        if (this.peek().code() == Tokens.Keyword.Final) {
-            this.tokenIndex++;
-            initialFlags |= LCFlags.THIS_FINAL;
+            hasThisReadonly = true;
+        }else {
+            hasThisReadonly = false;
         }
         LCTypeExpression returnTypeExpression;
         if (this.peek().code() == Tokens.Separator.Colon) {
@@ -3124,7 +3077,7 @@ public final class Parser {
 
         Position endPosition = this.getPos();
         Position position = new Position(beginPosition.beginPos(), endPosition.endPos(), beginPosition.beginLine(), endPosition.endLine(), beginPosition.beginCol(), endPosition.endCol());
-        return new LCLambda(typeParameters, callSignature, returnTypeExpression, initialFlags, throwsExceptions.toArray(new LCTypeReferenceExpression[0]), body, position, isErrorNode);
+        return new LCLambda(typeParameters, parameterList, returnTypeExpression, hasThisReadonly, throwsExceptions.toArray(new LCTypeReferenceExpression[0]), body, position, isErrorNode);
     }
 
     private LCSwitchStatement parseSwitchStatement() {

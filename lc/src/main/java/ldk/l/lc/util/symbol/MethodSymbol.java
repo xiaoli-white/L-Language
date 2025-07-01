@@ -80,10 +80,10 @@ public class MethodSymbol extends Symbol {
     }
 
     public int getNumParams() {
-        return this.declaration.callSignature.parameterList.parameters.length;
+        return this.declaration.parameterList.parameters.length;
     }
 
     public LCVariableDeclaration[] getParams() {
-        return this.declaration.callSignature.parameterList.parameters.clone();
+        return this.declaration.parameterList.parameters.clone();
     }
 }

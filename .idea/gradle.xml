@@ -13,6 +13,7 @@
             <option value="$PROJECT_DIR$/lg" />
             <option value="$PROJECT_DIR$/litec" />
             <option value="$PROJECT_DIR$/llvm-ir-generator" />
+            <option value="$PROJECT_DIR$/lpm" />
             <option value="$PROJECT_DIR$/lutil" />
             <option value="$PROJECT_DIR$/lvm" />
             <option value="$PROJECT_DIR$/lvm-bytecode-generator" />

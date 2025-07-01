@@ -58,7 +58,7 @@ public final class IRControlFlowGraph {
 
         public BasicBlock(String name) {
             this.name = name;
-            this.instructions = new ArrayList<>();
+            this.instructions = new LinkedList<>();
         }
 
         @Override

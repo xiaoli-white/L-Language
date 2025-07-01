@@ -772,35 +772,21 @@ public final class ExecutionUnit implements Runnable {
                     byte value = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]++);
                     result = registers[value];
                 }
-                case ByteCode.LONG_TO_BYTE -> {
+                case ByteCode.TYPE_CAST -> {
+                    byte types = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]++);
                     byte source = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]++);
                     byte target = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]++);
-                    registers[target] = (byte) registers[source];
-                }
-                case ByteCode.LONG_TO_SHORT -> {
-                    byte source = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]++);
-                    byte target = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]++);
-                    registers[target] = (short) registers[source];
-                }
-                case ByteCode.LONG_TO_INT -> {
-                    byte source = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]++);
-                    byte target = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]++);
-                    registers[target] = (int) registers[source];
-                }
-                case ByteCode.BYTE_TO_LONG -> {
-                    byte source = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]++);
-                    byte target = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]++);
-                    registers[target] = (registers[source] & 0xffL);
-                }
-                case ByteCode.SHORT_TO_LONG -> {
-                    byte source = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]++);
-                    byte target = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]++);
-                    registers[target] = (registers[source] & 0xffffL);
-                }
-                case ByteCode.INT_TO_LONG -> {
-                    byte source = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]++);
-                    byte target = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]++);
-                    registers[target] = (registers[source] & 0xffffffffL);
+                    byte type1 = (byte) (types >> 4);
+                    byte type2 = (byte) (types & 0xF);
+                    long src = registers[source];
+                    if (type1 == type2) {
+                        registers[target] = src;
+                    } else {
+                        long srcBits = (8 << type1) - 1;
+                        long sign = (src & (1L << srcBits)) >> srcBits;
+                        long targetBits = (8L << type2) - 1;
+                        registers[target] = sign << targetBits | (src & ((1L << targetBits) - 1));
+                    }
                 }
                 case ByteCode.LONG_TO_DOUBLE -> {
                     byte source = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]++);
