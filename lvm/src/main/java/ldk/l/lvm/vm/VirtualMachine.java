@@ -14,9 +14,9 @@ public final class VirtualMachine {
     public final long stackSize;
     public final Memory memory;
     public final List<ExecutionUnit> executionUnits = new LinkedList<>();
-    public final Map<Integer, InputStream> fd2InputStream = new HashMap<>();
-    public final Map<Integer, PrintStream> fd2PrintStream = new HashMap<>();
+    public final Map<Long, FileHandle> fd2FileHandle = new HashMap<>();
     public long entryPoint = 0;
+    private long lastFd;
 
     public VirtualMachine(long stackSize) {
         this.stackSize = stackSize;
@@ -26,6 +26,11 @@ public final class VirtualMachine {
     public int init(Module module) {
         this.memory.init(module.text(), module.rodata(), module.data(), module.bssSectionLength());
         this.entryPoint = module.entryPoint();
+
+        fd2FileHandle.put(0L, new FileHandle("<stdin>", FileHandle.FH_READ, 0, System.in, null));
+        fd2FileHandle.put(1L, new FileHandle("<stdout>", FileHandle.FH_WRITE, 0, null, System.out));
+        fd2FileHandle.put(2L, new FileHandle("<stderr>", FileHandle.FH_WRITE, 0, null, System.err));
+        lastFd = 2;
 
         return 0;
     }
@@ -51,52 +56,32 @@ public final class VirtualMachine {
     }
 
     public int open(String path, int flags, int mode) throws FileNotFoundException {
-        // TODO support flags and mode
-        int fd = getFd();
-        fd2InputStream.put(fd, new FileInputStream(path));
-        fd2PrintStream.put(fd, new PrintStream(new FileOutputStream(path)));
+        long fd = getFd();
+        fd2FileHandle.put(fd, new FileHandle(path, flags, mode));
         return -1;
     }
 
-    public int close(int fd) {
-        if (fd == 0 || fd == 1 || fd == 2) {
-            throw new RuntimeException("Invalid file descriptor");
-        } else {
-            try {
-                fd2InputStream.remove(fd).close();
-                fd2PrintStream.remove(fd).close();
-            } catch (IOException e) {
-                e.printStackTrace();
-                return -1;
-            }
-        }
+    public synchronized int close(long fd) {
+        FileHandle fileHandle = fd2FileHandle.remove(fd);
+        fileHandle.close();
+        lastFd = 2;
         return 0;
     }
 
-    public int read(int fd, byte[] buffer, int count) throws IOException {
-        InputStream fis;
-        if (fd == 0) {
-            fis = System.in;
-        } else if (fd2InputStream.containsKey(fd)) {
-            fis = fd2InputStream.get(fd);
-        } else {
+    public int read(long fd, byte[] buffer, int count) throws IOException {
+        FileHandle fileHandle = fd2FileHandle.get(fd);
+        if (fileHandle == null) {
             throw new IOException("Invalid file descriptor: " + fd);
         }
-        return fis.read(buffer, 0, count);
+        return fileHandle.read(buffer, count);
     }
 
-    public int write(int fd, byte[] buffer) throws IOException {
-        PrintStream fos;
-        if (fd == 1) {
-            fos = System.out;
-        } else if (fd == 2) {
-            fos = System.err;
-        } else if (fd2PrintStream.containsKey(fd)) {
-            fos = fd2PrintStream.get(fd);
-        } else {
+    public int write(long fd, byte[] buffer) throws IOException {
+        FileHandle fileHandle = fd2FileHandle.get(fd);
+        if (fileHandle == null) {
             throw new IOException("Invalid file descriptor: " + fd);
         }
-        fos.write(buffer);
+        fileHandle.write(buffer);
         return buffer.length;
     }
 
@@ -104,9 +89,10 @@ public final class VirtualMachine {
         // TODO exit
     }
 
-    private synchronized int getFd() {
-        int fd = 3;
-        while (fd2InputStream.containsKey(fd)) fd++;
+    private synchronized long getFd() {
+        long fd = lastFd + 1;
+        while (fd2FileHandle.containsKey(fd)) fd++;
+        lastFd = fd;
         return fd;
     }
 }

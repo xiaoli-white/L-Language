@@ -766,7 +766,6 @@ public final class ExecutionUnit implements Runnable {
                 case ByteCode.GET_RESULT -> {
                     byte target = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]++);
                     registers[target] = result;
-//                    System.out.println(result);
                 }
                 case ByteCode.SET_RESULT -> {
                     byte value = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]++);
@@ -782,8 +781,8 @@ public final class ExecutionUnit implements Runnable {
                     if (type1 == type2) {
                         registers[target] = src;
                     } else {
-                        long srcBits = (8 << type1) - 1;
-                        long sign = (src & (1L << srcBits)) >> srcBits;
+                        long srcBits = (8L << type1) - 1;
+                        long sign = (src & (1L << srcBits)) >>> srcBits;
                         long targetBits = (8L << type2) - 1;
                         registers[target] = sign << targetBits | (src & ((1L << targetBits) - 1));
                     }
@@ -826,7 +825,7 @@ public final class ExecutionUnit implements Runnable {
                 case ByteCode.CLOSE -> {
                     byte fdRegister = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]++);
                     byte resultRegister = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]++);
-                    registers[resultRegister] = virtualMachine.close((int) registers[fdRegister]);
+                    registers[resultRegister] = virtualMachine.close(registers[fdRegister]);
                 }
                 case ByteCode.READ -> {
                     byte fdRegister = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]++);
@@ -838,7 +837,7 @@ public final class ExecutionUnit implements Runnable {
                     byte[] buffer = new byte[(int) count];
                     int readCount;
                     try {
-                        readCount = virtualMachine.read((int) registers[fdRegister], buffer, (int) count);
+                        readCount = virtualMachine.read(registers[fdRegister], buffer, (int) count);
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -855,7 +854,7 @@ public final class ExecutionUnit implements Runnable {
                     byte[] buffer = new byte[(int) count];
                     for (int i = 0; i < count; i++) buffer[i] = virtualMachine.memory.getByte(address + i);
                     try {
-                        registers[resultRegister] = virtualMachine.write((int) registers[fdRegister], buffer);
+                        registers[resultRegister] = virtualMachine.write(registers[fdRegister], buffer);
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }

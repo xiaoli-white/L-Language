@@ -822,13 +822,13 @@ public final class ByteCodeGenerator extends Generator {
                 if (entry.value instanceof Number number) {
                     addInstruction(setRegister(new BCImmediate4(Float.floatToIntBits(number.floatValue()))));
                 } else {
-                    throw new RuntimeException("Unknown float size");
+                    throw new RuntimeException("Unknown type");
                 }
             } else if (entry.type instanceof IRDoubleType) {
                 if (entry.value instanceof Number number) {
                     addInstruction(setRegister(new BCImmediate8(Double.doubleToLongBits(number.doubleValue()))));
                 } else {
-                    throw new RuntimeException("Unknown double size");
+                    throw new RuntimeException("Unknown type");
                 }
             } else if (entry.type instanceof IRPointerType irPointerType) {
                 BCRegister register = allocateVirtualRegister();
