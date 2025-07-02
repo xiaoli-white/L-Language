@@ -37,7 +37,7 @@ public final class IRCalculate extends IRInstruction {
     }
 
     public enum Operator {
-        Add("add"), Sub("sub"), Mul("mul"), Div("div"), Mod("mod"), And("and"), Or("or"), Xor("xor"), Shl("shl"), Shr("shr"), UShr("ushr");
+        ADD("add"), SUB("sub"), MUL("mul"), DIV("div"), MOD("mod"), AND("and"), OR("or"), XOR("xor"), SHL("shl"), SHR("shr"), USHR("ushr");
         public final String text;
 
         Operator(String text) {
