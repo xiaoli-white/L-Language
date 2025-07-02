@@ -4,8 +4,6 @@ import ldk.l.lvm.module.Module;
 
 import java.io.*;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
 public final class VirtualMachine {
@@ -13,9 +11,11 @@ public final class VirtualMachine {
 
     public final long stackSize;
     public final Memory memory;
-    public final List<ExecutionUnit> executionUnits = new LinkedList<>();
+    public final Map<Long, ThreadHandle> threadID2Handle = new HashMap<>();
     public final Map<Long, FileHandle> fd2FileHandle = new HashMap<>();
     public long entryPoint = 0;
+    private boolean running = false;
+    private long lastThreadID;
     private long lastFd;
 
     public VirtualMachine(long stackSize) {
@@ -36,22 +36,31 @@ public final class VirtualMachine {
     }
 
     public int run() {
-        ExecutionUnit executionUnit = initThread(this.entryPoint);
-        Thread thread = new Thread(executionUnit, "ExecutionThread");
-        thread.start();
-
-        try {
-            thread.join();
-        } catch (InterruptedException ie) {
-            throw new RuntimeException(ie);
+        createThread(this.entryPoint);
+        running = true;
+        while (running && !threadID2Handle.isEmpty()) {
+            try {
+                threadID2Handle.values().stream().toList().getFirst().thread.join();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         }
         return 0;
     }
 
-    public ExecutionUnit initThread(long entryPoint) {
+    public long createThread(long entryPoint) {
+        long threadID = getThreadID();
+        ExecutionUnit executionUnit = createExecutionUnit(threadID, entryPoint);
+        ThreadHandle threadHandle = new ThreadHandle(executionUnit);
+        threadID2Handle.put(threadID, threadHandle);
+        threadHandle.thread.start();
+        return threadID;
+    }
+
+    private ExecutionUnit createExecutionUnit(long threadID, long entryPoint) {
         ExecutionUnit executionUnit = new ExecutionUnit(this);
         long stackStart = memory.allocateMemory(this.stackSize);
-        executionUnit.init(stackStart + this.stackSize - 1, entryPoint);
+        executionUnit.init(threadID, stackStart + this.stackSize - 1, entryPoint);
         return executionUnit;
     }
 
@@ -86,7 +95,15 @@ public final class VirtualMachine {
     }
 
     public void exit(long status) {
-        // TODO exit
+        running = false;
+        // TODO
+    }
+
+    private synchronized long getThreadID() {
+        long threadID = lastThreadID + 1;
+        while (fd2FileHandle.containsKey(threadID)) threadID++;
+        lastThreadID = threadID;
+        return threadID;
     }
 
     private synchronized long getFd() {

@@ -573,7 +573,7 @@ public final class Parser {
                         if (this.peek().code() == Tokens.Keyword.Readonly) {
                             this.tokenIndex++;
                             hasThisReadonly = true;
-                        }else {
+                        } else {
                             hasThisReadonly = false;
                         }
 
@@ -1340,7 +1340,7 @@ public final class Parser {
         if (this.peek().code() == Tokens.Keyword.Readonly) {
             this.tokenIndex++;
             hasThisReadonly = true;
-        }else {
+        } else {
             hasThisReadonly = false;
         }
 
@@ -2146,6 +2146,8 @@ public final class Parser {
         Position beginPos = this.getPos();
         boolean isErrorNode = false;
 
+        this.tokenIndex++;
+
         ArrayList<LCVariableDeclaration> params = new ArrayList<>();
 
         Token t = this.peek();
@@ -2193,6 +2195,13 @@ public final class Parser {
 //                            this.addError("Expecting ',' or '）' after a parameter", this.scanner.getLastPos());
                 this.skip();
             }
+        }
+        if (this.peek().code() == Tokens.Separator.CloseParen) {
+            this.tokenIndex++;
+        } else {
+            isErrorNode = true;
+            // TODO dump error
+            this.skip();
         }
 
         Position endPos = this.getPos();
@@ -3033,7 +3042,7 @@ public final class Parser {
         if (this.peek().code() == Tokens.Keyword.Readonly) {
             this.tokenIndex++;
             hasThisReadonly = true;
-        }else {
+        } else {
             hasThisReadonly = false;
         }
         LCTypeExpression returnTypeExpression;

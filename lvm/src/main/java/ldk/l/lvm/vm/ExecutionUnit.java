@@ -6,6 +6,7 @@ import java.math.BigInteger;
 
 public final class ExecutionUnit implements Runnable {
     public final VirtualMachine virtualMachine;
+    public long threadID;
     public long[] registers = new long[40];
     public static long flags = 0;
     public static long result = 0;
@@ -15,7 +16,8 @@ public final class ExecutionUnit implements Runnable {
         this.virtualMachine = virtualMachine;
     }
 
-    public void init(long stackStart, long entryPoint) {
+    public void init(long threadID, long stackStart, long entryPoint) {
+        this.threadID = threadID;
         registers[ByteCode.BP_REGISTER] = stackStart;
         registers[ByteCode.SP_REGISTER] = stackStart;
         registers[ByteCode.PC_REGISTER] = entryPoint;
@@ -883,6 +885,12 @@ public final class ExecutionUnit implements Runnable {
                     long exitCode = virtualMachine.memory.getLong(registers[ByteCode.PC_REGISTER]);
                     virtualMachine.exit(exitCode);
                     running = false;
+                }
+                case ByteCode.CREATE_THREAD -> {
+                    long entryPoint = virtualMachine.memory.getLong(registers[ByteCode.PC_REGISTER]);
+                    byte resultRegister = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER] + 8);
+                    registers[resultRegister] = virtualMachine.createThread(entryPoint);
+                    registers[ByteCode.PC_REGISTER] += 9;
                 }
             }
         }
