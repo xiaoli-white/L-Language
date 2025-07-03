@@ -1,11 +1,16 @@
 package ldk.l.lc.util.symbol.object;
 
 import ldk.l.lc.ast.base.LCFlags;
+import ldk.l.lc.ast.statement.declaration.object.LCClassDeclaration;
 import ldk.l.lc.ast.statement.declaration.object.LCRecordDeclaration;
+import ldk.l.lc.semantic.types.SystemTypes;
 import ldk.l.lc.semantic.types.Type;
 import ldk.l.lc.util.symbol.*;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 
 public final class RecordSymbol extends ObjectSymbol {
     public LCRecordDeclaration declaration;
@@ -70,5 +75,23 @@ public final class RecordSymbol extends ObjectSymbol {
     @Override
     public MethodSymbol[] getMethods() {
         return this.methods;
+    }
+
+    public MethodSymbol getMethodCascade(String simpleName) {
+        for (MethodSymbol method : this.methods) {
+            if (Objects.equals(method.getSimpleName(), simpleName)) {
+                return method;
+            }
+        }
+        // TODO
+//        MethodSymbol methodSymbol = ((LCClassDeclaration)getAST(recordSymbol.declaration).getObjectDeclaration(SystemTypes.Record_Type.name)).symbol.getMethodCascade(simpleName);
+//        if (methodSymbol != null) return methodSymbol;
+
+        MethodSymbol methodSymbol;
+        for (InterfaceSymbol interfaceSymbol : this.implementedInterfaces) {
+            methodSymbol = interfaceSymbol.getDefaultMethodCascade(simpleName);
+            if (methodSymbol != null) return methodSymbol;
+        }
+        return null;
     }
 }

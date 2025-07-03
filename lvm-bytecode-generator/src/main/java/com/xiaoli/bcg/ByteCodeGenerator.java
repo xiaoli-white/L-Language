@@ -498,30 +498,19 @@ public final class ByteCodeGenerator extends Generator {
                     default -> throw new RuntimeException("Unsupported operator: " + irCalculate.operator);
                 }, operand1, operand2, result));
             } else {
-                addInstruction(switch (irCalculate.operator) {
-                    case ADD ->
-                            new BCInstruction(irCalculate.isAtomic ? ByteCode.ATOMIC_ADD : ByteCode.ADD, operand1, operand2, result);
-                    case SUB ->
-                            new BCInstruction(irCalculate.isAtomic ? ByteCode.ATOMIC_SUB : ByteCode.SUB, operand1, operand2, result);
-                    case MUL ->
-                            new BCInstruction(irCalculate.isAtomic ? ByteCode.ATOMIC_MUL : ByteCode.MUL, operand1, operand2, result);
-                    case DIV ->
-                            new BCInstruction(irCalculate.isAtomic ? ByteCode.ATOMIC_DIV : ByteCode.DIV, operand1, operand2, result);
-                    case MOD ->
-                            new BCInstruction(irCalculate.isAtomic ? ByteCode.ATOMIC_MOD : ByteCode.MOD, operand1, operand2, result);
-                    case AND ->
-                            new BCInstruction(irCalculate.isAtomic ? ByteCode.ATOMIC_AND : ByteCode.AND, operand1, operand2, result);
-                    case OR ->
-                            new BCInstruction(irCalculate.isAtomic ? ByteCode.ATOMIC_OR : ByteCode.OR, operand1, operand2, result);
-                    case XOR ->
-                            new BCInstruction(irCalculate.isAtomic ? ByteCode.ATOMIC_XOR : ByteCode.XOR, operand1, operand2, result);
-                    case SHL ->
-                            new BCInstruction(irCalculate.isAtomic ? ByteCode.ATOMIC_SHL : ByteCode.SHL, operand1, operand2, result);
-                    case SHR ->
-                            new BCInstruction(irCalculate.isAtomic ? ByteCode.ATOMIC_SHR : ByteCode.SHR, operand1, operand2, result);
-                    case USHR ->
-                            new BCInstruction(irCalculate.isAtomic ? ByteCode.ATOMIC_USHR : ByteCode.USHR, operand1, operand2, result);
-                });
+                addInstruction(new BCInstruction(switch (irCalculate.operator) {
+                    case ADD -> irCalculate.isAtomic ? ByteCode.ATOMIC_ADD : ByteCode.ADD;
+                    case SUB -> irCalculate.isAtomic ? ByteCode.ATOMIC_SUB : ByteCode.SUB;
+                    case MUL -> irCalculate.isAtomic ? ByteCode.ATOMIC_MUL : ByteCode.MUL;
+                    case DIV -> irCalculate.isAtomic ? ByteCode.ATOMIC_DIV : ByteCode.DIV;
+                    case MOD -> irCalculate.isAtomic ? ByteCode.ATOMIC_MOD : ByteCode.MOD;
+                    case AND -> irCalculate.isAtomic ? ByteCode.ATOMIC_AND : ByteCode.AND;
+                    case OR -> irCalculate.isAtomic ? ByteCode.ATOMIC_OR : ByteCode.OR;
+                    case XOR -> irCalculate.isAtomic ? ByteCode.ATOMIC_XOR : ByteCode.XOR;
+                    case SHL -> irCalculate.isAtomic ? ByteCode.ATOMIC_SHL : ByteCode.SHL;
+                    case SHR -> irCalculate.isAtomic ? ByteCode.ATOMIC_SHR : ByteCode.SHR;
+                    case USHR -> irCalculate.isAtomic ? ByteCode.ATOMIC_USHR : ByteCode.USHR;
+                }, operand1, operand2, result));
             }
 
             registerStack.push(new BCRegister(result.register));

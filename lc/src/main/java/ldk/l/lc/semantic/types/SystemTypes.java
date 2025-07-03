@@ -28,6 +28,8 @@ public class SystemTypes {
     public static NamedType Object_Type = null;
     public static NamedType String_Type = null;
     public static NamedType Class_Type = null;
+    public static NamedType Enum_Type = null;
+    public static NamedType Record_Type = null;
     public static NamedType Throwable_Type = null;
     public static NamedType Closeable_Type = null;
     // Wrapper Types
@@ -100,6 +102,8 @@ public class SystemTypes {
         SystemTypes.Object_Type = ast.getType("l.lang.Object");
         SystemTypes.String_Type = ast.getType("l.lang.String");
         SystemTypes.Class_Type = ast.getType("l.lang.Class");
+        SystemTypes.Enum_Type = ast.getType("l.lang.Enum");
+        SystemTypes.Record_Type = ast.getType("l.lang.Record");
         SystemTypes.Throwable_Type = ast.getType("l.lang.Throwable");
         SystemTypes.Closeable_Type = ast.getType("l.lang.Closeable");
         SystemTypes.Byte_WrapperType = ast.getType("l.lang.Byte");
@@ -123,6 +127,12 @@ public class SystemTypes {
         }
         if (SystemTypes.Class_Type == null) {
             System.err.println("Cannot found the class 'l.lang.Class'.");
+        }
+        if (SystemTypes.Enum_Type == null) {
+            System.err.println("Cannot found the class 'l.lang.Enum'.");
+        }
+        if (SystemTypes.Record_Type == null) {
+            System.err.println("Cannot found the class 'l.lang.Record'.");
         }
         if (SystemTypes.Throwable_Type == null) {
             System.err.println("Cannot found the class 'l.lang.Throwable'.");

@@ -897,7 +897,6 @@ public final class Parser {
         LCVariableDeclaration[] fields;
         Token t1 = this.peek();
         if (t1.code() == Tokens.Separator.OpenParen) {
-            this.tokenIndex++;
             LCParameterList parameterList = this.parseParameterList(false);
             fields = parameterList.parameters;
         } else {
