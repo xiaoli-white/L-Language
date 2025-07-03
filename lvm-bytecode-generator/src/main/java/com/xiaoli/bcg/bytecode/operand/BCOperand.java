@@ -11,4 +11,10 @@ public abstract class BCOperand {
     public abstract byte[] toByteCode();
 
     public abstract long getLength();
+
+    @Override
+    public abstract boolean equals(Object obj);
+
+    @Override
+    public abstract int hashCode();
 }

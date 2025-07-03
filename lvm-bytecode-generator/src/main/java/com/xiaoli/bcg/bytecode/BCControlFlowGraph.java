@@ -59,7 +59,7 @@ public final class BCControlFlowGraph {
 
     public static class BasicBlock implements Comparable<BasicBlock> {
         public final String name;
-        public final List<BCInstruction> instructions;
+        public List<BCInstruction> instructions;
 
         public BasicBlock(String name) {
             this.name = name;

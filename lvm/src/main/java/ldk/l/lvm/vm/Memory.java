@@ -73,16 +73,12 @@ public final class Memory {
         }
         long mapped = 0;
         while (mapped < bssSectionLength) {
-            if (bssSectionLength - mapped < PAGE_SIZE - offset) {
-                break;
-            }
             mapped += PAGE_SIZE;
             setMemoryPageIfAbsent(address, MemoryPage.MP_READ | MemoryPage.MP_WRITE);
             address += PAGE_SIZE;
-            offset = 0;
         }
         MemoryPage.FreeMemory head = new MemoryPage.FreeMemory(0, 0);
-        head.next = new MemoryPage.FreeMemory(address - PAGE_SIZE + offset, MAX_MEMORY_ADDRESS);
+        head.next = new MemoryPage.FreeMemory(address - PAGE_SIZE + (bssSectionLength % PAGE_SIZE), MAX_MEMORY_ADDRESS);
         freeMemoryList = head;
     }
 
@@ -161,6 +157,7 @@ public final class Memory {
         if (memoryPage == null) throw new RuntimeException("Illegal address");
         return memoryPage;
     }
+
     private MemoryPage getMemoryPage(long address) {
         int pgdOffset = (int) ((address >> 39) & 0x1ff);
         MemoryPage[][][] pud = memoryPageTable[pgdOffset];
@@ -212,6 +209,8 @@ public final class Memory {
         if (page == null) {
             page = new MemoryPage(flags);
             pte[pteOffset] = page;
+        } else {
+            page.flags |= flags;
         }
         page.retain();
         return ret;

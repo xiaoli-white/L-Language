@@ -2,6 +2,8 @@ package com.xiaoli.bcg.bytecode.operand.immediate;
 
 import com.xiaoli.bcg.bytecode.BCVisitor;
 
+import java.util.Objects;
+
 public final class BCImmediate8 extends BCImmediate {
     public long value;
 
@@ -32,5 +34,16 @@ public final class BCImmediate8 extends BCImmediate {
     @Override
     public long getLength() {
         return 8;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof BCImmediate8 that)) return false;
+        return value == that.value && Objects.equals(comment, that.comment);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(value, comment);
     }
 }

@@ -2,6 +2,8 @@ package com.xiaoli.bcg.bytecode.operand;
 
 import com.xiaoli.bcg.bytecode.BCVisitor;
 
+import java.util.Objects;
+
 public final class BCRegister extends BCOperand {
     public byte register;
     public long virtualRegister;
@@ -14,6 +16,11 @@ public final class BCRegister extends BCOperand {
     public BCRegister(long virtualRegister) {
         this.register = -1;
         this.virtualRegister = virtualRegister;
+    }
+
+    public BCRegister(BCRegister register) {
+        this.register = register.register;
+        this.virtualRegister = register.virtualRegister;
     }
 
     @Override
@@ -37,6 +44,17 @@ public final class BCRegister extends BCOperand {
     @Override
     public long getLength() {
         return 1;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof BCRegister that)) return false;
+        return register == that.register && virtualRegister == that.virtualRegister;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(register, virtualRegister);
     }
 
     public static class Interval {
