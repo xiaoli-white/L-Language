@@ -16,6 +16,11 @@ public final class BCImmediate8 extends BCImmediate {
         this.value = value;
     }
 
+    public BCImmediate8(BCImmediate8 bcImmediate8) {
+        super(bcImmediate8.comment);
+        this.value = bcImmediate8.value;
+    }
+
     @Override
     public Object visit(BCVisitor visitor, Object additional) {
         return visitor.visitImmediate8(this, additional);

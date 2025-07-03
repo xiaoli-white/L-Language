@@ -130,13 +130,10 @@ public class ByteCode {
     public static final byte DESTROY_FRAME = 0x73;
     public static final byte EXIT = 0x74;
     public static final byte EXIT_IMMEDIATE = 0x75;
-    public static final byte LOAD_FIELD = 0x76;
-    public static final byte STORE_FIELD = 0x77;
-    public static final byte LOAD_LOCAL = 0x78;
-    public static final byte STORE_LOCAL = 0x79;
-    public static final byte LOAD_ARGUMENT = 0x7a;
-    public static final byte STORE_ARGUMENT = 0x7b;
-    public static final byte CREATE_THREAD = 0x7c;
+    public static final byte GET_FIELD_ADDRESS = 0x76;
+    public static final byte GET_LOCAL_ADDRESS = 0x77;
+    public static final byte GET_PARAMETER_ADDRESS = 0x78;
+    public static final byte CREATE_THREAD = 0x79;
 
     public static String getInstructionName(byte code) {
         return switch (code) {
@@ -258,12 +255,9 @@ public class ByteCode {
             case DESTROY_FRAME -> "DESTROY_FRAME";
             case EXIT -> "EXIT";
             case EXIT_IMMEDIATE -> "EXIT_IMMEDIATE";
-            case LOAD_FIELD -> "LOAD_FIELD";
-            case STORE_FIELD -> "STORE_FIELD";
-            case LOAD_LOCAL -> "LOAD_LOCAL";
-            case STORE_LOCAL -> "STORE_LOCAL";
-            case LOAD_ARGUMENT -> "LOAD_ARGUMENT";
-            case STORE_ARGUMENT -> "STORE_ARGUMENT";
+            case GET_FIELD_ADDRESS -> "GET_FIELD_ADDRESS";
+            case GET_LOCAL_ADDRESS -> "GET_LOCAL_ADDRESS";
+            case GET_PARAMETER_ADDRESS -> "GET_PARAMETER_ADDRESS";
             case CREATE_THREAD -> "CREATE_THREAD";
             default -> throw new IllegalArgumentException("Unknown instruction code: " + code);
         };
@@ -389,12 +383,9 @@ public class ByteCode {
             case "DESTROY_FRAME" -> DESTROY_FRAME;
             case "EXIT" -> EXIT;
             case "EXIT_IMMEDIATE" -> EXIT_IMMEDIATE;
-            case "LOAD_FIELD" -> LOAD_FIELD;
-            case "STORE_FIELD" -> STORE_FIELD;
-            case "LOAD_LOCAL" -> LOAD_LOCAL;
-            case "STORE_LOCAL" -> STORE_LOCAL;
-            case "LOAD_ARGUMENT" -> LOAD_ARGUMENT;
-            case "STORE_ARGUMENT" -> STORE_ARGUMENT;
+            case "GET_FIELD_ADDRESS" -> GET_FIELD_ADDRESS;
+            case "GET_LOCAL_ADDRESS" -> GET_LOCAL_ADDRESS;
+            case "GET_PARAMETER_ADDRESS" -> GET_PARAMETER_ADDRESS;
             case "CREATE_THREAD" -> CREATE_THREAD;
             default -> throw new IllegalArgumentException("Unknown instruction code: " + code);
         };

@@ -27,7 +27,7 @@ public final class ExecutionUnit implements Runnable {
         running = true;
         while (running) {
             byte code = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]++);
-            System.out.printf("%d: %s\n", registers[ByteCode.PC_REGISTER] - 1, ByteCode.getInstructionName(code));
+//            System.out.printf("%d: %s\n", registers[ByteCode.PC_REGISTER] - 1, ByteCode.getInstructionName(code));
             switch (code) {
                 case ByteCode.NOP -> {
                 }
@@ -104,7 +104,6 @@ public final class ExecutionUnit implements Runnable {
                 case ByteCode.STORE_4 -> {
                     byte address = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]++);
                     byte source = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]++);
-                    System.err.println(registers[address]);
                     virtualMachine.memory.setInt(registers[address], (int) (registers[source] & 0xffffffffL));
                 }
                 case ByteCode.STORE_8 -> {
@@ -887,97 +886,24 @@ public final class ExecutionUnit implements Runnable {
                     virtualMachine.exit(exitCode);
                     running = false;
                 }
-                case ByteCode.LOAD_FIELD -> {
-                    byte type = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]);
-                    byte objectRegister = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER] + 1);
-                    long offset = virtualMachine.memory.getLong(registers[ByteCode.PC_REGISTER] + 2);
-                    byte targetRegister = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER] + 10);
-                    registers[ByteCode.PC_REGISTER] += 11;
-                    long address = registers[objectRegister] + offset;
-                    registers[targetRegister] = switch (type) {
-                        case ByteCode.BYTE_TYPE -> virtualMachine.memory.getByte(address);
-                        case ByteCode.SHORT_TYPE -> virtualMachine.memory.getShort(address);
-                        case ByteCode.INT_TYPE -> virtualMachine.memory.getInt(address);
-                        case ByteCode.LONG_TYPE -> virtualMachine.memory.getLong(address);
-                        default -> throw new RuntimeException("Invalid type");
-                    };
-                }
-                case ByteCode.STORE_FIELD -> {
-                    byte type = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]);
-                    byte objectRegister = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER] + 1);
-                    long offset = virtualMachine.memory.getLong(registers[ByteCode.PC_REGISTER] + 2);
-                    byte valueRegister = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER] + 10);
-                    registers[ByteCode.PC_REGISTER] += 11;
-                    long address = registers[objectRegister] + offset;
-                    switch (type) {
-                        case ByteCode.BYTE_TYPE ->
-                                virtualMachine.memory.setByte(address, (byte) registers[valueRegister]);
-                        case ByteCode.SHORT_TYPE ->
-                                virtualMachine.memory.setShort(address, (short) registers[valueRegister]);
-                        case ByteCode.INT_TYPE -> virtualMachine.memory.setInt(address, (int) registers[valueRegister]);
-                        case ByteCode.LONG_TYPE -> virtualMachine.memory.setLong(address, registers[valueRegister]);
-                        default -> throw new RuntimeException("Invalid type");
-                    }
-                }
-                case ByteCode.LOAD_LOCAL -> {
-                    byte type = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]);
+                case ByteCode.GET_FIELD_ADDRESS -> {
+                    byte objectRegister = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]);
                     long offset = virtualMachine.memory.getLong(registers[ByteCode.PC_REGISTER] + 1);
                     byte targetRegister = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER] + 9);
                     registers[ByteCode.PC_REGISTER] += 10;
-                    long address = registers[ByteCode.BP_REGISTER] - offset;
-                    registers[targetRegister] = switch (type) {
-                        case ByteCode.BYTE_TYPE -> virtualMachine.memory.getByte(address);
-                        case ByteCode.SHORT_TYPE -> virtualMachine.memory.getShort(address);
-                        case ByteCode.INT_TYPE -> virtualMachine.memory.getInt(address);
-                        case ByteCode.LONG_TYPE -> virtualMachine.memory.getLong(address);
-                        default -> throw new RuntimeException("Invalid type");
-                    };
+                    registers[targetRegister] = registers[objectRegister] + offset;
                 }
-                case ByteCode.STORE_LOCAL -> {
-                    byte type = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]);
-                    long offset = virtualMachine.memory.getLong(registers[ByteCode.PC_REGISTER] + 1);
-                    byte valueRegister = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER] + 9);
-                    registers[ByteCode.PC_REGISTER] += 10;
-                    long address = registers[ByteCode.BP_REGISTER] - offset;
-                    switch (type) {
-                        case ByteCode.BYTE_TYPE ->
-                                virtualMachine.memory.setByte(address, (byte) registers[valueRegister]);
-                        case ByteCode.SHORT_TYPE ->
-                                virtualMachine.memory.setShort(address, (short) registers[valueRegister]);
-                        case ByteCode.INT_TYPE -> virtualMachine.memory.setInt(address, (int) registers[valueRegister]);
-                        case ByteCode.LONG_TYPE -> virtualMachine.memory.setLong(address, registers[valueRegister]);
-                        default -> throw new RuntimeException("Invalid type");
-                    }
+                case ByteCode.GET_LOCAL_ADDRESS -> {
+                    long offset = virtualMachine.memory.getLong(registers[ByteCode.PC_REGISTER]);
+                    byte targetRegister = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER] + 8);
+                    registers[ByteCode.PC_REGISTER] += 9;
+                    registers[targetRegister] = registers[ByteCode.BP_REGISTER] - offset;
                 }
-                case ByteCode.LOAD_ARGUMENT -> {
-                    byte type = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]);
-                    long offset = virtualMachine.memory.getLong(registers[ByteCode.PC_REGISTER] + 1);
-                    byte targetRegister = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER] + 9);
-                    registers[ByteCode.PC_REGISTER] += 10;
-                    long address = registers[ByteCode.BP_REGISTER] + offset;
-                    registers[targetRegister] = switch (type) {
-                        case ByteCode.BYTE_TYPE -> virtualMachine.memory.getByte(address);
-                        case ByteCode.SHORT_TYPE -> virtualMachine.memory.getShort(address);
-                        case ByteCode.INT_TYPE -> virtualMachine.memory.getInt(address);
-                        case ByteCode.LONG_TYPE -> virtualMachine.memory.getLong(address);
-                        default -> throw new RuntimeException("Invalid type");
-                    };
-                }
-                case ByteCode.STORE_ARGUMENT -> {
-                    byte type = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]);
-                    long offset = virtualMachine.memory.getLong(registers[ByteCode.PC_REGISTER] + 1);
-                    byte valueRegister = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER] + 9);
-                    registers[ByteCode.PC_REGISTER] += 10;
-                    long address = registers[ByteCode.BP_REGISTER] + offset;
-                    switch (type) {
-                        case ByteCode.BYTE_TYPE ->
-                                virtualMachine.memory.setByte(address, (byte) registers[valueRegister]);
-                        case ByteCode.SHORT_TYPE ->
-                                virtualMachine.memory.setShort(address, (short) registers[valueRegister]);
-                        case ByteCode.INT_TYPE -> virtualMachine.memory.setInt(address, (int) registers[valueRegister]);
-                        case ByteCode.LONG_TYPE -> virtualMachine.memory.setLong(address, registers[valueRegister]);
-                        default -> throw new RuntimeException("Invalid type");
-                    }
+                case ByteCode.GET_PARAMETER_ADDRESS -> {
+                    long offset = virtualMachine.memory.getLong(registers[ByteCode.PC_REGISTER]);
+                    byte targetRegister = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER] + 8);
+                    registers[ByteCode.PC_REGISTER] += 9;
+                    registers[targetRegister] = registers[ByteCode.BP_REGISTER] + offset;
                 }
                 case ByteCode.CREATE_THREAD -> {
                     long entryPoint = virtualMachine.memory.getLong(registers[ByteCode.PC_REGISTER]);

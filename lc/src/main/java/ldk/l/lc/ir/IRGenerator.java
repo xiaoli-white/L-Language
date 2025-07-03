@@ -1886,7 +1886,7 @@ public final class IRGenerator extends LCAstVisitor {
                 ClassSymbol symbol = ((LCClassDeclaration) this.ast.getObjectDeclaration(SystemTypes.Class_Type.name)).symbol;
                 MethodSymbol methodSymbol2 = null;
                 for (MethodSymbol method : symbol.methods) {
-                    if (method.name.equals("get_itable_entry")) {
+                    if (method.name.equals("getITableEntry")) {
                         methodSymbol2 = method;
                         break;
                     }
@@ -2030,7 +2030,7 @@ public final class IRGenerator extends LCAstVisitor {
             ClassSymbol classSymbol = ((LCClassDeclaration) this.ast.getObjectDeclaration(SystemTypes.Class_Type.name)).symbol;
             MethodSymbol methodSymbol = null;
             for (MethodSymbol method : classSymbol.methods) {
-                if (method.name.equals("get_itable_entry")) {
+                if (method.name.equals("getITableEntry")) {
                     methodSymbol = method;
                     break;
                 }
