@@ -41,13 +41,6 @@ public final class ByteCodeGenerator extends Generator {
             printTextSection(byteCodeModule);
         }
 
-        InstructionMerger merger = new InstructionMerger(byteCodeModule);
-        merger.merge();
-
-        if (verbose) {
-            printTextSection(byteCodeModule);
-        }
-
         Map<String, Map<Long, BCRegister.Interval>> intervals = new LinkedHashMap<>();
         Tagger tagger = new Tagger(byteCodeModule, intervals);
         tagger.tag();
@@ -564,7 +557,19 @@ public final class ByteCodeGenerator extends Generator {
             BCRegister operand1 = registerStack.pop();
             this.visit(irConditionalJump.operand2, additional);
             BCRegister operand2 = registerStack.pop();
-            addInstruction(new BCInstruction(ByteCode.CMP, operand1, operand2));
+
+            if (irConditionalJump.type instanceof IRIntegerType irIntegerType) {
+                addInstruction(new BCInstruction(ByteCode.CMP, new BCImmediate1(switch (irIntegerType.size) {
+                    case OneBit, OneByte -> ByteCode.BYTE_TYPE;
+                    case TwoBytes -> ByteCode.SHORT_TYPE;
+                    case FourBytes -> ByteCode.INT_TYPE;
+                    case EightBytes -> ByteCode.LONG_TYPE;
+                }), operand1, operand2));
+            } else if (irConditionalJump.type instanceof IRPointerType) {
+                addInstruction(new BCInstruction(ByteCode.CMP, new BCImmediate1(ByteCode.LONG_TYPE), operand1, operand2));
+            } else {
+                throw new RuntimeException("Unsupported type: " + irConditionalJump.type);
+            }
 
             BCRegister address = allocateVirtualRegister();
             addInstruction(new BCInstruction(ByteCode.MOV_IMMEDIATE8, new BCImmediate8(0, "<ir_basic_block>" + irConditionalJump.target), address));
@@ -700,21 +705,27 @@ public final class ByteCodeGenerator extends Generator {
                 this.visitVirtualRegister(irIncrease.target, additional);
                 BCRegister target = registerStack.pop();
 
-                BCRegister temp = allocateVirtualRegister();
-                addInstruction(new BCInstruction(ByteCode.MOV, operand, temp));
-                addInstruction(new BCInstruction(ByteCode.INC, new BCRegister(temp.virtualRegister)));
-                addInstruction(new BCInstruction(ByteCode.MOV, new BCRegister(temp.virtualRegister), target));
-                registerStack.push(new BCRegister(target.virtualRegister));
+                addInstruction(new BCInstruction(ByteCode.MOV, operand, target));
+                addInstruction(new BCInstruction(ByteCode.INC, new BCRegister(target)));
             } else {
                 addInstruction(new BCInstruction(ByteCode.ATOMIC_INC, operand));
             }
             return null;
         }
 
+        @Override
         public Object visitDecrease(IRDecrease irDecrease, Object additional) {
             this.visit(irDecrease.operand, additional);
             BCRegister operand = registerStack.pop();
-            addInstruction(new BCInstruction(irDecrease.isAtomic() ? ByteCode.ATOMIC_DEC : ByteCode.DEC, operand));
+            if (irDecrease.target != null) {
+                this.visitVirtualRegister(irDecrease.target, additional);
+                BCRegister target = registerStack.pop();
+
+                addInstruction(new BCInstruction(ByteCode.MOV, operand, target));
+                addInstruction(new BCInstruction(ByteCode.DEC, new BCRegister(target)));
+            } else {
+                addInstruction(new BCInstruction(ByteCode.ATOMIC_DEC, operand));
+            }
             return null;
         }
 
@@ -832,7 +843,14 @@ public final class ByteCodeGenerator extends Generator {
                     } else {
                         throw new IllegalArgumentException("Unknown type");
                     }
-                    BCInstruction instruction = setRegister(new BCImmediate8(value));
+                    BCImmediate imm = switch (irIntegerType.size) {
+                        case OneByte -> new BCImmediate1((byte) value);
+                        case TwoBytes -> new BCImmediate2((short) value);
+                        case FourBytes -> new BCImmediate4((int) value);
+                        case EightBytes -> new BCImmediate8(value);
+                        default -> throw new IllegalArgumentException("Unknown size");
+                    };
+                    BCInstruction instruction = setRegister(imm);
                     addInstruction(instruction);
                 }
             } else if (entry.type instanceof IRFloatType) {
@@ -890,16 +908,13 @@ public final class ByteCodeGenerator extends Generator {
             } else if ("field_address".equals(irMacro.name)) {
                 irMacro.setType(IRType.getUnsignedLongType());
                 long offset;
-                BCRegister register = allocateVirtualRegister();
                 BCRegister result = allocateVirtualRegister();
                 if (this.localVarOffsets.containsKey(irMacro.args[0])) {
                     offset = this.localVarOffsets.get(irMacro.args[0]);
-                    addInstruction(new BCInstruction(ByteCode.MOV_IMMEDIATE8, new BCImmediate8(offset), register));
-                    addInstruction(new BCInstruction(ByteCode.SUB, new BCRegister(ByteCode.BP_REGISTER), new BCRegister(register.virtualRegister), result));
+                    addInstruction(new BCInstruction(ByteCode.GET_LOCAL_ADDRESS, new BCImmediate8(offset), result));
                 } else {
                     offset = this.argumentOffsets.get(irMacro.args[0]);
-                    addInstruction(new BCInstruction(ByteCode.MOV_IMMEDIATE8, new BCImmediate8(offset + 16), register));
-                    addInstruction(new BCInstruction(ByteCode.ADD, new BCRegister(ByteCode.BP_REGISTER), new BCRegister(register.virtualRegister), result));
+                    addInstruction(new BCInstruction(ByteCode.GET_PARAMETER_ADDRESS, new BCImmediate8(offset + 16), result));
                 }
                 registerStack.push(new BCRegister(result.virtualRegister));
             } else if ("structure_length".equals(irMacro.name)) {
@@ -1099,79 +1114,6 @@ public final class ByteCodeGenerator extends Generator {
         }
     }
 
-    private static final class InstructionMerger extends BCVisitor {
-        private final ByteCodeModule module;
-
-        public InstructionMerger(ByteCodeModule module) {
-            this.module = module;
-        }
-
-        public void merge() {
-            this.visitModule(this.module, null);
-        }
-
-        @Override
-        public Object visitModule(ByteCodeModule module, Object additional) {
-            for (BCControlFlowGraph cfg : module.functionName2CFG.values()) {
-                for (BCControlFlowGraph.BasicBlock basicBlock : cfg.basicBlocks.values()) {
-                    int size = basicBlock.instructions.size();
-                    List<BCInstruction> newInstructions = new ArrayList<>(size);
-                    for (int i = 0; i < size; i++) {
-                        BCInstruction instruction;
-                        BCInstruction current = basicBlock.instructions.get(i);
-                        if (i + 1 >= size) {
-                            instruction = null;
-                        } else if (current.code == ByteCode.MOV_IMMEDIATE8) {
-                            BCImmediate8 imm = (BCImmediate8) current.operand1;
-                            BCRegister immRegister = (BCRegister) current.operand2;
-                            BCInstruction next = basicBlock.instructions.get(i + 1);
-                            if (next.code == ByteCode.ADD) {
-                                BCRegister op1 = (BCRegister) next.operand1;
-                                BCRegister op2 = (BCRegister) next.operand2;
-                                BCRegister op3 = (BCRegister) next.operand3;
-                                if (op2.equals(immRegister)) {
-                                    if (op1.register == ByteCode.BP_REGISTER)
-                                        instruction = new BCInstruction(ByteCode.GET_PARAMETER_ADDRESS, new BCImmediate8(imm), new BCRegister(op3));
-                                    else
-                                        instruction = new BCInstruction(ByteCode.GET_FIELD_ADDRESS, new BCRegister(op1), new BCImmediate8(imm), new BCRegister(op3));
-                                    instruction.allocatedRegisters.addAll(current.allocatedRegisters);
-                                    instruction.allocatedRegisters.addAll(next.allocatedRegisters);
-                                } else {
-                                    instruction = null;
-                                }
-                            } else if (next.code == ByteCode.SUB) {
-                                BCRegister op1 = (BCRegister) next.operand1;
-                                BCRegister op2 = (BCRegister) next.operand2;
-                                BCRegister op3 = (BCRegister) next.operand3;
-                                if (op1.register != ByteCode.BP_REGISTER || !op2.equals(immRegister)) {
-                                    instruction = null;
-                                } else {
-                                    instruction = new BCInstruction(ByteCode.GET_LOCAL_ADDRESS, new BCImmediate8(imm), new BCRegister(op3));
-                                    instruction.allocatedRegisters.addAll(current.allocatedRegisters);
-                                    instruction.allocatedRegisters.addAll(next.allocatedRegisters);
-                                }
-                            } else if (next.code == ByteCode.INVOKE && next.operand1.equals(immRegister)) {
-                                instruction = new BCInstruction(ByteCode.INVOKE_IMMEDIATE, new BCImmediate8(imm));
-                            } else {
-                                instruction = null;
-                            }
-                        } else {
-                            instruction = null;
-                        }
-                        if (instruction != null) {
-                            newInstructions.add(instruction);
-                            i += 1;
-                        } else {
-                            newInstructions.add(current);
-                        }
-                    }
-                    basicBlock.instructions = newInstructions;
-                }
-            }
-            return null;
-        }
-    }
-
     private static final class Tagger extends BCVisitor {
         private final ByteCodeModule module;
         private final Map<String, Map<Long, BCRegister.Interval>> resultMap;
@@ -1349,9 +1291,9 @@ public final class ByteCodeGenerator extends Generator {
                 imm.value = this.offset;
                 BCControlFlowGraph.BasicBlock end = basicBlocks[basicBlocks.length - 1];
                 ((BCImmediate8) end.instructions.get(0).operand1).value = this.offset + this.usedColors.size() * 8L;
-                ((BCImmediate8) end.instructions.get(1).operand1).value = this.offset;
+                ((BCImmediate8) end.instructions.get(2).operand1).value = this.offset;
                 for (Byte color : this.usedColors) {
-                    end.instructions.add(1, new BCInstruction(ByteCode.POP_8, new BCRegister(color)));
+                    end.instructions.add(2, new BCInstruction(ByteCode.POP_8, new BCRegister(color)));
                 }
             }
             return null;

@@ -669,6 +669,13 @@ public final class ReferenceResolver extends LCAstVisitor {
     }
 
     @Override
+    public Object visitUnary(LCUnary lcUnary, Object additional) {
+        this.visit(lcUnary.expression, additional);
+        lcUnary.theType = lcUnary.expression.theType;
+        return null;
+    }
+
+    @Override
     public Object visitNotNullAssert(LCNotNullAssert lcNotNullAssert, Object additional) {
         super.visitNotNullAssert(lcNotNullAssert, additional);
         if (lcNotNullAssert.base.theType instanceof NullableType nullableType) {
@@ -695,25 +702,6 @@ public final class ReferenceResolver extends LCAstVisitor {
         lcRealloc.theType = lcRealloc.expression.theType;
         return null;
     }
-//    @Override
-//    public Object visitMemberAccess(LCMemberAccess lcMemberAccess, Object additional) {
-//        this.visit(lcMemberAccess.base, additional);
-//
-//        Type baseType;
-//        if (lcMemberAccess.base.theType instanceof PointerType pointerType) {
-//            baseType = pointerType.base;
-//        } else {
-//            // TODO dump error
-//            return null;
-//        }
-//
-//        if (baseType instanceof NamedType namedType) {
-//            this.objectSymbolStack.push(Objects.requireNonNull(LCAstUtil.getObjectSymbol(Objects.requireNonNull(LCAstUtil.getObjectDeclarationByName(lcMemberAccess, namedType.name)))));
-//        }
-//        this.visit(lcMemberAccess.member, additional);
-//
-//        return null;
-//    }
 
     @Override
     public Object visitDereference(LCDereference lcDereference, Object additional) {

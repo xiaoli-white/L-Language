@@ -3,6 +3,7 @@ package ldk.l.lvm.vm;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.Arrays;
 
 public final class ExecutionUnit implements Runnable {
     public final VirtualMachine virtualMachine;
@@ -27,13 +28,14 @@ public final class ExecutionUnit implements Runnable {
         running = true;
         while (running) {
             byte code = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]++);
-//            System.out.printf("%d: %s\n", registers[ByteCode.PC_REGISTER] - 1, ByteCode.getInstructionName(code));
+            System.out.printf("%d: %s\n", registers[ByteCode.PC_REGISTER] - 1, ByteCode.getInstructionName(code));
             switch (code) {
                 case ByteCode.NOP -> {
                 }
                 case ByteCode.PUSH_1 -> {
                     byte register = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]++);
                     registers[ByteCode.SP_REGISTER]--;
+                    System.out.println("debug: " + registers[register]);
                     virtualMachine.memory.setByte(registers[ByteCode.SP_REGISTER], (byte) registers[register]);
                 }
                 case ByteCode.PUSH_2 -> {
@@ -112,29 +114,57 @@ public final class ExecutionUnit implements Runnable {
                     virtualMachine.memory.setLong(registers[address], registers[source]);
                 }
                 case ByteCode.CMP -> {
+                    byte type = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]++);
                     byte operand1 = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]++);
                     byte operand2 = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]++);
                     long value1 = registers[operand1];
                     long value2 = registers[operand2];
+                    if (type == ByteCode.BYTE_TYPE) {
+                        value1 = (byte) (value1 & 0xff);
+                        value2 = (byte) (value2 & 0xff);
+                    } else if (type == ByteCode.SHORT_TYPE) {
+                        value1 = (short) (value1 & 0xffff);
+                        value2 = (short) (value2 & 0xffff);
+                    } else if (type == ByteCode.INT_TYPE) {
+                        value1 = (int) (value1 & 0xffffffffL);
+                        value2 = (int) (value2 & 0xffffffffL);
+                    } else if (type != ByteCode.LONG_TYPE) {
+                        throw new RuntimeException("Unsupported type: " + type);
+                    }
+                    System.out.println(value1 + " " + value2);
                     if (value1 == value2) {
-                        flags = (flags & ~ByteCode.ZERO_MARK) | 1;
+                        flags = (flags & ~ByteCode.ZERO_MARK & ~ByteCode.CARRY_MARK & ~ByteCode.UNSIGNED_MARK) | 1;
                     } else {
-                        long signedResult = registers[operand1] - registers[operand2];
+                        long signedResult = value1 - value2;
                         long unsignedResult = new BigInteger(Long.toUnsignedString(value1)).compareTo(new BigInteger(Long.toUnsignedString(value2)));
                         flags = (flags & ~ByteCode.ZERO_MARK & ~ByteCode.CARRY_MARK & ~ByteCode.UNSIGNED_MARK) | ((signedResult < 0 ? 1 : 0) << 1) | ((unsignedResult < 0 ? 1 : 0) << 2);
                     }
+                    System.out.printf("%s %d %d\n", flags & ByteCode.ZERO_MARK, flags & ByteCode.CARRY_MARK, flags & ByteCode.UNSIGNED_MARK);
                 }
                 case ByteCode.ATOMIC_CMP -> {
                     virtualMachine.memory.lock();
+                    byte type = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]++);
                     byte operand1 = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]++);
                     byte operand2 = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]++);
-                    long temp = virtualMachine.memory.getLong(registers[operand1]);
+                    long value1 = virtualMachine.memory.getLong(registers[operand1]);
                     long value2 = registers[operand2];
-                    if (temp == value2) {
-                        flags = (flags & ~ByteCode.ZERO_MARK) | 1;
+                    if (type == ByteCode.BYTE_TYPE) {
+                        value1 = (byte) (value1 & 0xff);
+                        value2 = (byte) (value2 & 0xff);
+                    } else if (type == ByteCode.SHORT_TYPE) {
+                        value1 = (short) (value1 & 0xffff);
+                        value2 = (short) (value2 & 0xffff);
+                    } else if (type == ByteCode.INT_TYPE) {
+                        value1 = (int) (value1 & 0xffffffffL);
+                        value2 = (int) (value2 & 0xffffffffL);
+                    } else if (type != ByteCode.LONG_TYPE) {
+                        throw new RuntimeException("Unsupported type: " + type);
+                    }
+                    if (value1 == value2) {
+                        flags = (flags & ~ByteCode.ZERO_MARK & ~ByteCode.CARRY_MARK & ~ByteCode.UNSIGNED_MARK) | 1;
                     } else {
-                        long signedResult = registers[operand1] - registers[operand2];
-                        long unsignedResult = new BigInteger(Long.toUnsignedString(temp)).compareTo(new BigInteger(Long.toUnsignedString(value2)));
+                        long signedResult = value1 - value2;
+                        long unsignedResult = new BigInteger(Long.toUnsignedString(value1)).compareTo(new BigInteger(Long.toUnsignedString(value2)));
                         flags = (flags & ~ByteCode.ZERO_MARK & ~ByteCode.CARRY_MARK & ~ByteCode.UNSIGNED_MARK) | ((signedResult < 0 ? 1 : 0) << 1) | ((unsignedResult < 0 ? 1 : 0) << 2);
                     }
                     virtualMachine.memory.unlock();
@@ -247,42 +277,42 @@ public final class ExecutionUnit implements Runnable {
                 }
                 case ByteCode.JL -> {
                     byte address = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]++);
-                    if ((flags & ByteCode.ZERO_MARK) == 0 && ((flags & ByteCode.CARRY_MARK) >> 1) == 1)
+                    if ((flags & ByteCode.ZERO_MARK) == 0 && (flags & ByteCode.CARRY_MARK) != 0)
                         registers[ByteCode.PC_REGISTER] = registers[address];
                 }
                 case ByteCode.JLE -> {
                     byte address = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]++);
-                    if ((flags & ByteCode.ZERO_MARK) == 1 || ((flags & ByteCode.CARRY_MARK) >> 1) == 1)
+                    if ((flags & ByteCode.ZERO_MARK) == 1 || (flags & ByteCode.CARRY_MARK) != 0)
                         registers[ByteCode.PC_REGISTER] = registers[address];
                 }
                 case ByteCode.JG -> {
                     byte address = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]++);
-                    if ((flags & ByteCode.ZERO_MARK) == 0 && ((flags & ByteCode.CARRY_MARK) >> 1) == 0)
+                    if ((flags & ByteCode.ZERO_MARK) == 0 && (flags & ByteCode.CARRY_MARK) == 0)
                         registers[ByteCode.PC_REGISTER] = registers[address];
                 }
                 case ByteCode.JGE -> {
                     byte address = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]++);
-                    if ((flags & ByteCode.ZERO_MARK) == 1 || ((flags & ByteCode.CARRY_MARK) >> 1) == 0)
+                    if ((flags & ByteCode.ZERO_MARK) == 1 || (flags & ByteCode.CARRY_MARK) == 0)
                         registers[ByteCode.PC_REGISTER] = registers[address];
                 }
                 case ByteCode.JUL -> {
                     byte address = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]++);
-                    if ((flags & ByteCode.ZERO_MARK) == 0 && ((flags & ByteCode.UNSIGNED_MARK) >> 2) == 1)
+                    if ((flags & ByteCode.ZERO_MARK) == 0 && (flags & ByteCode.UNSIGNED_MARK) != 0)
                         registers[ByteCode.PC_REGISTER] = registers[address];
                 }
                 case ByteCode.JULE -> {
                     byte address = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]++);
-                    if ((flags & ByteCode.ZERO_MARK) == 1 || ((flags & ByteCode.UNSIGNED_MARK) >> 2) == 1)
+                    if ((flags & ByteCode.ZERO_MARK) == 1 || (flags & ByteCode.UNSIGNED_MARK) != 0)
                         registers[ByteCode.PC_REGISTER] = registers[address];
                 }
                 case ByteCode.JUG -> {
                     byte address = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]++);
-                    if ((flags & ByteCode.ZERO_MARK) == 0 && ((flags & ByteCode.UNSIGNED_MARK) >> 2) == 0)
+                    if ((flags & ByteCode.ZERO_MARK) == 0 && (flags & ByteCode.UNSIGNED_MARK) == 0)
                         registers[ByteCode.PC_REGISTER] = registers[address];
                 }
                 case ByteCode.JUGE -> {
                     byte address = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]++);
-                    if ((flags & ByteCode.ZERO_MARK) == 1 || ((flags & ByteCode.UNSIGNED_MARK) >> 2) == 0)
+                    if ((flags & ByteCode.ZERO_MARK) == 1 || (flags & ByteCode.UNSIGNED_MARK) == 0)
                         registers[ByteCode.PC_REGISTER] = registers[address];
                 }
                 case ByteCode.MALLOC -> {
@@ -887,10 +917,10 @@ public final class ExecutionUnit implements Runnable {
                     running = false;
                 }
                 case ByteCode.GET_FIELD_ADDRESS -> {
-                    byte objectRegister = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]);
-                    long offset = virtualMachine.memory.getLong(registers[ByteCode.PC_REGISTER] + 1);
-                    byte targetRegister = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER] + 9);
-                    registers[ByteCode.PC_REGISTER] += 10;
+                    byte objectRegister = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]++);
+                    long offset = virtualMachine.memory.getLong(registers[ByteCode.PC_REGISTER]);
+                    byte targetRegister = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER] + 8);
+                    registers[ByteCode.PC_REGISTER] += 9;
                     registers[targetRegister] = registers[objectRegister] + offset;
                 }
                 case ByteCode.GET_LOCAL_ADDRESS -> {
@@ -910,6 +940,32 @@ public final class ExecutionUnit implements Runnable {
                     byte resultRegister = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER] + 8);
                     registers[resultRegister] = virtualMachine.createThread(entryPoint);
                     registers[ByteCode.PC_REGISTER] += 9;
+                }
+                case ByteCode.THREAD_CONTROL -> {
+                    byte threadIDRegister = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]++);
+                    byte command = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]++);
+                    ThreadHandle threadHandle = virtualMachine.threadID2Handle.get(registers[threadIDRegister]);
+                    switch (command) {
+                        case ByteCode.TC_STOP -> threadHandle.thread.interrupt();
+                        case ByteCode.TC_WAIT -> {
+                            try {
+                                threadHandle.thread.join();
+                            } catch (InterruptedException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                        case ByteCode.TC_GET_REGISTER -> {
+                            byte register = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]++);
+                            byte target = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]++);
+                            registers[target] = threadHandle.executionUnit.registers[register];
+                        }
+                        case ByteCode.TC_SET_REGISTER -> {
+                            byte register = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]++);
+                            byte value = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]++);
+                            threadHandle.executionUnit.registers[register] = registers[value];
+                        }
+                        default -> throw new RuntimeException("Unknown command: " + command);
+                    }
                 }
             }
         }

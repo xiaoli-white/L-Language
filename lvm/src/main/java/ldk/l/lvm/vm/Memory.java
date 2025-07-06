@@ -146,7 +146,7 @@ public final class Memory {
         }
         while (size > 0) {
             releaseMemoryPage(address & ~PAGE_OFFSET_MASK);
-            long tmp = PAGE_SIZE - address & PAGE_OFFSET_MASK;
+            long tmp = PAGE_SIZE - (address & PAGE_OFFSET_MASK);
             size -= tmp;
             address += tmp;
         }

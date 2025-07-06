@@ -802,7 +802,7 @@ public final class IRGenerator extends LCAstVisitor {
                 String tempRegister = allocateVirtualRegister();
                 addInstruction(new IRStackAllocate(new IRConstant(constant1Index), new IRVirtualRegister(tempRegister)));
 
-                IRConditionalJump irConditionalJump = new IRConditionalJump(operandType, this.negatesCondition(this.parseRelationOperator(lcBinary._operator)), operand1, operand2, null);
+                IRConditionalJump irConditionalJump = new IRConditionalJump(parseType(TypeUtil.getUpperBound(lcBinary.expression1.theType, lcBinary.expression2.theType)), this.negatesCondition(this.parseRelationOperator(lcBinary._operator)), operand1, operand2, null);
                 addInstruction(irConditionalJump);
 
                 createBasicBlock();

@@ -11,6 +11,10 @@ public class ByteCode {
     public static final byte SHORT_TYPE = 1;
     public static final byte INT_TYPE = 2;
     public static final byte LONG_TYPE = 3;
+    public static final byte TC_STOP = 0; // TC = Thread Control
+    public static final byte TC_WAIT = 1;
+    public static final byte TC_GET_REGISTER = 2;
+    public static final byte TC_SET_REGISTER = 3;
 
     public static final byte NOP = 0x00;
     public static final byte PUSH_1 = 0x01;
@@ -134,6 +138,7 @@ public class ByteCode {
     public static final byte GET_LOCAL_ADDRESS = 0x77;
     public static final byte GET_PARAMETER_ADDRESS = 0x78;
     public static final byte CREATE_THREAD = 0x79;
+    public static final byte THREAD_CONTROL = 0x7a;
 
     public static String getInstructionName(byte code) {
         return switch (code) {
@@ -259,6 +264,7 @@ public class ByteCode {
             case GET_LOCAL_ADDRESS -> "GET_LOCAL_ADDRESS";
             case GET_PARAMETER_ADDRESS -> "GET_PARAMETER_ADDRESS";
             case CREATE_THREAD -> "CREATE_THREAD";
+            case THREAD_CONTROL -> "THREAD_CONTROL";
             default -> throw new IllegalArgumentException("Unknown instruction code: " + code);
         };
     }
@@ -387,6 +393,7 @@ public class ByteCode {
             case "GET_LOCAL_ADDRESS" -> GET_LOCAL_ADDRESS;
             case "GET_PARAMETER_ADDRESS" -> GET_PARAMETER_ADDRESS;
             case "CREATE_THREAD" -> CREATE_THREAD;
+            case "THREAD_CONTROL" -> THREAD_CONTROL;
             default -> throw new IllegalArgumentException("Unknown instruction code: " + code);
         };
     }
