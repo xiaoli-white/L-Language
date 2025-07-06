@@ -11,7 +11,6 @@ import ldk.l.lc.util.scope.Scope;
 import ldk.l.lc.util.symbol.object.RecordSymbol;
 
 import java.util.Arrays;
-import java.util.Objects;
 
 public final class LCRecordDeclaration extends LCObjectDeclaration {
     public Scope scope;

@@ -6,13 +6,11 @@ import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.ast.base.*;
 import ldk.l.lc.ast.expression.*;
 import ldk.l.lc.ast.expression.literal.*;
+import ldk.l.lc.ast.expression.type.LCTypeReferenceExpression;
 import ldk.l.lc.ast.statement.*;
 import ldk.l.lc.ast.statement.declaration.LCMethodDeclaration;
 import ldk.l.lc.ast.statement.declaration.LCVariableDeclaration;
-import ldk.l.lc.ast.statement.declaration.object.LCClassDeclaration;
-import ldk.l.lc.ast.statement.declaration.object.LCInterfaceDeclaration;
-import ldk.l.lc.ast.statement.declaration.object.LCObjectDeclaration;
-import ldk.l.lc.ast.statement.declaration.object.LCRecordDeclaration;
+import ldk.l.lc.ast.statement.declaration.object.*;
 import ldk.l.lc.ast.statement.loops.*;
 import ldk.l.lc.semantic.types.*;
 import ldk.l.lc.token.Token;
@@ -216,6 +214,95 @@ public final class IRGenerator extends LCAstVisitor {
     }
 
     @Override
+    public Object visitEnumDeclaration(LCEnumDeclaration lcEnumDeclaration, Object additional) {
+        this.createClassInstance(lcEnumDeclaration);
+
+        this.initCFG = createControlFlowGraph();
+        this.staticInitCFG = createControlFlowGraph();
+
+        this.initFields.add(new IRField("<this_instance>", new IRPointerType(IRType.getVoidType())));
+
+        List<IRField> fields = new ArrayList<>();
+        fields.add(new IRField("<class_ptr>", new IRPointerType(IRType.getVoidType())));
+        fields.add(new IRField("<reference_count>", IRType.getUnsignedLongType()));
+
+        for (VariableSymbol variableSymbol : ((LCClassDeclaration) getAST(lcEnumDeclaration).getObjectDeclaration("l.lang.Enum")).symbol.getAllProperties())
+            if (!LCFlags.hasStatic(variableSymbol.flags))
+                fields.add(new IRField(variableSymbol.name, parseType(variableSymbol.theType)));
+        for (VariableSymbol variableSymbol : lcEnumDeclaration.symbol.properties)
+            if (!LCFlags.hasStatic(variableSymbol.flags))
+                fields.add(new IRField(variableSymbol.name, parseType(variableSymbol.theType)));
+
+        IRStructure irStructure = new IRStructure(lcEnumDeclaration.getFullName(), fields.toArray(new IRField[0]));
+        this.module.putStructure(irStructure);
+
+        this.currentCFG = this.initCFG;
+        createBasicBlock();
+        this.getThisInstance();
+        IROperand thisInstance = operandStack.pop();
+        addInstruction(new IRInvoke(IRType.getVoidType(), new IRMacro("function_address", new String[]{"l.lang.Enum.<__init__>()V"}), new IRType[]{new IRPointerType(IRType.getVoidType())}, new IROperand[]{thisInstance}, null));
+        initObjectHead(lcEnumDeclaration.getFullName());
+
+        this.currentCFG = this.staticInitCFG;
+        createBasicBlock();
+
+        for (LCAnnotationDeclaration.LCAnnotation lcAnnotation : lcEnumDeclaration.annotations) {
+            this.visitAnnotation(lcAnnotation, additional);
+        }
+        for (LCTypeParameter lcTypeParameter : lcEnumDeclaration.typeParameters) {
+            this.visitTypeParameter(lcTypeParameter, additional);
+        }
+        for (LCTypeReferenceExpression lcTypeReferenceExpression : lcEnumDeclaration.implementedInterfaces) {
+            this.visitTypeReferenceExpression(lcTypeReferenceExpression, additional);
+        }
+        if (lcEnumDeclaration.delegated != null) {
+            this.visit(lcEnumDeclaration.delegated, additional);
+        }
+        this.inStaticInit = true;
+        for (LCEnumDeclaration.LCEnumFieldDeclaration field : lcEnumDeclaration.fields)
+            this.visitEnumFieldDeclaration(field, additional);
+        this.inStaticInit = false;
+        this.visitBlock(lcEnumDeclaration.body, additional);
+
+        this.module.putFunction(new IRFunction(IRType.getVoidType(), lcEnumDeclaration.getFullName() + ".<__init__>()V", 1, this.initFields.toArray(new IRField[0]), this.initCFG));
+        String staticInitFunctionName = lcEnumDeclaration.getFullName() + ".<__static_init__>()V";
+        this.module.putFunction(new IRFunction(IRType.getVoidType(), staticInitFunctionName, 0, this.staticInitFields.toArray(new IRField[0]), this.staticInitCFG));
+
+        if (lcEnumDeclaration.symbol.destructor == null) {
+            this.module.putFunction(new IRFunction(IRType.getVoidType(), lcEnumDeclaration.getFullName() + ".<deinit>()V", 1, new IRField[]{new IRField("<this_instance>", new IRPointerType(IRType.getVoidType()))}, createControlFlowGraph()));
+        }
+
+        this.objectStaticInitInvocations.add(new IRInvoke(IRType.getVoidType(), new IRMacro("function_address", new String[]{staticInitFunctionName}), new IRType[0], new IROperand[0], null));
+
+        this.initFields.clear();
+        this.initVariableName2FieldName.clear();
+        this.staticInitFields.clear();
+        this.staticInitVariableName2FieldName.clear();
+        return null;
+    }
+
+    @Override
+    public Object visitEnumFieldDeclaration(LCEnumDeclaration.LCEnumFieldDeclaration lcEnumFieldDeclaration, Object additional) {
+        String enumName = lcEnumFieldDeclaration.symbol.enumSymbol.getFullName();
+        String place = allocateVirtualRegister();
+        addInstruction(new IRMalloc(new IRMacro("structure_length", new String[]{enumName}), new IRVirtualRegister(place)));
+        addInstruction(new IRInvoke(IRType.getVoidType(), new IRMacro("function_address", new String[]{enumName + ".<__init__>()V"}), new IRType[]{new IRPointerType(IRType.getVoidType())}, new IROperand[]{new IRVirtualRegister(place)}, null));
+
+        IRType[] operandTypes = new IRType[lcEnumFieldDeclaration.arguments.length + 1];
+        IROperand[] operands = new IROperand[lcEnumFieldDeclaration.arguments.length + 1];
+        operandTypes[0] = new IRPointerType(IRType.getVoidType());
+        operands[0] = new IRVirtualRegister(place);
+        for (int i = 0; i < lcEnumFieldDeclaration.arguments.length; i++) {
+            operandTypes[i + 1] = parseType(lcEnumFieldDeclaration.arguments[i].theType);
+            this.visit(lcEnumFieldDeclaration.arguments[i], additional);
+            operands[i + 1] = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
+        }
+        addInstruction(new IRInvoke(IRType.getVoidType(), new IRMacro("function_address", new String[]{lcEnumFieldDeclaration.symbol.constructor.getFullName()}), operandTypes, operands, null));
+
+        return null;
+    }
+
+    @Override
     public Object visitRecordDeclaration(LCRecordDeclaration lcRecordDeclaration, Object additional) {
         this.createClassInstance(lcRecordDeclaration);
 
@@ -229,10 +316,14 @@ public final class IRGenerator extends LCAstVisitor {
         fields.add(new IRField("<class_ptr>", new IRPointerType(IRType.getVoidType())));
         fields.add(new IRField("<reference_count>", IRType.getUnsignedLongType()));
 
+        for (VariableSymbol variableSymbol : ((LCClassDeclaration) getAST(lcRecordDeclaration).getObjectDeclaration("l.lang.Record")).symbol.getAllProperties())
+            if (!LCFlags.hasStatic(variableSymbol.flags))
+                fields.add(new IRField(variableSymbol.name, parseType(variableSymbol.theType)));
         for (VariableSymbol variableSymbol : lcRecordDeclaration.symbol.fields)
             fields.add(new IRField(variableSymbol.name, parseType(variableSymbol.theType)));
         for (VariableSymbol variableSymbol : lcRecordDeclaration.symbol.properties)
-            fields.add(new IRField(variableSymbol.name, parseType(variableSymbol.theType)));
+            if (!LCFlags.hasStatic(variableSymbol.flags))
+                fields.add(new IRField(variableSymbol.name, parseType(variableSymbol.theType)));
 
         IRStructure irStructure = new IRStructure(lcRecordDeclaration.getFullName(), fields.toArray(new IRField[0]));
         this.module.putStructure(irStructure);
@@ -1432,10 +1523,8 @@ public final class IRGenerator extends LCAstVisitor {
             place = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
             retain(place, lcNewObject.theType);
         } else {
-            String lengthRegister = allocateVirtualRegister();
-            addInstruction(new IRSetVirtualRegister(new IRMacro("structure_length", new String[]{typeName}), new IRVirtualRegister(lengthRegister)));
             String addressRegister = allocateVirtualRegister();
-            addInstruction(new IRMalloc(new IRVirtualRegister(lengthRegister), new IRVirtualRegister(addressRegister)));
+            addInstruction(new IRMalloc(new IRMacro("structure_length", new String[]{typeName}), new IRVirtualRegister(addressRegister)));
             place = new IRVirtualRegister(addressRegister);
         }
 
@@ -1705,6 +1794,24 @@ public final class IRGenerator extends LCAstVisitor {
                 hasVTable = false;
                 hasITable = false;
             }
+            case LCEnumDeclaration lcEnumDeclaration -> {
+                Map<String, String> virtualMethods = getVirtualMethods(lcEnumDeclaration.symbol);
+                IRVirtualTable vtable = new IRVirtualTable(virtualMethods.values().toArray(new String[0]));
+                this.module.globalDataSection.add(new IRGlobalDataSection.GlobalData(vtableName, new IROperand[]{vtable}));
+                this.module.name2VTableKeys.put(lcEnumDeclaration.getFullName(), new ArrayList<>(virtualMethods.keySet()));
+
+                Map<String, Map<String, String>> interfacesMethodMap = getInterfacesMethodMap(lcEnumDeclaration.symbol);
+                List<IRInterfaceTable.Entry> entries = new ArrayList<>();
+                for (Map.Entry<String, Map<String, String>> entry : interfacesMethodMap.entrySet())
+                    entries.add(new IRInterfaceTable.Entry(entry.getKey(), entry.getValue().values().toArray(new String[0])));
+                IRInterfaceTable itable = new IRInterfaceTable(entries.toArray(new IRInterfaceTable.Entry[0]));
+                this.module.globalDataSection.add(new IRGlobalDataSection.GlobalData(itableName, new IROperand[]{itable}));
+                itableLength = entries.size();
+
+                superClassInstanceAddress = new IRMacro("global_data_address", new String[]{"<class_instance l.lang.Enum>"});
+                hasVTable = true;
+                hasITable = true;
+            }
             case LCRecordDeclaration lcRecordDeclaration -> {
                 Map<String, String> virtualMethods = getVirtualMethods(lcRecordDeclaration.symbol);
                 IRVirtualTable vtable = new IRVirtualTable(virtualMethods.values().toArray(new String[0]));
@@ -1768,6 +1875,18 @@ public final class IRGenerator extends LCAstVisitor {
         return result;
     }
 
+    private Map<String, String> getVirtualMethods(EnumSymbol enumSymbol) {
+        Map<String, String> result = getVirtualMethods(((LCClassDeclaration) getAST(enumSymbol.declaration).getObjectDeclaration(SystemTypes.Enum_Type.name)).symbol);
+        for (MethodSymbol methodSymbol : enumSymbol.methods) {
+            if (LCFlags.hasStatic(methodSymbol.flags)) continue;
+            result.put(methodSymbol.getSimpleName(), LCFlags.hasAbstract(methodSymbol.flags) ? "" : methodSymbol.getFullName());
+        }
+        if (enumSymbol.destructor != null) {
+            result.put(enumSymbol.destructor.getSimpleName(), enumSymbol.destructor.getFullName());
+        }
+        return result;
+    }
+
     private Map<String, Map<String, String>> getInterfacesMethodMap(ClassSymbol classSymbol) {
         Map<String, Map<String, String>> result;
         if (classSymbol.extended != null) {
@@ -1801,6 +1920,23 @@ public final class IRGenerator extends LCAstVisitor {
                 map.put(methodSymbol.getSimpleName(), symbol != null ? symbol.getFullName() : "");
             }
             map.put("<deinit>()V", recordSymbol.getFullName() + ".<deinit>()V");
+            result.put(interfaceSymbol.getFullName(), map);
+            queue.addAll(Arrays.asList(interfaceSymbol.extendedInterfaces));
+        }
+        return result;
+    }
+
+    private Map<String, Map<String, String>> getInterfacesMethodMap(EnumSymbol enumSymbol) {
+        Map<String, Map<String, String>> result = new LinkedHashMap<>();
+        Queue<InterfaceSymbol> queue = new LinkedList<>(List.of(enumSymbol.implementedInterfaces));
+        while (!queue.isEmpty()) {
+            InterfaceSymbol interfaceSymbol = queue.poll();
+            Map<String, String> map = new LinkedHashMap<>();
+            for (MethodSymbol methodSymbol : interfaceSymbol.methods) {
+                MethodSymbol symbol = enumSymbol.getMethodCascade(methodSymbol.getSimpleName());
+                map.put(methodSymbol.getSimpleName(), symbol != null ? symbol.getFullName() : "");
+            }
+            map.put("<deinit>()V", enumSymbol.getFullName() + ".<deinit>()V");
             result.put(interfaceSymbol.getFullName(), map);
             queue.addAll(Arrays.asList(interfaceSymbol.extendedInterfaces));
         }

@@ -100,7 +100,7 @@ public final class NamedType extends Type {
         } else if (this.equals(SystemTypes.VOID)) {
             return "V";
         } else {
-            return "E" + name.replace(".", "/") + ";";
+            return "O" + name.replace(".", "/") + ";";
         }
     }
 }

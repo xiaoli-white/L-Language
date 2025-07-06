@@ -28,14 +28,13 @@ public final class ExecutionUnit implements Runnable {
         running = true;
         while (running) {
             byte code = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]++);
-            System.out.printf("%d: %s\n", registers[ByteCode.PC_REGISTER] - 1, ByteCode.getInstructionName(code));
+//            System.out.printf("%d: %s\n", registers[ByteCode.PC_REGISTER] - 1, ByteCode.getInstructionName(code));
             switch (code) {
                 case ByteCode.NOP -> {
                 }
                 case ByteCode.PUSH_1 -> {
                     byte register = virtualMachine.memory.getByte(registers[ByteCode.PC_REGISTER]++);
                     registers[ByteCode.SP_REGISTER]--;
-                    System.out.println("debug: " + registers[register]);
                     virtualMachine.memory.setByte(registers[ByteCode.SP_REGISTER], (byte) registers[register]);
                 }
                 case ByteCode.PUSH_2 -> {
@@ -131,7 +130,6 @@ public final class ExecutionUnit implements Runnable {
                     } else if (type != ByteCode.LONG_TYPE) {
                         throw new RuntimeException("Unsupported type: " + type);
                     }
-                    System.out.println(value1 + " " + value2);
                     if (value1 == value2) {
                         flags = (flags & ~ByteCode.ZERO_MARK & ~ByteCode.CARRY_MARK & ~ByteCode.UNSIGNED_MARK) | 1;
                     } else {
@@ -139,7 +137,6 @@ public final class ExecutionUnit implements Runnable {
                         long unsignedResult = new BigInteger(Long.toUnsignedString(value1)).compareTo(new BigInteger(Long.toUnsignedString(value2)));
                         flags = (flags & ~ByteCode.ZERO_MARK & ~ByteCode.CARRY_MARK & ~ByteCode.UNSIGNED_MARK) | ((signedResult < 0 ? 1 : 0) << 1) | ((unsignedResult < 0 ? 1 : 0) << 2);
                     }
-                    System.out.printf("%s %d %d\n", flags & ByteCode.ZERO_MARK, flags & ByteCode.CARRY_MARK, flags & ByteCode.UNSIGNED_MARK);
                 }
                 case ByteCode.ATOMIC_CMP -> {
                     virtualMachine.memory.lock();

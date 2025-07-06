@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 public final class ClassSymbol extends ObjectSymbol {
     public LCClassDeclaration declaration;
@@ -160,7 +161,7 @@ public final class ClassSymbol extends ObjectSymbol {
         if (this.extended != null) {
             properties.addAll(List.of(this.extended.getAllProperties()));
         }
-        properties.addAll(List.of(this.properties));
+        properties.addAll(Stream.of(this.properties).filter(variableSymbol -> !LCFlags.hasStatic(variableSymbol.flags)).toList());
         return properties.toArray(new VariableSymbol[0]);
     }
 }

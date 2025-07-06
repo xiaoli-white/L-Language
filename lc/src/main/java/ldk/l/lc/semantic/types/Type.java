@@ -55,7 +55,7 @@ public abstract sealed class Type permits ArrayType,MethodPointerType,NamedType,
             return SystemTypes.BOOLEAN;
         } else if (string.equalsString("V")) {
             return SystemTypes.VOID;
-        } else if (string.startsWith("E") && string.endsWith(";")) {
+        } else if (string.startsWith("O") && string.endsWith(";")) {
             return new NamedType(string.substring(1, string.length() - 1));
         } else if (string.startsWith("R")) {
             string.addPos(1);

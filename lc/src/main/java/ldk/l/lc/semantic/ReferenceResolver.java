@@ -119,6 +119,20 @@ public final class ReferenceResolver extends LCAstVisitor {
     }
 
     @Override
+    public Object visitEnumFieldDeclaration(LCEnumDeclaration.LCEnumFieldDeclaration lcEnumFieldDeclaration, Object additional) {
+        Type[] types = new Type[lcEnumFieldDeclaration.arguments.length];
+        for (int i = 0; i < lcEnumFieldDeclaration.arguments.length; i++) {
+            LCExpression expression = lcEnumFieldDeclaration.arguments[i];
+            this.visit(expression, additional);
+            types[i] = expression.theType;
+        }
+
+        lcEnumFieldDeclaration.symbol.constructor = findMethodSymbolOfObjectSymbol(lcEnumFieldDeclaration.symbol.enumSymbol, "<init>", types);
+
+        return null;
+    }
+
+    @Override
     public Object visitRecordDeclaration(LCRecordDeclaration lcRecordDeclaration, Object additional) {
         Scope oldScope = this.scope;
         this.scope = lcRecordDeclaration.scope;
@@ -165,6 +179,7 @@ public final class ReferenceResolver extends LCAstVisitor {
         this.scope = oldScope;
         return null;
     }
+
     @Override
     public Object visitFor(LCFor lcFor, Object additional) {
         Scope oldScope = this.scope;

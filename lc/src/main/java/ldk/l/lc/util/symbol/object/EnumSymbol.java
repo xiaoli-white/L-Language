@@ -6,6 +6,7 @@ import ldk.l.lc.semantic.types.Type;
 import ldk.l.lc.util.symbol.*;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 public final class EnumSymbol extends ObjectSymbol {
     public LCEnumDeclaration declaration;
@@ -74,13 +75,32 @@ public final class EnumSymbol extends ObjectSymbol {
         return this.methods;
     }
 
+    public MethodSymbol getMethodCascade(String simpleName) {
+        for (MethodSymbol method : this.methods) {
+            if (Objects.equals(method.getSimpleName(), simpleName)) {
+                return method;
+            }
+        }
+        // TODO
+//        MethodSymbol methodSymbol = ((LCClassDeclaration)getAST(recordSymbol.declaration).getObjectDeclaration(SystemTypes.Record_Type.name)).symbol.getMethodCascade(simpleName);
+//        if (methodSymbol != null) return methodSymbol;
+
+        MethodSymbol methodSymbol;
+        for (InterfaceSymbol interfaceSymbol : this.implementedInterfaces) {
+            methodSymbol = interfaceSymbol.getDefaultMethodCascade(simpleName);
+            if (methodSymbol != null) return methodSymbol;
+        }
+        return null;
+    }
+
     public static class EnumFieldSymbol extends Symbol {
         public EnumSymbol enumSymbol = null;
-        public LCEnumDeclaration.LCEnumFieldDeclaration decl;
+        public LCEnumDeclaration.LCEnumFieldDeclaration declaration;
+        public MethodSymbol constructor = null;
 
-        public EnumFieldSymbol(LCEnumDeclaration.LCEnumFieldDeclaration decl, Type theType) {
-            super(decl.name, theType, SymbolKind.EnumField);
-            this.decl = decl;
+        public EnumFieldSymbol(LCEnumDeclaration.LCEnumFieldDeclaration declaration, Type theType) {
+            super(declaration.name, theType, SymbolKind.EnumField);
+            this.declaration = declaration;
         }
 
         @Override
@@ -94,6 +114,10 @@ public final class EnumSymbol extends ObjectSymbol {
                     "name='" + name + '\'' +
                     ", theType=" + theType +
                     '}';
+        }
+
+        public String getFullName() {
+            return enumSymbol.getFullName() + "." + name;
         }
     }
 }
