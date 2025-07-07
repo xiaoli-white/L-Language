@@ -1,5 +1,6 @@
 package ldk.l.lc.ir;
 
+import com.xiaoli.bcg.bytecode.BCControlFlowGraph;
 import ldk.l.lc.ast.LCAst;
 import ldk.l.lc.ast.LCAstUtil;
 import ldk.l.lc.ast.LCAstVisitor;
@@ -1212,18 +1213,33 @@ public final class IRGenerator extends LCAstVisitor {
         IROperand index = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
 
         IRType elementType = parseType(lcArrayAccess.theType);
-        String tempRegister = allocateVirtualRegister();
-        if (lcArrayAccess.base.theType instanceof ArrayType) {
+        IROperand temp;
+        IRConditionalJump conditionalJump1;
+        IRConditionalJump conditionalJump2;
+        if (lcArrayAccess.base.theType instanceof ArrayType arrayType) {
+            arrayLength(base, arrayType.base);
+            IROperand length = operandStack.pop();
+            int constant0Index = this.module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 0));
+            conditionalJump1 = new IRConditionalJump(IRType.getUnsignedLongType(), IRCondition.Less, index, new IRConstant(constant0Index), "");
+            addInstruction(conditionalJump1);
+            createBasicBlock();
+            conditionalJump2 = new IRConditionalJump(IRType.getUnsignedLongType(), IRCondition.GreaterEqual, index, length, "");
+            addInstruction(conditionalJump2);
+            createBasicBlock();
             int constant16Index = this.module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 16));
+            String tempRegister = allocateVirtualRegister();
             addInstruction(new IRCalculate(IRCalculate.Operator.ADD, new IRPointerType(elementType), base, new IRConstant(constant16Index), new IRVirtualRegister(tempRegister)));
+            temp = new IRVirtualRegister(tempRegister);
         } else {
-            addInstruction(new IRSetVirtualRegister(base, new IRVirtualRegister(tempRegister)));
+            temp = base;
+            conditionalJump1 = null;
+            conditionalJump2 = null;
         }
         String temp2Register = allocateVirtualRegister();
         int constantElementSizeIndex = this.module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), IRType.getLength(elementType)));
         addInstruction(new IRCalculate(IRCalculate.Operator.MUL, IRType.getUnsignedLongType(), new IRConstant(constantElementSizeIndex), index, new IRVirtualRegister(temp2Register)));
         String addressRegister = allocateVirtualRegister();
-        addInstruction(new IRCalculate(IRCalculate.Operator.ADD, new IRPointerType(elementType), new IRVirtualRegister(tempRegister), new IRVirtualRegister(temp2Register), new IRVirtualRegister(addressRegister)));
+        addInstruction(new IRCalculate(IRCalculate.Operator.ADD, new IRPointerType(elementType), temp, new IRVirtualRegister(temp2Register), new IRVirtualRegister(addressRegister)));
         if (lcArrayAccess.isLeftValue) {
             operandStack.push(new IRVirtualRegister(addressRegister));
         } else {
@@ -1232,6 +1248,16 @@ public final class IRGenerator extends LCAstVisitor {
             operandStack.push(new IRVirtualRegister(result));
         }
 
+        if (conditionalJump1 != null) {
+            IRGoto irGoto = new IRGoto("");
+            addInstruction(irGoto);
+            IRControlFlowGraph.BasicBlock basicBlock = createBasicBlock();
+            conditionalJump1.target = basicBlock.name;
+            conditionalJump2.target = basicBlock.name;
+            // TODO throw ArrayIndexOutOfBoundsException
+            IRControlFlowGraph.BasicBlock next = createBasicBlock();
+            irGoto.target = next.name;
+        }
         return null;
     }
 
