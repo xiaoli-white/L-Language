@@ -40,7 +40,10 @@ public final class VirtualMachine {
         running = true;
         while (running && !threadID2Handle.isEmpty()) {
             try {
-                threadID2Handle.values().stream().toList().getFirst().thread.join();
+                ThreadHandle threadHandle = threadID2Handle.values().stream().toList().getFirst();
+                threadHandle.thread.join();
+                threadHandle.executionUnit.destroy();
+                threadID2Handle.remove(threadHandle.executionUnit.threadID);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
