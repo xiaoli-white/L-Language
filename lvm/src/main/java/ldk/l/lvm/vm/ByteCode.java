@@ -1,6 +1,9 @@
 package ldk.l.lvm.vm;
 
 public class ByteCode {
+    private ByteCode() {
+    }
+
     public static final long ZERO_MARK = 0b01L;
     public static final long CARRY_MARK = 0b10L;
     public static final long UNSIGNED_MARK = 0b100L;

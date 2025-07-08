@@ -1,4 +1,4 @@
-package ldk.l.lc.token;
+package ldk.l.litec.token;
 
 public class Tokens {
     public interface TokenCode {
@@ -6,97 +6,23 @@ public class Tokens {
     }
 
     public enum Keyword implements TokenCode {
-        Private("private"),
-        Protected("protected"),
-        Public("public"),
-        Static("static"),
-        Const("const"),
-        Readonly("readonly"),
-        Final("final"),
-        Abstract("abstract"),
-        Override("override"),
-        Default("default"),
-        Volatile("volatile"),
-
         Class("class"),
-        Interface("interface"),
-        Enum("enum"),
-        Record("record"),
-
+        Func("func"),
         Var("var"),
-        Val("val"),
-        Method("method"),
-        Constructor("constructor"),
-        Destructor("destructor"),
 
-        Native("native"),
-
-        Package("package"),
-        Import("import"),
-        This("this"),
-        Super("super"),
-        Extends("extends"),
-        Implements("implements"),
-        New("new"),
-        Delete("delete"),
         If("if"),
         Else("else"),
         Return("return"),
         For("for"),
-        Foreach("foreach"),
         While("while"),
         Do("do"),
         Loop("loop"),
-        Clone("clone"),
-        Typeof("typeof"),
-        Sizeof("sizeof"),
-        Instanceof("instanceof"),
-        Malloc("malloc"),
-        Free("free"),
-        Realloc("realloc"),
-        Goto("goto"),
         Break("break"),
         Continue("continue"),
-        Static_cast("static_cast"),
-        Dynamic_cast("dynamic_cast"),
-        Reinterpret_cast("reinterpret_cast"),
-        Assert("assert"),
-        Operator("operator"),
-        Typedef("typedef"),
-        Vararg("vararg"),
-        Synchronized("synchronized"),
-        __Attribute__("__attribute__"),
-        Throw("throw"),
-        Throws("throws"),
-        Try("try"),
-        Catch("catch"),
-        Finally("finally"),
-        Switch("switch"),
-        Case("case"),
-        When("when"),
-        In("in"),
-        Include("include"),
-        Lambda("lambda"),
-        Sealed("sealed"),
-        Non_sealed("non_sealed"),
-        Permits("permits"),
+
+        Instanceof("instanceof"),
         As("as"),
-        __Dynamic__("__dynamic__"),
         Is("is"),
-        Classof("classof"),
-        Method_address_of("method_address_of"),
-        __Platform__("__platform__"),
-        __Static_init__("__static_init__"),
-        __Init__("__init__"),
-        Yield("yield"),
-        Internal("internal"),
-        Bit_range("bit_range"),
-        With("with"),
-        __Field__("__field__"),
-        By("by"),
-        __Type__("__type__"),
-        Extern("extern"),
-        Lateinit("lateinit"),
         ;
         private final String code;
 
@@ -112,17 +38,8 @@ public class Tokens {
 
     public enum Type implements TokenCode {
         Void("void"),
-        Byte("byte"),
-        Short("short"),
         Int("int"),
-        Long("long"),
-        UByte("ubyte"),
-        UShort("ushort"),
-        UInt("uint"),
-        ULong("ulong"),
         Float("float"),
-        Double("double"),
-        Char("char"),
         Boolean("boolean"),
         Auto("auto");
 
@@ -243,8 +160,7 @@ public class Tokens {
     public enum BaseLiteral implements TokenCode {
         True("true"),
         False("false"),
-        Null("null"),
-        Nullptr("nullptr");
+        Null("null");
 
         private final String code;
 
