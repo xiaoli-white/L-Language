@@ -1,6 +1,7 @@
 package com.xiaoli.bcg.bytecode.operand;
 
 import com.xiaoli.bcg.bytecode.BCVisitor;
+import ldk.l.lvm.vm.ByteCode;
 
 import java.util.Objects;
 
@@ -30,10 +31,16 @@ public final class BCRegister extends BCOperand {
 
     @Override
     public String toString() {
-        if (register == -1)
+        if (register == -1) {
             return "v" + virtualRegister;
-        else
-            return "%" + register;
+        } else {
+            return "%" + switch (register) {
+                case ByteCode.BP_REGISTER -> "BP";
+                case ByteCode.SP_REGISTER -> "SP";
+                case ByteCode.PC_REGISTER -> "PC";
+                default -> register;
+            };
+        }
     }
 
     @Override
