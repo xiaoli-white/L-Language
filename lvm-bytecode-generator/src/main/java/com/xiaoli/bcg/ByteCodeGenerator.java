@@ -1076,7 +1076,13 @@ public final class ByteCodeGenerator extends Generator {
 
         private BCOperand parseOperand(String text, Map<String, BCRegister> name2Register, Map<String, BCRegister> localVirtualRegister2Register) {
             if (text.startsWith("%")) {
-                byte register = Byte.parseByte(text.substring(1));
+                String registerName = text.substring(1);
+                byte register = switch (registerName.toUpperCase()) {
+                    case "BP" -> ByteCode.BP_REGISTER;
+                    case "SP" -> ByteCode.SP_REGISTER;
+                    case "PC" -> ByteCode.PC_REGISTER;
+                    default -> Byte.parseByte(registerName);
+                };
                 return new BCRegister(register);
             } else if (text.startsWith("@")) {
                 return name2Register.get(text.substring(1));
