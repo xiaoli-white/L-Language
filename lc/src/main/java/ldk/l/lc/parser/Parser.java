@@ -122,7 +122,7 @@ public final class Parser {
         Position mainBeginPosition = this.getPos();
         int mainBeginIndex = statements.size();
         while (t.kind() != TokenKind.EOF) {
-            LCAnnotationDeclaration.LCAnnotation[] annotations = this.parseAnnotations();
+            LCAnnotation[] annotations = this.parseAnnotations();
             LCModifier modifier = this.parseModifier();
 
             t = this.peek();
@@ -189,7 +189,7 @@ public final class Parser {
         List<LCStatement> body = new ArrayList<>(statements.subList(0, mainBeginIndex));
         LCClassDeclaration lcClassDeclaration = new LCClassDeclaration(fileNameWithoutExtension, new LCTypeParameter[0], null, new LCTypeReferenceExpression[0], new LCTypeReferenceExpression[0], null,
                 new LCBlock(statements.subList(mainBeginIndex, statements.size()), mainPosition, isErrorNode), mainPosition, isErrorNode);
-        lcClassDeclaration.setAnnotations(new LCAnnotationDeclaration.LCAnnotation[0]);
+        lcClassDeclaration.setAnnotations(new LCAnnotation[0]);
         lcClassDeclaration.setModifier(new LCModifier(LCFlags.PUBLIC, Position.origin));
         body.add(lcClassDeclaration);
         return new LCBlock(body, position, isErrorNode);
@@ -1059,7 +1059,7 @@ public final class Parser {
         this.anonymousClassDeclarationsStack.push(new ArrayList<>());
         Token t = this.peek();
         while (t.kind() != TokenKind.EOF && t.code() != Tokens.Separator.CloseBrace) {
-            LCAnnotationDeclaration.LCAnnotation[] annotations = this.parseAnnotations();
+            LCAnnotation[] annotations = this.parseAnnotations();
 
             LCModifier modifier = this.parseModifier();
 
@@ -1175,15 +1175,15 @@ public final class Parser {
         return statements;
     }
 
-    private LCAnnotationDeclaration.LCAnnotation[] parseAnnotations() {
-        ArrayList<LCAnnotationDeclaration.LCAnnotation> annotations = new ArrayList<>();
+    private LCAnnotation[] parseAnnotations() {
+        ArrayList<LCAnnotation> annotations = new ArrayList<>();
         while (this.peek().code() == Tokens.Operator.At && this.peek2().code() != Tokens.Keyword.Interface) {
             annotations.add(this.parseAnnotation());
         }
-        return annotations.toArray(new LCAnnotationDeclaration.LCAnnotation[0]);
+        return annotations.toArray(new LCAnnotation[0]);
     }
 
-    private LCAnnotationDeclaration.LCAnnotation parseAnnotation() {
+    private LCAnnotation parseAnnotation() {
         Position beginPos = this.getPos();
         this.tokenIndex++;
 
@@ -1195,7 +1195,7 @@ public final class Parser {
             // TODO dump error
         }
 
-        ArrayList<LCAnnotationDeclaration.LCAnnotation.LCAnnotationField> arguments = new ArrayList<>();
+        ArrayList<LCAnnotation.LCAnnotationField> arguments = new ArrayList<>();
         Token t1 = this.peek();
         if (t1.code() == Tokens.Separator.OpenParen) {
             this.tokenIndex++;
@@ -1207,10 +1207,10 @@ public final class Parser {
                     LCExpression expression = this.parseExpression();
                     Position endPos = this.getPos();
                     Position position = new Position(begin.beginPos(), endPos.endPos(), begin.beginLine(), endPos.endLine(), begin.beginCol(), endPos.endCol());
-                    arguments.add(new LCAnnotationDeclaration.LCAnnotation.LCAnnotationField(t2.text(), expression, position, false));
+                    arguments.add(new LCAnnotation.LCAnnotationField(t2.text(), expression, position, false));
                 } else {
                     LCExpression expression = this.parseExpression();
-                    arguments.add(new LCAnnotationDeclaration.LCAnnotation.LCAnnotationField("value", expression, expression.position, false));
+                    arguments.add(new LCAnnotation.LCAnnotationField("value", expression, expression.position, false));
                     if (this.peek().code() != Tokens.Separator.CloseParen) {
                         isErrorNode = true;
                         // TODO dump error
@@ -1231,7 +1231,7 @@ public final class Parser {
 
         Position endPos = this.getPos();
         Position position = new Position(beginPos.beginPos(), endPos.endPos(), beginPos.beginLine(), endPos.endLine(), beginPos.beginCol(), endPos.endCol());
-        return new LCAnnotationDeclaration.LCAnnotation(name.text(), arguments.toArray(new LCAnnotationDeclaration.LCAnnotation.LCAnnotationField[0]), position, isErrorNode);
+        return new LCAnnotation(name.text(), arguments.toArray(new LCAnnotation.LCAnnotationField[0]), position, isErrorNode);
     }
 
     private LCReturn parseReturn() {
@@ -2539,7 +2539,7 @@ public final class Parser {
                                     String anonymousClassName = "<class_" + anonymousClassDeclarations.size() + ">";
                                     LCClassDeclaration classDeclaration = new LCClassDeclaration(anonymousClassName, new LCTypeParameter[0], typeReferenceExpression.clone(), new LCTypeReferenceExpression[0], new LCTypeReferenceExpression[0], null, body, body.position.clone(), false);
                                     classDeclaration.setModifier(new LCModifier(Position.origin));
-                                    classDeclaration.setAnnotations(new LCAnnotationDeclaration.LCAnnotation[0]);
+                                    classDeclaration.setAnnotations(new LCAnnotation[0]);
                                     anonymousClassDeclarations.add(classDeclaration);
                                     lcTypeExpression = new LCTypeReferenceExpression(anonymousClassName, classDeclaration.position.clone(), false);
                                 } catch (CloneNotSupportedException e) {

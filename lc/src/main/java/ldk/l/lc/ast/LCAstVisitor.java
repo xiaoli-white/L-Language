@@ -105,7 +105,7 @@ public abstract class LCAstVisitor {
     }
 
     public Object visitClassDeclaration(LCClassDeclaration lcClassDeclaration, Object additional) {
-        for (LCAnnotationDeclaration.LCAnnotation lcAnnotation : lcClassDeclaration.annotations) {
+        for (LCAnnotation lcAnnotation : lcClassDeclaration.annotations) {
             this.visit(lcAnnotation, additional);
         }
         for (LCTypeParameter lcTypeParameter : lcClassDeclaration.typeParameters) {
@@ -128,7 +128,7 @@ public abstract class LCAstVisitor {
     }
 
     public Object visitInterfaceDeclaration(LCInterfaceDeclaration lcInterfaceDeclaration, Object additional) {
-        for (LCAnnotationDeclaration.LCAnnotation lcAnnotation : lcInterfaceDeclaration.annotations) {
+        for (LCAnnotation lcAnnotation : lcInterfaceDeclaration.annotations) {
             this.visit(lcAnnotation, additional);
         }
         for (LCTypeParameter lcTypeParameter : lcInterfaceDeclaration.typeParameters) {
@@ -142,7 +142,7 @@ public abstract class LCAstVisitor {
     }
 
     public Object visitRecordDeclaration(LCRecordDeclaration lcRecordDeclaration, Object additional) {
-        for (LCAnnotationDeclaration.LCAnnotation lcAnnotation : lcRecordDeclaration.annotations) {
+        for (LCAnnotation lcAnnotation : lcRecordDeclaration.annotations) {
             this.visitAnnotation(lcAnnotation, additional);
         }
         for (LCTypeParameter lcTypeParameter : lcRecordDeclaration.typeParameters) {
@@ -162,7 +162,7 @@ public abstract class LCAstVisitor {
     }
 
     public Object visitEnumDeclaration(LCEnumDeclaration lcEnumDeclaration, Object additional) {
-        for (LCAnnotationDeclaration.LCAnnotation lcAnnotation : lcEnumDeclaration.annotations) {
+        for (LCAnnotation lcAnnotation : lcEnumDeclaration.annotations) {
             this.visitAnnotation(lcAnnotation, additional);
         }
         for (LCTypeParameter lcTypeParameter : lcEnumDeclaration.typeParameters) {
@@ -189,7 +189,7 @@ public abstract class LCAstVisitor {
     }
 
     public Object visitAnnotationDeclaration(LCAnnotationDeclaration lcAnnotationDeclaration, Object additional) {
-        for (LCAnnotationDeclaration.LCAnnotation lcAnnotation : lcAnnotationDeclaration.annotations) {
+        for (LCAnnotation lcAnnotation : lcAnnotationDeclaration.annotations) {
             this.visitAnnotation(lcAnnotation, additional);
         }
         for (LCTypeParameter lcTypeParameter : lcAnnotationDeclaration.typeParameters) {
@@ -570,14 +570,14 @@ public abstract class LCAstVisitor {
         return null;
     }
 
-    public Object visitAnnotation(LCAnnotationDeclaration.LCAnnotation lcAnnotation, Object additional) {
-        for (LCAnnotationDeclaration.LCAnnotation.LCAnnotationField argument : lcAnnotation.arguments) {
+    public Object visitAnnotation(LCAnnotation lcAnnotation, Object additional) {
+        for (LCAnnotation.LCAnnotationField argument : lcAnnotation.arguments) {
             this.visitAnnotationField(argument, additional);
         }
         return null;
     }
 
-    public Object visitAnnotationField(LCAnnotationDeclaration.LCAnnotation.LCAnnotationField lcAnnotationField, Object additional) {
+    public Object visitAnnotationField(LCAnnotation.LCAnnotationField lcAnnotationField, Object additional) {
         this.visit(lcAnnotationField.value, additional);
         return null;
     }
@@ -784,7 +784,7 @@ public abstract class LCAstVisitor {
     }
 
     public Object visitInit(LCInit lcInit, Object additional) {
-        for (LCAnnotationDeclaration.LCAnnotation annotation : lcInit.annotations) {
+        for (LCAnnotation annotation : lcInit.annotations) {
             this.visitAnnotation(annotation, additional);
         }
         this.visitBlock(lcInit.body, additional);

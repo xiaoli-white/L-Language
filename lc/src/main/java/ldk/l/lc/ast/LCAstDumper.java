@@ -695,7 +695,7 @@ public final class LCAstDumper extends LCAstVisitor {
         System.out.println(prefix + "-LCClassDecl" + (lcClassDeclaration.isErrorNode ? " **E**" : ""));
         if (lcClassDeclaration.annotations.length != 0) {
             System.out.println(prefix + "   |-annotations:");
-            for (LCAnnotationDeclaration.LCAnnotation lcAnnotation : lcClassDeclaration.annotations) {
+            for (LCAnnotation lcAnnotation : lcClassDeclaration.annotations) {
                 this.visitAnnotation(lcAnnotation, prefix + "   |   |");
             }
         }
@@ -733,7 +733,7 @@ public final class LCAstDumper extends LCAstVisitor {
         System.out.println(prefix + "-LCInterfaceDecl" + (lcInterfaceDeclaration.isErrorNode ? " **E**" : ""));
         if (lcInterfaceDeclaration.annotations.length != 0) {
             System.out.println(prefix + "   |-annotations:");
-            for (LCAnnotationDeclaration.LCAnnotation lcAnnotation : lcInterfaceDeclaration.annotations) {
+            for (LCAnnotation lcAnnotation : lcInterfaceDeclaration.annotations) {
                 this.visitAnnotation(lcAnnotation, prefix + "   |   |");
             }
         }
@@ -761,7 +761,7 @@ public final class LCAstDumper extends LCAstVisitor {
         System.out.println(prefix + "LCAnnotationDecl" + (lcAnnotationDeclaration.isErrorNode ? " **E**" : ""));
         if (lcAnnotationDeclaration.annotations.length != 0) {
             System.out.println(prefix + "   |-annotations:");
-            for (LCAnnotationDeclaration.LCAnnotation lcAnnotation : lcAnnotationDeclaration.annotations) {
+            for (LCAnnotation lcAnnotation : lcAnnotationDeclaration.annotations) {
                 this.visit(lcAnnotation, prefix + "   |   |");
             }
         }
@@ -802,7 +802,7 @@ public final class LCAstDumper extends LCAstVisitor {
         System.out.println(prefix + "-LCEnumDecl" + (lcEnumDeclaration.isErrorNode ? " **E**" : ""));
         if (lcEnumDeclaration.annotations.length != 0) {
             System.out.println(prefix + "   |-annotations:");
-            for (LCAnnotationDeclaration.LCAnnotation lcAnnotation : lcEnumDeclaration.annotations) {
+            for (LCAnnotation lcAnnotation : lcEnumDeclaration.annotations) {
                 this.visitAnnotation(lcAnnotation, prefix + "   |   |");
             }
         }
@@ -847,7 +847,7 @@ public final class LCAstDumper extends LCAstVisitor {
         System.out.println(prefix + "LCRecordDecl" + (lcRecordDeclaration.isErrorNode ? " **E**" : ""));
         if (lcRecordDeclaration.annotations.length != 0) {
             System.out.println(prefix + "   |-annotations:");
-            for (LCAnnotationDeclaration.LCAnnotation lcAnnotation : lcRecordDeclaration.annotations) {
+            for (LCAnnotation lcAnnotation : lcRecordDeclaration.annotations) {
                 this.visitAnnotation(lcAnnotation, prefix + "   |   |");
             }
         }
@@ -877,11 +877,11 @@ public final class LCAstDumper extends LCAstVisitor {
     }
 
     @Override
-    public Object visitAnnotation(LCAnnotationDeclaration.LCAnnotation lcAnnotation, Object prefix) {
+    public Object visitAnnotation(LCAnnotation lcAnnotation, Object prefix) {
         System.out.println(prefix + "-LCAnnotation(name: '" + lcAnnotation.name + "')" + (lcAnnotation.isErrorNode ? " **E**" : ""));
         if (lcAnnotation.arguments.length == 0) {
             System.out.println(prefix + "   |-arguments:");
-            for (LCAnnotationDeclaration.LCAnnotation.LCAnnotationField argument : lcAnnotation.arguments) {
+            for (LCAnnotation.LCAnnotationField argument : lcAnnotation.arguments) {
                 this.visitAnnotationField(argument, prefix + "       |");
             }
         }
@@ -889,7 +889,7 @@ public final class LCAstDumper extends LCAstVisitor {
     }
 
     @Override
-    public Object visitAnnotationField(LCAnnotationDeclaration.LCAnnotation.LCAnnotationField lcAnnotationField, Object prefix) {
+    public Object visitAnnotationField(LCAnnotation.LCAnnotationField lcAnnotationField, Object prefix) {
         System.out.println(prefix + "-LCAnnotationField" + (lcAnnotationField.isErrorNode ? " **E**" : ""));
         System.out.println(prefix + "   |-name: '" + lcAnnotationField.name + "'");
         System.out.println(prefix + "   |-value:");
@@ -1271,7 +1271,7 @@ public final class LCAstDumper extends LCAstVisitor {
         System.out.println(prefix + "-LCInit" + (lcInit.isErrorNode ? " **E**" : ""));
         if (lcInit.annotations.length != 0) {
             System.out.println(prefix + "   |-annotations:");
-            for (LCAnnotationDeclaration.LCAnnotation lcAnnotation : lcInit.annotations) {
+            for (LCAnnotation lcAnnotation : lcInit.annotations) {
                 this.visitAnnotation(lcAnnotation, prefix + "   |   |");
             }
         }

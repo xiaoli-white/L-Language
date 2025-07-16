@@ -1,6 +1,5 @@
 package ldk.l.lc.ir;
 
-import com.xiaoli.bcg.bytecode.BCControlFlowGraph;
 import ldk.l.lc.ast.LCAst;
 import ldk.l.lc.ast.LCAstUtil;
 import ldk.l.lc.ast.LCAstVisitor;
@@ -247,7 +246,7 @@ public final class IRGenerator extends LCAstVisitor {
         this.currentCFG = this.staticInitCFG;
         createBasicBlock();
 
-        for (LCAnnotationDeclaration.LCAnnotation lcAnnotation : lcEnumDeclaration.annotations) {
+        for (LCAnnotation lcAnnotation : lcEnumDeclaration.annotations) {
             this.visitAnnotation(lcAnnotation, additional);
         }
         for (LCTypeParameter lcTypeParameter : lcEnumDeclaration.typeParameters) {

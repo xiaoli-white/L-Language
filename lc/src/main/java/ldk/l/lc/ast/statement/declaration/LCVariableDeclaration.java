@@ -4,7 +4,7 @@ import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.ast.base.*;
 import ldk.l.lc.ast.expression.type.LCTypeExpression;
 import ldk.l.lc.ast.expression.type.LCTypeReferenceExpression;
-import ldk.l.lc.ast.statement.declaration.object.LCAnnotationDeclaration;
+import ldk.l.lc.ast.base.LCAnnotation;
 import ldk.l.lc.semantic.types.SystemTypes;
 import ldk.l.lc.semantic.types.Type;
 import ldk.l.lc.util.Position;
@@ -13,7 +13,7 @@ import ldk.l.lc.util.symbol.VariableSymbol;
 import java.util.Arrays;
 
 public class LCVariableDeclaration extends LCDeclaration {
-    public LCAnnotationDeclaration.LCAnnotation[] annotations = null;
+    public LCAnnotation[] annotations = null;
     public LCModifier modifier = null;
     public boolean isVal;
     public String name;
