@@ -11,7 +11,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
 
 public class LCAst extends LCAstNode {
     public LCObjectDeclaration mainObjectDeclaration = null;

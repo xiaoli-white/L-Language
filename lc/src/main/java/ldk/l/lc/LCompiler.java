@@ -1,7 +1,6 @@
 package ldk.l.lc;
 
 import com.xiaoli.bcg.ByteCodeGenerator;
-import com.xiaoli.llvmir_generator.LLVMIRGenerator;
 import ldk.l.lc.ast.LCAst;
 import ldk.l.lc.ast.LCAstDumper;
 import ldk.l.lc.ir.IRGenerator;

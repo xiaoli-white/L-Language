@@ -44,14 +44,14 @@ public final class Parser {
     }
 
     public void parseAST(File file) {
-        LCBlock body = this.parseBaseStatements(file.getName());
+        String filename = file.getName();
+        String fileNameWithoutExtension = filename.substring(0, filename.length() - 2);
+        LCBlock body = this.parseBaseStatements(fileNameWithoutExtension);
         LCSourceCodeFile sourceCodeFile = new LCSourceCodeFile(file.getPath(), body, body.position, body.isErrorNode);
         this.ast.addSourceFile(sourceCodeFile);
 
-        if (this.ast.mainObjectDeclaration == null) {
-            String filename = file.getName();
-            this.ast.mainObjectDeclaration = sourceCodeFile.getObjectDeclarationByName(filename.substring(0, filename.length() - 2));
-        }
+        if (this.ast.mainObjectDeclaration == null)
+            this.ast.mainObjectDeclaration = sourceCodeFile.getObjectDeclarationByName(fileNameWithoutExtension);
     }
 
     private LCBlock parseBaseStatements(String fileNameWithoutExtension) {
@@ -157,6 +157,7 @@ public final class Parser {
                     LCMethodDeclaration methodDeclaration = this.parseMethodDeclaration(MethodKind.Method, modifier.flags);
                     methodDeclaration.setModifier(modifier);
                     methodDeclaration.setAnnotations(annotations);
+                    statements.add(methodDeclaration);
                     hasMethod = true;
                 }
                 case null, default -> {
@@ -186,8 +187,11 @@ public final class Parser {
 
         Position mainPosition = new Position(mainBeginPosition.beginPos(), endPosition.endPos(), mainBeginPosition.beginLine(), endPosition.endLine(), mainBeginPosition.beginCol(), endPosition.endCol());
         List<LCStatement> body = new ArrayList<>(statements.subList(0, mainBeginIndex));
-        body.add(new LCClassDeclaration(fileNameWithoutExtension, new LCTypeParameter[0], null, new LCTypeReferenceExpression[0], new LCTypeReferenceExpression[0], null,
-                new LCBlock(statements.subList(mainBeginIndex, statements.size()), mainPosition, isErrorNode), mainPosition, isErrorNode));
+        LCClassDeclaration lcClassDeclaration = new LCClassDeclaration(fileNameWithoutExtension, new LCTypeParameter[0], null, new LCTypeReferenceExpression[0], new LCTypeReferenceExpression[0], null,
+                new LCBlock(statements.subList(mainBeginIndex, statements.size()), mainPosition, isErrorNode), mainPosition, isErrorNode);
+        lcClassDeclaration.setAnnotations(new LCAnnotationDeclaration.LCAnnotation[0]);
+        lcClassDeclaration.setModifier(new LCModifier(LCFlags.PUBLIC, Position.origin));
+        body.add(lcClassDeclaration);
         return new LCBlock(body, position, isErrorNode);
     }
 
