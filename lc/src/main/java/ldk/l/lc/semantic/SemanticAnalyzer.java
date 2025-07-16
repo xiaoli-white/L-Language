@@ -21,6 +21,8 @@ public final class SemanticAnalyzer {
     public final AssignAnalyzer assignAnalyzer;
     public final LiveAnalyzer liveAnalyzer;
     public final LeftValueAttributor leftValueAttributor;
+    public final AnnotationCollector annotationCollector;
+    public final AnnotationProcessor annotationProcessor;
 
     public SemanticAnalyzer(CharStream charStream, LCAst ast, ErrorStream errorStream, Options options) {
         this.ast = ast;
@@ -40,6 +42,8 @@ public final class SemanticAnalyzer {
         this.assignAnalyzer = new AssignAnalyzer(errorStream);
         this.liveAnalyzer = new LiveAnalyzer(errorStream);
         this.leftValueAttributor = new LeftValueAttributor(errorStream);
+        this.annotationCollector = new AnnotationCollector();
+        this.annotationProcessor = new AnnotationProcessor(errorStream);
     }
 
     public void execute() {
@@ -56,5 +60,6 @@ public final class SemanticAnalyzer {
 //        this.assignAnalyzer.visitAst(this.ast, null);
 //        this.liveAnalyzer.visitAst(this.ast, null);
         this.leftValueAttributor.visitAst(this.ast, null);
+        this.annotationCollector.visitAst(this.ast, null);
     }
 }

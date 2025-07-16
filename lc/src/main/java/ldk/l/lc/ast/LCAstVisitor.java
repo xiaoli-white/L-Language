@@ -97,6 +97,18 @@ public abstract class LCAstVisitor {
         return null;
     }
 
+    public LCSourceCodeFile getEnclosingSourceCodeFile(LCAstNode node) {
+        LCAstNode parent = node.parentNode;
+        while (parent != null) {
+            if (parent instanceof LCSourceCodeFile lcSourceCodeFile) {
+                return lcSourceCodeFile;
+            }
+            parent = parent.parentNode;
+        }
+        System.err.println("getEnclosingSourceCodeFile()中，parent不应该是null");
+        return null;
+    }
+
     public Object visitAst(LCAst ast, Object additional) {
         for (LCSourceFile lcSourceFile : ast.sourceFiles) {
             this.visit(lcSourceFile, additional);
