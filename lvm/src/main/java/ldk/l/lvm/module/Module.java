@@ -3,10 +3,12 @@ package ldk.l.lvm.module;
 import ldk.l.lvm.vm.VirtualMachine;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 public record Module(byte[] text, byte[] rodata, byte[] data, long bssSectionLength, long entryPoint) {
     public byte[] raw() {
         ByteBuffer byteBuffer = ByteBuffer.allocate(20 + text.length + 8 + rodata.length + 8 + data.length + 16);
+        byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
         byteBuffer.put((byte) 'l');
         byteBuffer.put((byte) 'v');
         byteBuffer.put((byte) 'm');
@@ -25,6 +27,7 @@ public record Module(byte[] text, byte[] rodata, byte[] data, long bssSectionLen
 
     public static Module fromRaw(byte[] raw) {
         ByteBuffer byteBuffer = ByteBuffer.wrap(raw);
+        byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
         if (byteBuffer.get() != 'l' || byteBuffer.get() != 'v' || byteBuffer.get() != 'm' || byteBuffer.get() != 'e') {
             throw new RuntimeException("Invalid module format");
         }
