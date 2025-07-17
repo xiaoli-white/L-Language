@@ -521,7 +521,7 @@ public final class ByteCodeGenerator extends Generator {
         public Object visitNot(IRNot irNot, Object additional) {
             this.visit(irNot.operand, additional);
             BCRegister operand = registerStack.pop();
-            this.visitVirtualRegister(irNot.result, additional);
+            this.visitVirtualRegister(irNot.target, additional);
             BCRegister result = registerStack.pop();
 
             if (irNot.type instanceof IRIntegerType irIntegerType) {
@@ -686,8 +686,8 @@ public final class ByteCodeGenerator extends Generator {
             this.visit(irInvoke.address, additional);
             BCRegister address = registerStack.pop();
             addInstruction(new BCInstruction(ByteCode.INVOKE, address));
-            if (irInvoke.result != null) {
-                this.visitVirtualRegister(irInvoke.result, additional);
+            if (irInvoke.target != null) {
+                this.visitVirtualRegister(irInvoke.target, additional);
                 BCRegister result = registerStack.pop();
                 addInstruction(new BCInstruction(ByteCode.GET_RESULT, result));
             }

@@ -6,18 +6,18 @@ import ldk.l.lg.ir.operand.IRVirtualRegister;
 import ldk.l.lg.ir.type.IRType;
 
 public final class IRInvoke extends IRInstruction {
-    public IRType returnType;
-    public IROperand address;
-    public IRType[] argumentTypes;
-    public IROperand[] arguments;
-    public IRVirtualRegister result;
+    public final IRType returnType;
+    public final IROperand address;
+    public final IRType[] argumentTypes;
+    public final IROperand[] arguments;
+    public final IRVirtualRegister target;
 
-    public IRInvoke(IRType returnType, IROperand address, IRType[] argumentTypes, IROperand[] arguments, IRVirtualRegister result) {
+    public IRInvoke(IRType returnType, IROperand address, IRType[] argumentTypes, IROperand[] arguments, IRVirtualRegister target) {
         this.returnType = returnType;
         this.address = address;
         this.argumentTypes = argumentTypes;
         this.arguments = arguments;
-        this.result = result;
+        this.target = target;
     }
 
     @Override
@@ -28,7 +28,7 @@ public final class IRInvoke extends IRInstruction {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        if (result != null) builder.append(result).append(" = ");
+        if (target != null) builder.append(target).append(" = ");
         builder.append("invoke ").append(returnType).append(" ").append(address);
         for (int i = 0; i < arguments.length; i++) {
             builder.append(", [").append(argumentTypes[i]).append(", ").append(arguments[i]).append("]");

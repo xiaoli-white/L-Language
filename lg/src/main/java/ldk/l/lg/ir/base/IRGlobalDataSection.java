@@ -1,7 +1,6 @@
 package ldk.l.lg.ir.base;
 
 import ldk.l.lg.ir.IRVisitor;
-import ldk.l.lg.ir.operand.IRMacro;
 import ldk.l.lg.ir.operand.IROperand;
 
 import java.util.ArrayList;
@@ -9,10 +8,10 @@ import java.util.Arrays;
 import java.util.List;
 
 public final class IRGlobalDataSection extends IRNode {
-    public final List<GlobalData> dataList;
+    public final List<GlobalData> data;
 
     public IRGlobalDataSection() {
-        this.dataList = new ArrayList<>();
+        this.data = new ArrayList<>();
     }
 
     @Override
@@ -23,16 +22,16 @@ public final class IRGlobalDataSection extends IRNode {
     @Override
     public String toString() {
         return "IRGlobalDataSection{" +
-                "dataList=" + dataList +
+                "data=" + data +
                 '}';
     }
 
     public void add(GlobalData globalData) {
-        dataList.add(globalData);
+        data.add(globalData);
     }
 
     public boolean contains(String name) {
-        for (GlobalData globalData : dataList)
+        for (GlobalData globalData : data)
             if (globalData.name.equals(name))
                 return true;
         return false;

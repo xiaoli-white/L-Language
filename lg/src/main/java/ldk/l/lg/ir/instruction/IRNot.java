@@ -6,16 +6,16 @@ import ldk.l.lg.ir.operand.IRVirtualRegister;
 import ldk.l.lg.ir.type.IRType;
 
 public final class IRNot extends IRInstruction {
-    public boolean isAtomic;
-    public IRType type;
-    public IROperand operand;
-    public IRVirtualRegister result;
+    public final boolean isAtomic;
+    public final IRType type;
+    public final IROperand operand;
+    public final IRVirtualRegister target;
 
-    public IRNot(boolean isAtomic, IRType type, IROperand operand, IRVirtualRegister result) {
+    public IRNot(boolean isAtomic, IRType type, IROperand operand, IRVirtualRegister target) {
         this.isAtomic = isAtomic;
         this.type = type;
         this.operand = operand;
-        this.result = result;
+        this.target = target;
     }
 
     @Override
@@ -25,6 +25,6 @@ public final class IRNot extends IRInstruction {
 
     @Override
     public String toString() {
-        return result + " = " + (isAtomic ? "atomic_" : "") + "not " + type + " " + operand;
+        return target + " = " + (isAtomic ? "atomic_" : "") + "not " + type + " " + operand;
     }
 }

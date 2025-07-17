@@ -1,5 +1,5 @@
 <component name="ArtifactManager">
-  <artifact type="jar" name="L-Language-Dev.lc.main:jar">
+  <artifact type="jar" build-on-make="true" name="L-Language-Dev.lc.main:jar">
     <output-path>$PROJECT_DIR$/out/artifacts/L_Language_Dev_lc_main_jar</output-path>
     <root id="archive" name="L-Language-Dev.lc.main.jar">
       <element id="module-output" name="L-Language-Dev.lc.main" />

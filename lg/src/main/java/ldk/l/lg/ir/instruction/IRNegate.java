@@ -6,10 +6,10 @@ import ldk.l.lg.ir.operand.IRVirtualRegister;
 import ldk.l.lg.ir.type.IRType;
 
 public final class IRNegate extends IRInstruction {
-    public boolean isAtomic;
-    public IRType type;
-    public IROperand operand;
-    public IRVirtualRegister target;
+    public final boolean isAtomic;
+    public final IRType type;
+    public final IROperand operand;
+    public final IRVirtualRegister target;
 
     public IRNegate(boolean isAtomic, IRType type, IROperand operand, IRVirtualRegister target) {
         this.isAtomic = isAtomic;

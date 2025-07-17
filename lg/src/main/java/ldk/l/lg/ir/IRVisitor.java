@@ -109,7 +109,7 @@ public abstract class IRVisitor {
     public Object visitNot(IRNot irNot, Object additional) {
         this.visit(irNot.type, additional);
         this.visit(irNot.operand, additional);
-        this.visitVirtualRegister(irNot.result, additional);
+        this.visitVirtualRegister(irNot.target, additional);
         return null;
     }
 
@@ -164,8 +164,8 @@ public abstract class IRVisitor {
             this.visit(irInvoke.argumentTypes[i], additional);
             this.visit(irInvoke.arguments[i], additional);
         }
-        if (irInvoke.result != null) {
-            this.visitVirtualRegister(irInvoke.result, additional);
+        if (irInvoke.target != null) {
+            this.visitVirtualRegister(irInvoke.target, additional);
         }
         return null;
     }
@@ -246,7 +246,7 @@ public abstract class IRVisitor {
     }
 
     public Object visitGlobalDataSection(IRGlobalDataSection irGlobalDataSection, Object additional) {
-        for (IRGlobalDataSection.GlobalData data : irGlobalDataSection.dataList) {
+        for (IRGlobalDataSection.GlobalData data : irGlobalDataSection.data) {
             this.visitGlobalData(data, additional);
         }
         return null;

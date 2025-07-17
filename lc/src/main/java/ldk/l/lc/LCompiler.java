@@ -127,7 +127,7 @@ public class LCompiler {
                     System.out.println("\t" + i + " => " + irModule.constantPool.entries.get(i));
                 }
                 System.out.println("Global data section:");
-                for (IRGlobalDataSection.GlobalData globalData : irModule.globalDataSection.dataList) {
+                for (IRGlobalDataSection.GlobalData globalData : irModule.globalDataSection.data) {
                     System.out.println("\t" + globalData);
                 }
                 System.out.println("Global init section:");

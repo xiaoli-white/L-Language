@@ -52,6 +52,15 @@ public final class IRControlFlowGraph {
         }
     }
 
+    @Override
+    public String toString() {
+        return "IRControlFlowGraph{" +
+                "basicBlocks=" + basicBlocks +
+                ", outEdges=" + outEdges +
+                ", inEdges=" + inEdges +
+                '}';
+    }
+
     public static class BasicBlock implements Comparable<BasicBlock> {
         public final String name;
         public final List<IRInstruction> instructions;
