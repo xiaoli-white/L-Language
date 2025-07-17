@@ -17,7 +17,7 @@ public final class IRFloatType extends IRType {
 
     @Override
     public String toString() {
-        return "IRFloatType{}";
+        return "float";
     }
 
     @Override

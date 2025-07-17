@@ -6,11 +6,11 @@ import java.util.Objects;
 
 public final class IRIntegerType extends IRType {
     public final Size size;
-    public final boolean isUnsigned;
+    public final boolean unsigned;
 
-    public IRIntegerType(Size size, boolean isUnsigned) {
+    public IRIntegerType(Size size, boolean unsigned) {
         this.size = size;
-        this.isUnsigned = isUnsigned;
+        this.unsigned = unsigned;
     }
 
     @Override
@@ -20,19 +20,19 @@ public final class IRIntegerType extends IRType {
 
     @Override
     public String toString() {
-        return (isUnsigned ? "u" : "i") + size;
+        return (unsigned ? "u" : "i") + size;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof IRIntegerType that)) return false;
-        return size == that.size && isUnsigned == that.isUnsigned;
+        return size == that.size && unsigned == that.unsigned;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(size, isUnsigned);
+        return Objects.hash(size, unsigned);
     }
 
     public enum Size {

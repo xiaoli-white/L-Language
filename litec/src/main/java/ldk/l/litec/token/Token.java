@@ -56,7 +56,7 @@ public record Token(TokenKind kind, String text, Position position, Tokens.Token
     public static boolean isOperator(Token token) {
         if (token.kind == TokenKind.Operator)
             return true;
-        return token.code == Tokens.Keyword.Is || token.code == Tokens.Keyword.In || token.code == Tokens.Keyword.Instanceof;
+        return token.code == Tokens.Keyword.Is || token.code == Tokens.Keyword.Instanceof;
     }
 
     public static boolean isAssignOperator(Tokens.Operator operator) {
@@ -79,8 +79,6 @@ public record Token(TokenKind kind, String text, Position position, Tokens.Token
     }
 
     public static boolean isBaseType(Token token) {
-        return token.code == Tokens.Type.Byte || token.code == Tokens.Type.Short || token.code == Tokens.Type.Int || token.code == Tokens.Type.Long
-                || token.code == Tokens.Type.UByte || token.code == Tokens.Type.UShort || token.code == Tokens.Type.UInt || token.code == Tokens.Type.ULong
-                || token.code == Tokens.Type.Float || token.code == Tokens.Type.Double || token.code == Tokens.Type.Char || token.code == Tokens.Type.Boolean;
+        return token.code == Tokens.Type.Int || token.code == Tokens.Type.Float || token.code == Tokens.Type.Char || token.code == Tokens.Type.Boolean;
     }
 }

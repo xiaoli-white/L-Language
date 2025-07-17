@@ -17,7 +17,7 @@ public final class IRDoubleType extends IRType {
 
     @Override
     public String toString() {
-        return "IRDoubleType{}";
+        return "double";
     }
 
     @Override

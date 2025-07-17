@@ -457,8 +457,6 @@ public final class Scanner {
             return new Token(TokenKind.BooleanLiteral, text, position, Tokens.BaseLiteral.False);
         } else if (text.equals("null")) {
             return new Token(TokenKind.NullLiteral, text, position, Tokens.BaseLiteral.Null);
-        } else if (text.equals("nullptr")) {
-            return new Token(TokenKind.NullptrLiteral, text, position, Tokens.BaseLiteral.Nullptr);
         } else if (keywordMap.containsKey(text)) {
             return new Token(TokenKind.Keyword, text, position, keywordMap.get(text));
         } else {

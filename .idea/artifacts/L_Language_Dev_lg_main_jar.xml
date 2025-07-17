@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="L-Language-Dev.lg.main:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/L_Language_Dev_lg_main_jar</output-path>
+    <root id="archive" name="L-Language-Dev.lg.main.jar">
+      <element id="module-output" name="L-Language-Dev.lg.main" />
+      <element id="module-output" name="L-Language-Dev.lutil.main" />
+    </root>
+  </artifact>
+</component>

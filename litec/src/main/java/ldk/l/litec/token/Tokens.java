@@ -41,6 +41,7 @@ public class Tokens {
         Int("int"),
         Float("float"),
         Boolean("boolean"),
+        Char("char"),
         Auto("auto");
 
         private final String code;
