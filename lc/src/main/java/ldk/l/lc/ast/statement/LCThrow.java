@@ -5,9 +5,7 @@ import ldk.l.lc.ast.base.LCExpression;
 import ldk.l.lc.ast.base.LCStatement;
 import ldk.l.lc.util.Position;
 
-import java.util.Objects;
-
-public class LCThrow extends LCStatement {
+public final class LCThrow extends LCStatement {
     public LCExpression expression;
 
     public LCThrow(LCExpression expression, Position pos, boolean isErrorNode) {

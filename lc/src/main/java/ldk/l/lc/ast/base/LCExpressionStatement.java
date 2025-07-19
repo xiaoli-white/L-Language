@@ -3,16 +3,14 @@ package ldk.l.lc.ast.base;
 import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.util.Position;
 
-import java.util.Arrays;
-
-public class LCExpressionStatement extends LCStatement {
+public final class LCExpressionStatement extends LCStatement {
     public LCExpression expression;
 
     public LCExpressionStatement(LCExpression expression, Position pos) {
         this(expression, pos, false);
     }
 
-    public LCExpressionStatement(LCExpression expression,Position pos, boolean isErrorNode) {
+    public LCExpressionStatement(LCExpression expression, Position pos, boolean isErrorNode) {
         super(pos, isErrorNode);
         this.expression = expression;
         this.expression.parentNode = this;
@@ -27,7 +25,7 @@ public class LCExpressionStatement extends LCStatement {
     public String toString() {
         return "LCExpressionStatement{" +
                 "expression=" + expression +
-                ", annotations=" + Arrays.toString(annotations) +
+                ", annotations=" + annotations +
                 ", position=" + position +
                 ", isErrorNode=" + isErrorNode +
                 '}';

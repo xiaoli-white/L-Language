@@ -7,10 +7,9 @@ import ldk.l.lc.semantic.types.Type;
 import ldk.l.lc.util.symbol.object.ObjectSymbol;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-public class MethodSymbol extends Symbol {
+public final class MethodSymbol extends Symbol {
     public LCMethodDeclaration declaration = null;
     public LCLambda lambdaDeclaration = null;
     public List<Type> parameterTypes;
@@ -20,15 +19,15 @@ public class MethodSymbol extends Symbol {
     public ObjectSymbol objectSymbol = null;
     public Closure closure = null;
     public long flags;
-    public String[] attributes;
+    public List<String> attributes;
     private static int lambdaCount = 0;
 
-    public MethodSymbol(List<Type> parameterTypes, Type returnType, Type theType, MethodKind methodKind, long flags, String[] attributes) {
+    public MethodSymbol(List<Type> parameterTypes, Type returnType, Type theType, MethodKind methodKind, long flags, List<String> attributes) {
         this("<lambda_" + lambdaCount + ">", parameterTypes, returnType, theType, methodKind, flags, attributes);
         lambdaCount++;
     }
 
-    public MethodSymbol(String name, List<Type> parameterTypes, Type returnType, Type theType, MethodKind methodKind, long flags, String[] attributes) {
+    public MethodSymbol(String name, List<Type> parameterTypes, Type returnType, Type theType, MethodKind methodKind, long flags, List<String> attributes) {
         super(name, theType, SymbolKind.Method);
         this.parameterTypes = parameterTypes;
         this.returnType = returnType;
@@ -53,7 +52,7 @@ public class MethodSymbol extends Symbol {
                 ", methodKind=" + methodKind +
                 ", closure=" + closure +
                 ", flags=" + flags +
-                ", attributes=" + Arrays.toString(attributes) +
+                ", attributes=" + attributes +
                 ", name='" + name + '\'' +
                 ", theType=" + theType +
                 '}';
@@ -80,10 +79,10 @@ public class MethodSymbol extends Symbol {
     }
 
     public int getNumParams() {
-        return this.declaration.parameterList.parameters.length;
+        return this.declaration.parameterList.parameters.size();
     }
 
-    public LCVariableDeclaration[] getParams() {
-        return this.declaration.parameterList.parameters.clone();
+    public List<LCVariableDeclaration> getParams() {
+        return new ArrayList<>(this.declaration.parameterList.parameters);
     }
 }

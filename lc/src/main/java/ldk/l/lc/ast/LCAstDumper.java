@@ -18,8 +18,6 @@ import ldk.l.lc.ast.statement.declaration.object.*;
 import ldk.l.lc.ast.statement.declaration.object.LCAnnotationDeclaration;
 import ldk.l.lc.ast.statement.loops.*;
 
-import java.util.Arrays;
-
 public final class LCAstDumper extends LCAstVisitor {
     @Override
     public Object visitAst(LCAst lcAst, Object prefix) {
@@ -71,7 +69,7 @@ public final class LCAstDumper extends LCAstVisitor {
     public Object visitMethodDeclaration(LCMethodDeclaration lcMethodDeclaration, Object prefix) {
         System.out.println(prefix + "-LCMethodDeclaration" + (lcMethodDeclaration.isErrorNode ? " **E**" : ""));
         System.out.println(prefix + "   |-methodKind: " + lcMethodDeclaration.methodKind);
-        if (lcMethodDeclaration.typeParameters.length != 0) {
+        if (!lcMethodDeclaration.typeParameters.isEmpty()) {
             System.out.println(prefix + "   |-typeParameters:");
             for (LCTypeParameter typeParameter : lcMethodDeclaration.typeParameters) {
                 this.visitTypeParameter(typeParameter, prefix + "   |   |");
@@ -86,7 +84,7 @@ public final class LCAstDumper extends LCAstVisitor {
             System.out.println(prefix + "   |-returnTypeExpression:");
             this.visit(lcMethodDeclaration.returnTypeExpression, prefix + "   |   |");
         }
-        if (lcMethodDeclaration.threwExceptions.length != 0) {
+        if (!lcMethodDeclaration.threwExceptions.isEmpty()) {
             System.out.println(prefix + "   |-threwExceptions:");
             for (LCTypeReferenceExpression threwException : lcMethodDeclaration.threwExceptions) {
                 this.visitTypeReferenceExpression(threwException, prefix + "   |   |");
@@ -106,7 +104,7 @@ public final class LCAstDumper extends LCAstVisitor {
     @Override
     public Object visitParameterList(LCParameterList lcParameterList, Object prefix) {
         System.out.println(prefix + "-LCParameterList" + (lcParameterList.isErrorNode ? " **E**" : ""));
-        if (lcParameterList.parameters.length != 0) {
+        if (!lcParameterList.parameters.isEmpty()) {
             System.out.println(prefix + "   |-parameters:");
             for (LCVariableDeclaration parameter : lcParameterList.parameters) {
                 this.visitVariableDeclaration(parameter, prefix + "       |");
@@ -260,7 +258,7 @@ public final class LCAstDumper extends LCAstVisitor {
     public Object visitStringLiteral(LCStringLiteral lcStringLiteral, Object prefix) {
         System.out.println(prefix + "-LCStringLiteral" + (lcStringLiteral.isErrorNode ? " **E**" : ""));
         System.out.println(prefix + "   |-theType: " + (lcStringLiteral.theType != null ? lcStringLiteral.theType : "<unknown>"));
-        System.out.println(prefix + "   |-value: \"" + lcStringLiteral.value.toString().replace("\n", "\\n") + "\"");
+        System.out.println(prefix + "   |-value: \"" + lcStringLiteral.value.replace("\n", "\\n") + "\"");
         return null;
     }
 
@@ -322,7 +320,7 @@ public final class LCAstDumper extends LCAstVisitor {
         System.out.println(prefix + "   |-typeExpression:");
         this.visit(lcNewObject.typeExpression, prefix + "   |   |");
         System.out.println(prefix + "   |-arguments:");
-        if (lcNewObject.arguments.length == 0) {
+        if (lcNewObject.arguments.isEmpty()) {
             System.out.println(prefix + "       |-<empty>");
         } else {
             for (LCExpression argument : lcNewObject.arguments) {
@@ -353,7 +351,7 @@ public final class LCAstDumper extends LCAstVisitor {
         }
         if (lcNewArray.elements != null) {
             System.out.println(prefix + "   |-elements:");
-            if (lcNewArray.elements.length == 0) {
+            if (lcNewArray.elements.isEmpty()) {
                 System.out.println(prefix + "       |-<empty>");
             } else {
                 for (LCExpression element : lcNewArray.elements) {
@@ -396,7 +394,7 @@ public final class LCAstDumper extends LCAstVisitor {
         if (lcMethodCall.expression == null) {
             System.out.println(prefix + "   |-<resolved>: " + (lcMethodCall.symbol != null));
         }
-        if (lcMethodCall.arguments.length != 0) {
+        if (!lcMethodCall.arguments.isEmpty()) {
             System.out.println(prefix + "   |-arguments:");
             for (LCExpression argument : lcMethodCall.arguments) {
                 this.visit(argument, prefix + "       |");
@@ -436,7 +434,7 @@ public final class LCAstDumper extends LCAstVisitor {
     public Object visitTypeReferenceExpression(LCTypeReferenceExpression lcTypeReferenceExpression, Object prefix) {
         System.out.println(prefix + "-LCTypeReferenceExpression" + (lcTypeReferenceExpression.isErrorNode ? " **E**" : ""));
         System.out.println(prefix + "   |-name: '" + lcTypeReferenceExpression.name + "'");
-        if (lcTypeReferenceExpression.typeArgs != null && lcTypeReferenceExpression.typeArgs.length != 0) {
+        if (lcTypeReferenceExpression.typeArgs != null && !lcTypeReferenceExpression.typeArgs.isEmpty()) {
             System.out.println(prefix + "   |-typeArgs:");
             for (LCTypeExpression typeExpression : lcTypeReferenceExpression.typeArgs) {
                 this.visit(typeExpression, prefix + "   |   |");
@@ -519,7 +517,7 @@ public final class LCAstDumper extends LCAstVisitor {
     public Object visitModifier(LCModifier lcModifier, Object prefix) {
         String e = (lcModifier.isErrorNode ? " **E**" : "");
         System.out.println(prefix + "-modifier: " + "(0x" + Long.toHexString(lcModifier.flags) + ")" + LCFlags.toFlagsString(lcModifier.flags) + e);
-        System.out.println(prefix + "-attributes: " + Arrays.toString(lcModifier.attributes) + e);
+        System.out.println(prefix + "-attributes: " + lcModifier.attributes + e);
         System.out.println(prefix + "-bitRange: " + lcModifier.bitRange + e);
         return null;
     }
@@ -570,12 +568,12 @@ public final class LCAstDumper extends LCAstVisitor {
             System.out.println(prefix + "   |-name: '" + lcGetAddress.name + "'");
         }
 
-        if (lcGetAddress.paramTypeExpressions != null) {
+        if (lcGetAddress.parameterTypeExpressions != null) {
             System.out.println(prefix + "   |-paramTypeExpressions:");
-            if (lcGetAddress.paramTypeExpressions.isEmpty()) {
+            if (lcGetAddress.parameterTypeExpressions.isEmpty()) {
                 System.out.println(prefix + "   |   |-<empty>");
             } else {
-                for (LCTypeExpression paramTypeExpression : lcGetAddress.paramTypeExpressions) {
+                for (LCTypeExpression paramTypeExpression : lcGetAddress.parameterTypeExpressions) {
                     this.visit(paramTypeExpression, prefix + "   |   |");
                 }
             }
@@ -583,7 +581,7 @@ public final class LCAstDumper extends LCAstVisitor {
         System.out.println(prefix + "   |-theType: " + (lcGetAddress.theType != null ? lcGetAddress.theType : "<unknown>"));
         System.out.println(prefix + "   |-shouldBeLeftValue: " + lcGetAddress.shouldBeLeftValue);
         System.out.println(prefix + "   |-isLeftValue: " + lcGetAddress.isLeftValue);
-        if (lcGetAddress.paramTypeExpressions != null) {
+        if (lcGetAddress.parameterTypeExpressions != null) {
             System.out.println(prefix + "   |-<resolved>: " + (lcGetAddress.methodSymbol != null));
         }
         return null;
@@ -693,7 +691,7 @@ public final class LCAstDumper extends LCAstVisitor {
     @Override
     public Object visitClassDeclaration(LCClassDeclaration lcClassDeclaration, Object prefix) {
         System.out.println(prefix + "-LCClassDecl" + (lcClassDeclaration.isErrorNode ? " **E**" : ""));
-        if (lcClassDeclaration.annotations.length != 0) {
+        if (!lcClassDeclaration.annotations.isEmpty()) {
             System.out.println(prefix + "   |-annotations:");
             for (LCAnnotation lcAnnotation : lcClassDeclaration.annotations) {
                 this.visitAnnotation(lcAnnotation, prefix + "   |   |");
@@ -701,7 +699,7 @@ public final class LCAstDumper extends LCAstVisitor {
         }
         this.visitModifier(lcClassDeclaration.modifier, prefix + "   |");
         System.out.println(prefix + "   |-name: '" + lcClassDeclaration.name + "'");
-        if (lcClassDeclaration.typeParameters.length != 0) {
+        if (!lcClassDeclaration.typeParameters.isEmpty()) {
             System.out.println(prefix + "   |-typeParameters:");
             for (LCTypeParameter lcTypeParameter : lcClassDeclaration.typeParameters) {
                 this.visit(lcTypeParameter, prefix + "   |   |");
@@ -711,13 +709,13 @@ public final class LCAstDumper extends LCAstVisitor {
             System.out.println(prefix + "   |-extended:");
             this.visitTypeReferenceExpression(lcClassDeclaration.extended, prefix + "   |   |");
         }
-        if (lcClassDeclaration.implementedInterfaces.length != 0) {
+        if (!lcClassDeclaration.implementedInterfaces.isEmpty()) {
             System.out.println(prefix + "   |-implementedInterfaces:");
             for (LCTypeReferenceExpression implementedInterface : lcClassDeclaration.implementedInterfaces) {
                 this.visitTypeReferenceExpression(implementedInterface, prefix + "   |   |");
             }
         }
-        if (lcClassDeclaration.permittedClasses.length != 0) {
+        if (!lcClassDeclaration.permittedClasses.isEmpty()) {
             System.out.println(prefix + "   |-permittedClasses:");
             for (LCTypeReferenceExpression permittedClass : lcClassDeclaration.permittedClasses) {
                 this.visitTypeReferenceExpression(permittedClass, prefix + "   |   |");
@@ -731,7 +729,7 @@ public final class LCAstDumper extends LCAstVisitor {
     @Override
     public Object visitInterfaceDeclaration(LCInterfaceDeclaration lcInterfaceDeclaration, Object prefix) {
         System.out.println(prefix + "-LCInterfaceDecl" + (lcInterfaceDeclaration.isErrorNode ? " **E**" : ""));
-        if (lcInterfaceDeclaration.annotations.length != 0) {
+        if (!lcInterfaceDeclaration.annotations.isEmpty()) {
             System.out.println(prefix + "   |-annotations:");
             for (LCAnnotation lcAnnotation : lcInterfaceDeclaration.annotations) {
                 this.visitAnnotation(lcAnnotation, prefix + "   |   |");
@@ -739,13 +737,13 @@ public final class LCAstDumper extends LCAstVisitor {
         }
         this.visitModifier(lcInterfaceDeclaration.modifier, prefix + "   |");
         System.out.println(prefix + "   |-name: '" + lcInterfaceDeclaration.name + "'");
-        if (lcInterfaceDeclaration.typeParameters.length != 0) {
+        if (!lcInterfaceDeclaration.typeParameters.isEmpty()) {
             System.out.println(prefix + "   |-typeParameters:");
             for (LCTypeParameter lcTypeParameter : lcInterfaceDeclaration.typeParameters) {
                 this.visit(lcTypeParameter, prefix + "   |   |");
             }
         }
-        if (lcInterfaceDeclaration.extendedInterfaces.length != 0) {
+        if (!lcInterfaceDeclaration.extendedInterfaces.isEmpty()) {
             System.out.println(prefix + "   |-extendedInterfaces:");
             for (LCTypeReferenceExpression extendedInterface : lcInterfaceDeclaration.extendedInterfaces) {
                 this.visitTypeReferenceExpression(extendedInterface, prefix + "   |   |");
@@ -759,7 +757,7 @@ public final class LCAstDumper extends LCAstVisitor {
     @Override
     public Object visitAnnotationDeclaration(LCAnnotationDeclaration lcAnnotationDeclaration, Object prefix) {
         System.out.println(prefix + "LCAnnotationDecl" + (lcAnnotationDeclaration.isErrorNode ? " **E**" : ""));
-        if (lcAnnotationDeclaration.annotations.length != 0) {
+        if (!lcAnnotationDeclaration.annotations.isEmpty()) {
             System.out.println(prefix + "   |-annotations:");
             for (LCAnnotation lcAnnotation : lcAnnotationDeclaration.annotations) {
                 this.visit(lcAnnotation, prefix + "   |   |");
@@ -775,7 +773,7 @@ public final class LCAstDumper extends LCAstVisitor {
     @Override
     public Object visitAnnotationBody(LCAnnotationDeclaration.LCAnnotationBody lcAnnotationBody, Object prefix) {
         System.out.println(prefix + "-LCAnnotationBody" + (lcAnnotationBody.isErrorNode ? " **E**" : ""));
-        if (lcAnnotationBody.fields.length != 0) {
+        if (!lcAnnotationBody.fields.isEmpty()) {
             System.out.println(prefix + "   |-fields:");
             for (LCAnnotationDeclaration.LCAnnotationFieldDeclaration field : lcAnnotationBody.fields) {
                 this.visit(field, prefix + "       |");
@@ -799,8 +797,8 @@ public final class LCAstDumper extends LCAstVisitor {
 
     @Override
     public Object visitEnumDeclaration(LCEnumDeclaration lcEnumDeclaration, Object prefix) {
-        System.out.println(prefix + "-LCEnumDecl" + (lcEnumDeclaration.isErrorNode ? " **E**" : ""));
-        if (lcEnumDeclaration.annotations.length != 0) {
+        System.out.println(prefix + "-LCEnumDeclaration" + (lcEnumDeclaration.isErrorNode ? " **E**" : ""));
+        if (!lcEnumDeclaration.annotations.isEmpty()) {
             System.out.println(prefix + "   |-annotations:");
             for (LCAnnotation lcAnnotation : lcEnumDeclaration.annotations) {
                 this.visitAnnotation(lcAnnotation, prefix + "   |   |");
@@ -808,13 +806,13 @@ public final class LCAstDumper extends LCAstVisitor {
         }
         this.visitModifier(lcEnumDeclaration.modifier, prefix + "   |");
         System.out.println(prefix + "   |-name: '" + lcEnumDeclaration.name + "'");
-        if (lcEnumDeclaration.typeParameters.length != 0) {
+        if (!lcEnumDeclaration.typeParameters.isEmpty()) {
             System.out.println(prefix + "   |-typeParameters:");
             for (LCTypeParameter lcTypeParameter : lcEnumDeclaration.typeParameters) {
                 this.visit(lcTypeParameter, prefix + "   |   |");
             }
         }
-        if (lcEnumDeclaration.implementedInterfaces.length != 0) {
+        if (!lcEnumDeclaration.implementedInterfaces.isEmpty()) {
             System.out.println(prefix + "   |-implementedInterfaces:");
             for (LCTypeReferenceExpression implementedInterface : lcEnumDeclaration.implementedInterfaces) {
                 this.visitTypeReferenceExpression(implementedInterface, prefix + "   |   |");
@@ -833,7 +831,7 @@ public final class LCAstDumper extends LCAstVisitor {
     public Object visitEnumFieldDeclaration(LCEnumDeclaration.LCEnumFieldDeclaration lcEnumFieldDeclaration, Object prefix) {
         System.out.println(prefix + "-LCEnumFieldDecl" + (lcEnumFieldDeclaration.isErrorNode ? " **E**" : ""));
         System.out.println(prefix + "   |-name: '" + lcEnumFieldDeclaration.name + "'");
-        if (lcEnumFieldDeclaration.arguments.length != 0) {
+        if (!lcEnumFieldDeclaration.arguments.isEmpty()) {
             System.out.println(prefix + "   |-arguments:");
             for (LCExpression argument : lcEnumFieldDeclaration.arguments) {
                 this.visit(argument, prefix + "       |");
@@ -845,7 +843,7 @@ public final class LCAstDumper extends LCAstVisitor {
     @Override
     public Object visitRecordDeclaration(LCRecordDeclaration lcRecordDeclaration, Object prefix) {
         System.out.println(prefix + "LCRecordDecl" + (lcRecordDeclaration.isErrorNode ? " **E**" : ""));
-        if (lcRecordDeclaration.annotations.length != 0) {
+        if (!lcRecordDeclaration.annotations.isEmpty()) {
             System.out.println(prefix + "   |-annotations:");
             for (LCAnnotation lcAnnotation : lcRecordDeclaration.annotations) {
                 this.visitAnnotation(lcAnnotation, prefix + "   |   |");
@@ -853,13 +851,13 @@ public final class LCAstDumper extends LCAstVisitor {
         }
         this.visitModifier(lcRecordDeclaration.modifier, prefix + "   |");
         System.out.println(prefix + "   |-name: '" + lcRecordDeclaration.name + "'");
-        if (lcRecordDeclaration.typeParameters.length != 0) {
+        if (!lcRecordDeclaration.typeParameters.isEmpty()) {
             System.out.println(prefix + "   |-typeParameters:");
             for (LCTypeParameter lcTypeParameter : lcRecordDeclaration.typeParameters) {
                 this.visit(lcTypeParameter, prefix + "   |   |");
             }
         }
-        if (lcRecordDeclaration.implementedInterfaces.length != 0) {
+        if (!lcRecordDeclaration.implementedInterfaces.isEmpty()) {
             System.out.println(prefix + "   |-implementedInterfaces:");
             for (LCTypeReferenceExpression implementedInterface : lcRecordDeclaration.implementedInterfaces) {
                 this.visitTypeReferenceExpression(implementedInterface, prefix + "   |   |");
@@ -879,7 +877,7 @@ public final class LCAstDumper extends LCAstVisitor {
     @Override
     public Object visitAnnotation(LCAnnotation lcAnnotation, Object prefix) {
         System.out.println(prefix + "-LCAnnotation(name: '" + lcAnnotation.name + "')" + (lcAnnotation.isErrorNode ? " **E**" : ""));
-        if (lcAnnotation.arguments.length == 0) {
+        if (!lcAnnotation.arguments.isEmpty()) {
             System.out.println(prefix + "   |-arguments:");
             for (LCAnnotation.LCAnnotationField argument : lcAnnotation.arguments) {
                 this.visitAnnotationField(argument, prefix + "       |");
@@ -952,7 +950,7 @@ public final class LCAstDumper extends LCAstVisitor {
     @Override
     public Object visitTry(LCTry lcTry, Object prefix) {
         System.out.println(prefix + "-LCTry" + (lcTry.isErrorNode ? " **E**" : ""));
-        if (lcTry.resources.length != 0) {
+        if (!lcTry.resources.isEmpty()) {
             System.out.println(prefix + "   |-resources:");
             for (LCStatement resource : lcTry.resources) {
                 this.visit(resource, prefix + "   |   |");
@@ -960,7 +958,7 @@ public final class LCAstDumper extends LCAstVisitor {
         }
         System.out.println(prefix + "   |-base:");
         this.visit(lcTry.base, prefix + "   |   |");
-        if (lcTry.catchers.length != 0) {
+        if (!lcTry.catchers.isEmpty()) {
             System.out.println(prefix + "   |-catchers:");
             for (LCTry.LCCatch catcher : lcTry.catchers) {
                 this.visitCatch(catcher, prefix + "   |   |");
@@ -1009,7 +1007,7 @@ public final class LCAstDumper extends LCAstVisitor {
         System.out.println(prefix + "   |-filepath: '" + lcSourceCodeFile.filepath + "'");
         System.out.println(prefix + "   |-body:");
         this.visitBlock(lcSourceCodeFile.body, prefix + "   |   |");
-        if (lcSourceCodeFile.proxies.length > 0) {
+        if (!lcSourceCodeFile.proxies.isEmpty()) {
             System.out.println(prefix + "   |-proxies:");
             for (LCSourceFileProxy proxy : lcSourceCodeFile.proxies) {
                 this.visitSourceFileProxy(proxy, prefix + "       |");
@@ -1037,13 +1035,13 @@ public final class LCAstDumper extends LCAstVisitor {
     @Override
     public Object visitNative(LCNative lcNative, Object prefix) {
         System.out.println(prefix + "-LCNative" + (lcNative.isErrorNode ? " **E**" : ""));
-        if (lcNative.resources.length != 0) {
+        if (!lcNative.resources.isEmpty()) {
             System.out.println(prefix + "   |-resources:");
             for (LCNative.LCResourceForNative resource : lcNative.resources) {
                 this.visitResourceForNative(resource, prefix + "   |   |");
             }
         }
-        if (lcNative.sections.length != 0) {
+        if (!lcNative.sections.isEmpty()) {
             System.out.println(prefix + "   |-sections:");
             for (LCNativeSection lcNativeSection : lcNative.sections) {
                 this.visit(lcNativeSection, prefix + "       |");
@@ -1123,7 +1121,7 @@ public final class LCAstDumper extends LCAstVisitor {
             System.out.println(prefix + "   |-extended:");
             this.visitTypeReferenceExpression(lcTypeParameter.extended, prefix + "   |   |");
         }
-        if (lcTypeParameter.implemented.length != 0) {
+        if (!lcTypeParameter.implemented.isEmpty()) {
             System.out.println(prefix + "   |-implemented:");
             for (LCTypeReferenceExpression typeReferenceExpression : lcTypeParameter.implemented) {
                 this.visitTypeReferenceExpression(typeReferenceExpression, prefix + "   |   |");
@@ -1172,7 +1170,7 @@ public final class LCAstDumper extends LCAstVisitor {
     @Override
     public Object visitLambda(LCLambda lcLambda, Object prefix) {
         System.out.println(prefix + "-LCLambda" + (lcLambda.isErrorNode ? " **E**" : ""));
-        if (lcLambda.typeParameters.length != 0) {
+        if (!lcLambda.typeParameters.isEmpty()) {
             System.out.println(prefix + "   |-typeParameters:");
             for (LCTypeParameter typeParameter : lcLambda.typeParameters) {
                 this.visitTypeParameter(typeParameter, prefix + "   |   |");
@@ -1187,7 +1185,7 @@ public final class LCAstDumper extends LCAstVisitor {
             this.visit(lcLambda.returnTypeExpression, prefix + "   |   |");
         }
 
-        if (lcLambda.threwExceptions.length != 0) {
+        if (!lcLambda.threwExceptions.isEmpty()) {
             System.out.println(prefix + "   |-threwExceptions:");
             for (LCTypeReferenceExpression threwException : lcLambda.threwExceptions) {
                 this.visitTypeReferenceExpression(threwException, prefix + "   |   |");
@@ -1269,7 +1267,7 @@ public final class LCAstDumper extends LCAstVisitor {
     @Override
     public Object visitInit(LCInit lcInit, Object prefix) {
         System.out.println(prefix + "-LCInit" + (lcInit.isErrorNode ? " **E**" : ""));
-        if (lcInit.annotations.length != 0) {
+        if (!lcInit.annotations.isEmpty()) {
             System.out.println(prefix + "   |-annotations:");
             for (LCAnnotation lcAnnotation : lcInit.annotations) {
                 this.visitAnnotation(lcAnnotation, prefix + "   |   |");

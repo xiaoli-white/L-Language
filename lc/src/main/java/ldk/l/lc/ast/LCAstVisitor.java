@@ -517,8 +517,8 @@ public abstract class LCAstVisitor {
     }
 
     public Object visitGetAddress(LCGetAddress lcGetAddress, Object additional) {
-        if (lcGetAddress.paramTypeExpressions != null) {
-            for (LCTypeExpression typeExpression : lcGetAddress.paramTypeExpressions) {
+        if (lcGetAddress.parameterTypeExpressions != null) {
+            for (LCTypeExpression typeExpression : lcGetAddress.parameterTypeExpressions) {
                 this.visit(typeExpression, additional);
             }
         }

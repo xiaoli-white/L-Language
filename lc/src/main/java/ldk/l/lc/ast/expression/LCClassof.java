@@ -5,7 +5,7 @@ import ldk.l.lc.ast.base.LCExpression;
 import ldk.l.lc.ast.expression.type.LCTypeReferenceExpression;
 import ldk.l.lc.util.Position;
 
-public class LCClassof extends LCExpression {
+public final class LCClassof extends LCExpression {
     public LCTypeReferenceExpression typeExpression;
 
     public LCClassof(LCTypeReferenceExpression typeExpression, Position pos, boolean isErrorNode) {

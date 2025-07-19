@@ -6,7 +6,7 @@ import ldk.l.lc.util.Position;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LCBlock extends LCExpressionWithScope {
+public final class LCBlock extends LCExpressionWithScope {
     public List<LCStatement> statements;
 
     public LCBlock(List<LCStatement> statements, Position pos) {

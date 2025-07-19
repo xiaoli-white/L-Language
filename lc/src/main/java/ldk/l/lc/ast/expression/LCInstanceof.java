@@ -2,14 +2,11 @@ package ldk.l.lc.ast.expression;
 
 import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.ast.base.LCExpression;
-import ldk.l.lc.ast.expression.type.LCTypeExpression;
 import ldk.l.lc.ast.expression.type.LCTypeReferenceExpression;
 import ldk.l.lc.semantic.types.SystemTypes;
 import ldk.l.lc.util.Position;
 
-import java.util.Objects;
-
-public class LCInstanceof extends LCExpression {
+public final class LCInstanceof extends LCExpression {
     public LCExpression expression;
     public LCTypeReferenceExpression typeExpression;
 

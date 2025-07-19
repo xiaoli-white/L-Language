@@ -1,28 +1,25 @@
 package ldk.l.lc.util.symbol.object;
 
 import ldk.l.lc.ast.base.LCFlags;
-import ldk.l.lc.ast.statement.declaration.object.LCClassDeclaration;
 import ldk.l.lc.ast.statement.declaration.object.LCRecordDeclaration;
-import ldk.l.lc.semantic.types.SystemTypes;
 import ldk.l.lc.semantic.types.Type;
 import ldk.l.lc.util.symbol.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
 public final class RecordSymbol extends ObjectSymbol {
     public LCRecordDeclaration declaration;
-    public InterfaceSymbol[] implementedInterfaces = null;
-    public VariableSymbol[] fields;
-    public VariableSymbol[] properties;
-    public MethodSymbol[] constructors;
-    public MethodSymbol[] methods;
+    public List<InterfaceSymbol> implementedInterfaces = null;
+    public List<VariableSymbol> fields;
+    public List<VariableSymbol> properties;
+    public List<MethodSymbol> constructors;
+    public List<MethodSymbol> methods;
     public MethodSymbol destructor;
 
-    public RecordSymbol(LCRecordDeclaration declaration, Type theType, TemplateTypeParameterSymbol[] templateTypeParameters, TypeParameterSymbol[] typeParameters, long flags, String[] attributes, VariableSymbol[] fields, VariableSymbol[] properties, MethodSymbol[] constructors, MethodSymbol[] methods, MethodSymbol destructor) {
-        super(declaration.getPackageName(), declaration.name, theType, SymbolKind.Record, templateTypeParameters, typeParameters, flags, attributes);
+    public RecordSymbol(LCRecordDeclaration declaration, Type theType, List<TypeParameterSymbol> typeParameters, long flags, List<String> attributes, List<VariableSymbol> fields, List<VariableSymbol> properties, List<MethodSymbol> constructors, List<MethodSymbol> methods, MethodSymbol destructor) {
+        super(declaration.getPackageName(), declaration.name, theType, SymbolKind.Record, typeParameters, flags, attributes);
         this.flags |= LCFlags.FINAL;
 
         this.declaration = declaration;
@@ -58,23 +55,22 @@ public final class RecordSymbol extends ObjectSymbol {
     @Override
     public String toString() {
         return "RecordSymbol{" +
-                "implementedInterfaces=" + Arrays.toString(implementedInterfaces) +
-                ", fields=" + Arrays.toString(fields) +
-                ", properties=" + Arrays.toString(properties) +
-                ", constructors=" + Arrays.toString(constructors) +
+                "implementedInterfaces=" + implementedInterfaces +
+                ", fields=" + fields +
+                ", properties=" + properties +
+                ", constructors=" + constructors +
                 ", destructor=" + destructor +
-                ", methods=" + Arrays.toString(methods) +
+                ", methods=" + methods +
                 ", _package='" + _package + '\'' +
-                ", templateTypeParameters=" + Arrays.toString(templateTypeParameters) +
-                ", typeParameters=" + Arrays.toString(typeParameters) +
+                ", typeParameters=" + typeParameters +
                 ", name='" + name + '\'' +
                 ", theType=" + theType +
                 '}';
     }
 
     @Override
-    public MethodSymbol[] getMethods() {
-        return this.methods;
+    public List<MethodSymbol> getMethods() {
+        return new ArrayList<>(this.methods);
     }
 
     public MethodSymbol getMethodCascade(String simpleName) {

@@ -78,7 +78,7 @@ public final class LeftValueAttributor extends LCAstVisitor {
     @Override
     public Object visitGetAddress(LCGetAddress lcGetAddress, Object additional) {
         super.visitGetAddress(lcGetAddress, additional);
-        if (lcGetAddress.paramTypeExpressions == null) {
+        if (lcGetAddress.parameterTypeExpressions == null) {
             lcGetAddress.expression.isLeftValue = true;
         }
         return null;

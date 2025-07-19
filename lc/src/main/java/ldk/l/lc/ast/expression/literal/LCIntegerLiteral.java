@@ -4,8 +4,6 @@ import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.semantic.types.SystemTypes;
 import ldk.l.lc.util.Position;
 
-import java.util.Objects;
-
 public final class LCIntegerLiteral extends LCLiteral<Long> {
     public LCIntegerLiteral(long value, boolean isLong, Position pos) {
         this(value, isLong, pos, false);

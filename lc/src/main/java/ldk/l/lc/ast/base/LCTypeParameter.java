@@ -6,18 +6,18 @@ import ldk.l.lc.ast.expression.type.LCTypeReferenceExpression;
 import ldk.l.lc.util.Position;
 import ldk.l.lc.util.symbol.TypeParameterSymbol;
 
-import java.util.Arrays;
-import java.util.Objects;
+import java.util.ArrayList;
+import java.util.List;
 
-public class LCTypeParameter extends LCAstNode {
+public final class LCTypeParameter extends LCAstNode {
     public TypeParameterSymbol symbol;
     public String name;
     public LCTypeReferenceExpression extended;
-    public LCTypeReferenceExpression[] implemented;
+    public List<LCTypeReferenceExpression> implemented;
     public LCTypeReferenceExpression supered;
     public LCTypeReferenceExpression _default;
 
-    public LCTypeParameter(String name, LCTypeReferenceExpression extended, LCTypeReferenceExpression[] implemented, LCTypeReferenceExpression supered, LCTypeReferenceExpression _default, Position pos, boolean isErrorNode) {
+    public LCTypeParameter(String name, LCTypeReferenceExpression extended, List<LCTypeReferenceExpression> implemented, LCTypeReferenceExpression supered, LCTypeReferenceExpression _default, Position pos, boolean isErrorNode) {
         super(pos, isErrorNode);
         this.name = name;
 
@@ -44,7 +44,7 @@ public class LCTypeParameter extends LCAstNode {
         return "LCTypeParameter{" +
                 "name='" + name + '\'' +
                 ", extended=" + extended +
-                ", implemented=" + Arrays.toString(implemented) +
+                ", implemented=" + implemented +
                 ", supered=" + supered +
                 ", _default=" + _default +
                 ", isErrorNode=" + isErrorNode +
@@ -54,6 +54,6 @@ public class LCTypeParameter extends LCAstNode {
 
     @Override
     public LCTypeParameter clone() throws CloneNotSupportedException {
-        return new LCTypeParameter(name, extended != null ? extended.clone() : null, Arrays.copyOf(implemented, implemented.length), supered != null ? supered.clone() : null, _default != null ? _default.clone() : null, position.clone(), isErrorNode);
+        return new LCTypeParameter(name, extended != null ? extended.clone() : null, new ArrayList<>(implemented), supered != null ? supered.clone() : null, _default != null ? _default.clone() : null, position.clone(), isErrorNode);
     }
 }

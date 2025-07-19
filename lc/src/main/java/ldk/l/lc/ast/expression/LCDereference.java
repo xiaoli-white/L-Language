@@ -4,9 +4,7 @@ import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.ast.base.LCExpression;
 import ldk.l.lc.util.Position;
 
-import java.util.Objects;
-
-public class LCDereference extends LCExpression {
+public final class LCDereference extends LCExpression {
     public LCExpression expression;
 
     public LCDereference(LCExpression expression, Position pos, boolean isErrorNode) {

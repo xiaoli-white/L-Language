@@ -5,9 +5,7 @@ import ldk.l.lc.ast.base.LCExpression;
 import ldk.l.lc.semantic.types.SystemTypes;
 import ldk.l.lc.util.Position;
 
-import java.util.Objects;
-
-public class LCSizeof extends LCExpression {
+public final class LCSizeof extends LCExpression {
     public LCExpression expression;
 
     public LCSizeof(LCExpression expression, Position pos, boolean isErrorNode) {

@@ -55,7 +55,7 @@ public final class TypeParameterEnter extends LCAstVisitor {
         } else {
             _default = null;
         }
-        TypeParameterSymbol symbol = new TypeParameterSymbol(lcTypeParameter, extended, implemented.toArray(new ObjectSymbol[0]), supered, _default);
+        TypeParameterSymbol symbol = new TypeParameterSymbol(lcTypeParameter, extended, implemented, supered, _default);
         lcTypeParameter.symbol = symbol;
         this.scope.enter(lcTypeParameter.name, symbol);
         return null;

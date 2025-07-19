@@ -4,9 +4,7 @@ import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.ast.base.LCExpression;
 import ldk.l.lc.util.Position;
 
-import java.util.Objects;
-
-public class LCTernary extends LCExpression {
+public final class LCTernary extends LCExpression {
     public LCExpression condition;
     public LCExpression then;
     public LCExpression _else;

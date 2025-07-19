@@ -8,17 +8,16 @@ import ldk.l.lc.util.Position;
 import ldk.l.lc.util.symbol.MethodSymbol;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-public class LCWith extends LCStatementWithScope {
+public final class LCWith extends LCStatementWithScope {
     public List<LCVariableDeclaration> resources;
     public LCStatement body;
     public MethodSymbol methodSymbol = null;
 
     public LCWith(List<LCVariableDeclaration> resources, LCStatement body, Position pos, boolean isErrorNode) {
         super(pos, isErrorNode);
-        this.resources = new ArrayList<>(resources);
+        this.resources = resources;
         for (LCStatement resource : resources) resource.parentNode = this;
         this.body = body;
         this.body.parentNode = this;
@@ -35,7 +34,7 @@ public class LCWith extends LCStatementWithScope {
                 "resources=" + resources +
                 ", body=" + body +
                 ", scope=" + scope +
-                ", annotations=" + Arrays.toString(annotations) +
+                ", annotations=" + annotations +
                 ", position=" + position +
                 ", isErrorNode=" + isErrorNode +
                 '}';

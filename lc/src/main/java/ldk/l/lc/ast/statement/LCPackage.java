@@ -4,10 +4,7 @@ import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.ast.base.LCStatement;
 import ldk.l.lc.util.Position;
 
-import java.util.Arrays;
-import java.util.Objects;
-
-public class LCPackage extends LCStatement {
+public final class LCPackage extends LCStatement {
     public String name;
 
     public LCPackage(String name, Position pos, boolean isErrorNode) {
@@ -24,7 +21,7 @@ public class LCPackage extends LCStatement {
     public String toString() {
         return "LCPackage{" +
                 "name='" + name + '\'' +
-                ", annotations=" + Arrays.toString(annotations) +
+                ", annotations=" + annotations +
                 ", position=" + position +
                 ", isErrorNode=" + isErrorNode +
                 '}';

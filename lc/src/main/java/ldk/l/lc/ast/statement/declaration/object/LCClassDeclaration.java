@@ -8,16 +8,17 @@ import ldk.l.lc.ast.expression.type.LCTypeReferenceExpression;
 import ldk.l.lc.util.Position;
 import ldk.l.lc.util.symbol.object.ClassSymbol;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class LCClassDeclaration extends LCObjectDeclaration {
     public LCTypeReferenceExpression extended;
-    public LCTypeReferenceExpression[] implementedInterfaces;
-    public LCTypeReferenceExpression[] permittedClasses;
+    public List<LCTypeReferenceExpression> implementedInterfaces;
+    public List<LCTypeReferenceExpression> permittedClasses;
     public ClassSymbol symbol = null;
     public LCExpression delegated;
 
-    public LCClassDeclaration(String name, LCTypeParameter[] typeParameters, LCTypeReferenceExpression extended, LCTypeReferenceExpression[] implementedInterfaces, LCTypeReferenceExpression[] permittedClasses,
+    public LCClassDeclaration(String name, List<LCTypeParameter> typeParameters, LCTypeReferenceExpression extended, List<LCTypeReferenceExpression> implementedInterfaces, List<LCTypeReferenceExpression> permittedClasses,
                               LCExpression delegated, LCBlock body, Position pos, boolean isErrorNode) {
         super(name, typeParameters, body, pos, isErrorNode);
         this.extended = extended;
@@ -41,16 +42,16 @@ public final class LCClassDeclaration extends LCObjectDeclaration {
     public String toString() {
         return "LCClassDeclaration{" +
                 "extended=" + extended +
-                ", implementedInterfaces=" + Arrays.toString(implementedInterfaces) +
-                ", permittedClasses=" + Arrays.toString(permittedClasses) +
+                ", implementedInterfaces=" + implementedInterfaces +
+                ", permittedClasses=" + permittedClasses +
                 ", symbol=" + symbol +
                 ", delegated=" + delegated +
                 ", scope=" + scope +
                 ", modifier=" + modifier +
                 ", name='" + name + '\'' +
-                ", typeParameters=" + Arrays.toString(typeParameters) +
+                ", typeParameters=" + typeParameters +
                 ", body=" + body +
-                ", annotations=" + Arrays.toString(annotations) +
+                ", annotations=" + annotations +
                 ", position=" + position +
                 ", isErrorNode=" + isErrorNode +
                 '}';
@@ -58,6 +59,6 @@ public final class LCClassDeclaration extends LCObjectDeclaration {
 
     @Override
     public LCClassDeclaration clone() throws CloneNotSupportedException {
-        return new LCClassDeclaration(this.name, Arrays.copyOf(this.typeParameters, this.typeParameters.length), this.extended != null ? this.extended.clone() : null, Arrays.copyOf(this.implementedInterfaces, this.implementedInterfaces.length), Arrays.copyOf(this.permittedClasses, this.permittedClasses.length), this.delegated != null ? this.delegated.clone() : null, this.body != null ? this.body.clone() : null, this.position.clone(), this.isErrorNode);
+        return new LCClassDeclaration(this.name, new ArrayList<>(this.typeParameters), this.extended != null ? this.extended.clone() : null, new ArrayList<>(this.implementedInterfaces), new ArrayList<>(this.permittedClasses), this.delegated != null ? this.delegated.clone() : null, this.body != null ? this.body.clone() : null, this.position.clone(), this.isErrorNode);
     }
 }

@@ -4,9 +4,7 @@ import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.ast.base.LCStatement;
 import ldk.l.lc.util.Position;
 
-import java.util.Arrays;
-
-public class LCImport extends LCStatement {
+public final class LCImport extends LCStatement {
     public LCImport.LCImportKind kind;
     public String name;
     public String alias;
@@ -34,7 +32,7 @@ public class LCImport extends LCStatement {
                 "kind=" + kind +
                 ", name='" + name + '\'' +
                 ", alias='" + alias + '\'' +
-                ", annotations=" + Arrays.toString(annotations) +
+                ", annotations=" + annotations +
                 ", position=" + position +
                 ", isErrorNode=" + isErrorNode +
                 '}';

@@ -4,9 +4,7 @@ import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.token.Tokens;
 import ldk.l.lc.util.Position;
 
-import java.util.Objects;
-
-public class LCPredefinedTypeExpression extends LCTypeExpression {
+public final class LCPredefinedTypeExpression extends LCTypeExpression {
     public Tokens.Type keyword;
 
     public LCPredefinedTypeExpression(Tokens.Type keyword, Position pos) {

@@ -3,13 +3,10 @@ package ldk.l.lc.ast.statement.loops;
 import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.ast.base.LCExpression;
 import ldk.l.lc.ast.base.LCStatement;
-import ldk.l.lc.ast.base.LCStatementWithScope;
 import ldk.l.lc.ast.statement.declaration.LCVariableDeclaration;
 import ldk.l.lc.util.Position;
 
-import java.util.Arrays;
-
-public class LCForeach extends LCAbstractLoop {
+public final class LCForeach extends LCAbstractLoop {
     public LCVariableDeclaration init;
     public LCExpression source;
     public LCStatement body;
@@ -38,7 +35,7 @@ public class LCForeach extends LCAbstractLoop {
                 ", source=" + source +
                 ", body=" + body +
                 ", scope=" + scope +
-                ", annotations=" + Arrays.toString(annotations) +
+                ", annotations=" + annotations +
                 ", position=" + position +
                 ", isErrorNode=" + isErrorNode +
                 '}';

@@ -12,21 +12,21 @@ import java.util.List;
 public final class LCGetAddress extends LCExpression {
     public LCExpression expression;
     public String name;
-    public List<LCTypeExpression> paramTypeExpressions;
+    public List<LCTypeExpression> parameterTypeExpressions;
     public MethodSymbol methodSymbol;
 
     public LCGetAddress(LCExpression expression, Position pos, boolean isErrorNode) {
         this(expression, null, null, pos, isErrorNode);
     }
 
-    public LCGetAddress(LCExpression expression, String name, List<LCTypeExpression> paramTypeExpressions, Position pos, boolean isErrorNode) {
+    public LCGetAddress(LCExpression expression, String name, List<LCTypeExpression> parameterTypeExpressions, Position pos, boolean isErrorNode) {
         super(pos, isErrorNode);
         this.expression = expression;
         this.expression.parentNode = this;
         this.name = name;
-        if (paramTypeExpressions != null) {
-            this.paramTypeExpressions = new ArrayList<>(paramTypeExpressions);
-            for (LCTypeExpression paramTypeExpression : paramTypeExpressions) paramTypeExpression.parentNode = this;
+        if (parameterTypeExpressions != null) {
+            this.parameterTypeExpressions = new ArrayList<>(parameterTypeExpressions);
+            for (LCTypeExpression paramTypeExpression : parameterTypeExpressions) paramTypeExpression.parentNode = this;
         }
     }
 
@@ -40,7 +40,7 @@ public final class LCGetAddress extends LCExpression {
         return "LCGetAddress{" +
                 "expression=" + expression +
                 ", name='" + name + '\'' +
-                ", paramTypeExpressions=" + paramTypeExpressions +
+                ", parameterTypeExpressions=" + parameterTypeExpressions +
                 ", methodSymbol=" + methodSymbol +
                 ", theType=" + theType +
                 ", shouldBeLeftValue=" + shouldBeLeftValue +
@@ -53,6 +53,6 @@ public final class LCGetAddress extends LCExpression {
 
     @Override
     public LCGetAddress clone() throws CloneNotSupportedException {
-        return new LCGetAddress(expression.clone(), name, paramTypeExpressions != null ? new ArrayList<>(paramTypeExpressions) : null, position.clone(), isErrorNode);
+        return new LCGetAddress(expression.clone(), name, parameterTypeExpressions != null ? new ArrayList<>(parameterTypeExpressions) : null, position.clone(), isErrorNode);
     }
 }

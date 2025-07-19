@@ -5,9 +5,7 @@ import ldk.l.lc.ast.base.LCExpression;
 import ldk.l.lc.util.Position;
 import ldk.l.lc.util.symbol.MethodSymbol;
 
-import java.util.Objects;
-
-public class LCArrayAccess extends LCExpression {
+public final class LCArrayAccess extends LCExpression {
     public LCExpression base;
     public LCExpression index;
     public MethodSymbol methodSymbol = null;

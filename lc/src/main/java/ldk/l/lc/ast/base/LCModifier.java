@@ -3,23 +3,23 @@ package ldk.l.lc.ast.base;
 import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.util.Position;
 
-import java.util.Arrays;
-import java.util.Objects;
+import java.util.ArrayList;
+import java.util.List;
 
-public class LCModifier extends LCAstNode {
+public final class LCModifier extends LCAstNode {
     public long flags;
-    public String[] attributes;
+    public List<String> attributes;
     public Long bitRange;
 
     public LCModifier(Position pos) {
-        this(0, new String[0], null, pos, false);
+        this(0, new ArrayList<>(), null, pos, false);
     }
 
     public LCModifier(long flags, Position pos) {
-        this(flags, new String[0], null, pos, false);
+        this(flags, new ArrayList<>(), null, pos, false);
     }
 
-    public LCModifier(long flags, String[] attributes, Long bitRange, Position pos, boolean isErrorNode) {
+    public LCModifier(long flags, List<String> attributes, Long bitRange, Position pos, boolean isErrorNode) {
         super(pos, isErrorNode);
         this.flags = flags;
         this.attributes = attributes;
@@ -35,7 +35,7 @@ public class LCModifier extends LCAstNode {
     public String toString() {
         return "LCModifier{" +
                 "flags=" + flags +
-                ", attributes=" + Arrays.toString(attributes) +
+                ", attributes=" + attributes +
                 ", position=" + position +
                 ", isErrorNode=" + isErrorNode +
                 '}';
@@ -43,6 +43,6 @@ public class LCModifier extends LCAstNode {
 
     @Override
     public LCModifier clone() throws CloneNotSupportedException {
-        return new LCModifier(this.flags, this.attributes, this.bitRange, this.position.clone(), this.isErrorNode);
+        return new LCModifier(this.flags, new ArrayList<>(this.attributes), this.bitRange, this.position.clone(), this.isErrorNode);
     }
 }

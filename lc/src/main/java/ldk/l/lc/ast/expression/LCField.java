@@ -4,10 +4,7 @@ import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.ast.base.LCExpression;
 import ldk.l.lc.util.Position;
 
-import java.util.Objects;
-
-public class LCField extends LCExpression {
-
+public final class LCField extends LCExpression {
     public LCField(Position pos, boolean isErrorNode) {
         super(pos, isErrorNode);
     }

@@ -5,14 +5,14 @@ import ldk.l.lc.ast.base.LCExpression;
 import ldk.l.lc.ast.base.LCExpressionWithScope;
 import ldk.l.lc.util.Position;
 
-import java.util.Arrays;
-import java.util.Objects;
+import java.util.ArrayList;
+import java.util.List;
 
-public class LCSwitchExpression extends LCExpressionWithScope {
+public final class LCSwitchExpression extends LCExpressionWithScope {
     public LCExpression selector;
-    public LCCase[] cases;
+    public List<LCCase> cases;
 
-    public LCSwitchExpression(LCExpression selector, LCCase[] cases, Position pos, boolean isErrorNode) {
+    public LCSwitchExpression(LCExpression selector, List<LCCase> cases, Position pos, boolean isErrorNode) {
         super(pos, isErrorNode);
         this.selector = selector;
         this.selector.parentNode = this;
@@ -30,7 +30,7 @@ public class LCSwitchExpression extends LCExpressionWithScope {
     public String toString() {
         return "LCSwitchExpression{" +
                 "selector=" + selector +
-                ", cases=" + Arrays.toString(cases) +
+                ", cases=" + cases +
                 ", scope=" + scope +
                 ", theType=" + theType +
                 ", shouldBeLeftValue=" + shouldBeLeftValue +
@@ -43,6 +43,6 @@ public class LCSwitchExpression extends LCExpressionWithScope {
 
     @Override
     public LCSwitchExpression clone() throws CloneNotSupportedException {
-        return new LCSwitchExpression(selector.clone(), Arrays.copyOf(cases, cases.length), position.clone(), isErrorNode);
+        return new LCSwitchExpression(selector.clone(), new ArrayList<>(cases), position.clone(), isErrorNode);
     }
 }

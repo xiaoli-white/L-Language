@@ -6,9 +6,7 @@ import ldk.l.lc.ast.base.LCExpression;
 import ldk.l.lc.ast.base.LCExpressionWithScope;
 import ldk.l.lc.util.Position;
 
-import java.util.Objects;
-
-public class LCSynchronized extends LCExpressionWithScope {
+public final class LCSynchronized extends LCExpressionWithScope {
     public LCExpression lock;
     public LCBlock body;
 

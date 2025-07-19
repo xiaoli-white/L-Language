@@ -6,17 +6,17 @@ import ldk.l.lc.ast.base.LCExpressionWithScope;
 import ldk.l.lc.ast.base.LCStatement;
 import ldk.l.lc.util.Position;
 
-import java.util.Arrays;
-import java.util.Objects;
+import java.util.ArrayList;
+import java.util.List;
 
-public class LCCase extends LCExpressionWithScope {
+public final class LCCase extends LCExpressionWithScope {
     public LCCaseKind kind;
-    public LCCaseLabel[] labels;
+    public List<LCCaseLabel> labels;
     public LCExpression guard;
-    public LCStatement[] statements;
+    public List<LCStatement> statements;
     public boolean completesNormally;
 
-    public LCCase(LCCaseKind kind, LCCaseLabel[] labels, LCExpression guard, LCStatement[] statements, boolean completesNormally, Position pos, boolean isErrorNode) {
+    public LCCase(LCCaseKind kind, List<LCCaseLabel> labels, LCExpression guard, List<LCStatement> statements, boolean completesNormally, Position pos, boolean isErrorNode) {
         super(pos, isErrorNode);
         this.kind = kind;
 
@@ -41,9 +41,9 @@ public class LCCase extends LCExpressionWithScope {
     public String toString() {
         return "LCCase{" +
                 "kind=" + kind +
-                ", labels=" + Arrays.toString(labels) +
+                ", labels=" + labels +
                 ", guard=" + guard +
-                ", statements=" + Arrays.toString(statements) +
+                ", statements=" + statements +
                 ", completesNormally=" + completesNormally +
                 ", scope=" + scope +
                 ", theType=" + theType +
@@ -57,7 +57,7 @@ public class LCCase extends LCExpressionWithScope {
 
     @Override
     public LCCase clone() throws CloneNotSupportedException {
-        return new LCCase(kind, Arrays.copyOf(labels, labels.length), guard != null ? guard.clone() : null, Arrays.copyOf(statements, statements.length), completesNormally, position.clone(), isErrorNode);
+        return new LCCase(kind, new ArrayList<>(labels), guard != null ? guard.clone() : null, new ArrayList<>(statements), completesNormally, position.clone(), isErrorNode);
     }
 
     public enum LCCaseKind {

@@ -4,9 +4,7 @@ import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.ast.base.LCExpression;
 import ldk.l.lc.util.Position;
 
-import java.util.Objects;
-
-public class LCNotNullAssert extends LCExpression {
+public final class LCNotNullAssert extends LCExpression {
     public LCExpression base;
 
     public LCNotNullAssert(LCExpression base, Position pos, boolean isErrorNode) {

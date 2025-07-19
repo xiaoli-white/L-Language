@@ -5,20 +5,21 @@ import ldk.l.lc.ast.statement.declaration.object.LCEnumDeclaration;
 import ldk.l.lc.semantic.types.Type;
 import ldk.l.lc.util.symbol.*;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public final class EnumSymbol extends ObjectSymbol {
     public LCEnumDeclaration declaration;
-    public InterfaceSymbol[] implementedInterfaces = null;
-    public EnumFieldSymbol[] fields;
-    public VariableSymbol[] properties;
-    public MethodSymbol[] constructors;
-    public MethodSymbol[] methods;
+    public List<InterfaceSymbol> implementedInterfaces = null;
+    public List<EnumFieldSymbol> fields;
+    public List<VariableSymbol> properties;
+    public List<MethodSymbol> constructors;
+    public List<MethodSymbol> methods;
     public MethodSymbol destructor;
 
-    public EnumSymbol(LCEnumDeclaration declaration, Type theType, TemplateTypeParameterSymbol[] templateTypeParameters, TypeParameterSymbol[] typeParameters, long flags, String[] attributes, EnumFieldSymbol[] fields, VariableSymbol[] properties, MethodSymbol[] constructors, MethodSymbol[] methods, MethodSymbol destructor) {
-        super(declaration.getPackageName(), declaration.name, theType, SymbolKind.Enum, templateTypeParameters, typeParameters, flags, attributes);
+    public EnumSymbol(LCEnumDeclaration declaration, Type theType, List<TypeParameterSymbol> typeParameters, long flags, List<String> attributes, List<EnumFieldSymbol> fields, List<VariableSymbol> properties, List<MethodSymbol> constructors, List<MethodSymbol> methods, MethodSymbol destructor) {
+        super(declaration.getPackageName(), declaration.name, theType, SymbolKind.Enum, typeParameters, flags, attributes);
         this.flags |= LCFlags.FINAL;
 
         this.declaration = declaration;
@@ -56,23 +57,22 @@ public final class EnumSymbol extends ObjectSymbol {
     @Override
     public String toString() {
         return "EnumSymbol{" +
-                "implementedInterfaces=" + Arrays.toString(implementedInterfaces) +
-                ", fields=" + Arrays.toString(fields) +
-                ", properties=" + Arrays.toString(properties) +
-                ", constructors=" + Arrays.toString(constructors) +
+                "implementedInterfaces=" + implementedInterfaces +
+                ", fields=" + fields +
+                ", properties=" + properties +
+                ", constructors=" + constructors +
                 ", destructor=" + destructor +
-                ", methods=" + Arrays.toString(methods) +
+                ", methods=" + methods +
                 ", _package='" + _package + '\'' +
-                ", templateTypeParameters=" + Arrays.toString(templateTypeParameters) +
-                ", typeParameters=" + Arrays.toString(typeParameters) +
+                ", typeParameters=" + typeParameters +
                 ", name='" + name + '\'' +
                 ", theType=" + theType +
                 '}';
     }
 
     @Override
-    public MethodSymbol[] getMethods() {
-        return this.methods;
+    public List<MethodSymbol> getMethods() {
+        return new ArrayList<>(this.methods);
     }
 
     public MethodSymbol getMethodCascade(String simpleName) {
@@ -93,7 +93,7 @@ public final class EnumSymbol extends ObjectSymbol {
         return null;
     }
 
-    public static class EnumFieldSymbol extends Symbol {
+    public static final class EnumFieldSymbol extends Symbol {
         public EnumSymbol enumSymbol = null;
         public LCEnumDeclaration.LCEnumFieldDeclaration declaration;
         public MethodSymbol constructor = null;

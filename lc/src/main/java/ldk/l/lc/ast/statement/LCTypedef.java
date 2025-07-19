@@ -5,9 +5,7 @@ import ldk.l.lc.ast.base.LCStatement;
 import ldk.l.lc.ast.expression.type.LCTypeExpression;
 import ldk.l.lc.util.Position;
 
-import java.util.Objects;
-
-public class LCTypedef extends LCStatement {
+public final class LCTypedef extends LCStatement {
     public LCTypeExpression typeExpression;
     public String name;
 

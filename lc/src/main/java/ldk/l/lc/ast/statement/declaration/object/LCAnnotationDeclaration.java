@@ -3,21 +3,20 @@ package ldk.l.lc.ast.statement.declaration.object;
 import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.ast.base.LCAstNode;
 import ldk.l.lc.ast.base.LCExpression;
-import ldk.l.lc.ast.base.LCTypeParameter;
 import ldk.l.lc.ast.expression.type.LCTypeExpression;
 import ldk.l.lc.util.Position;
 import ldk.l.lc.util.scope.Scope;
 import ldk.l.lc.util.symbol.object.AnnotationSymbol;
 
-import java.util.Arrays;
-import java.util.Objects;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class LCAnnotationDeclaration extends LCObjectDeclaration {
     public AnnotationSymbol symbol = null;
     public LCAnnotationBody annotationBody;
 
     public LCAnnotationDeclaration(String name, LCAnnotationBody annotationBody, Position position, boolean isErrorNode) {
-        super(name, new LCTypeParameter[0], null, position, isErrorNode);
+        super(name, new ArrayList<>(), null, position, isErrorNode);
         this.annotationBody = annotationBody;
         this.annotationBody.parentNode = this;
     }
@@ -35,9 +34,9 @@ public final class LCAnnotationDeclaration extends LCObjectDeclaration {
                 ", scope=" + scope +
                 ", modifier=" + modifier +
                 ", name='" + name + '\'' +
-                ", typeParameters=" + Arrays.toString(typeParameters) +
+                ", typeParameters=" + typeParameters +
                 ", body=" + body +
-                ", annotations=" + Arrays.toString(annotations) +
+                ", annotations=" + annotations +
                 ", position=" + position +
                 ", isErrorNode=" + isErrorNode +
                 '}';
@@ -88,11 +87,11 @@ public final class LCAnnotationDeclaration extends LCObjectDeclaration {
         }
     }
 
-    public static class LCAnnotationBody extends LCAstNode {
+    public static final class LCAnnotationBody extends LCAstNode {
         public Scope scope = null;
-        public LCAnnotationFieldDeclaration[] fields;
+        public List<LCAnnotationFieldDeclaration> fields;
 
-        public LCAnnotationBody(LCAnnotationFieldDeclaration[] fields, Position pos, boolean isErrorNode) {
+        public LCAnnotationBody(List<LCAnnotationFieldDeclaration> fields, Position pos, boolean isErrorNode) {
             super(pos, isErrorNode);
             this.fields = fields;
             for (LCAnnotationFieldDeclaration field : fields) field.parentNode = this;
@@ -106,7 +105,7 @@ public final class LCAnnotationDeclaration extends LCObjectDeclaration {
         @Override
         public String toString() {
             return "LCAnnotationBody{" +
-                    "fields=" + Arrays.toString(fields) +
+                    "fields=" + fields +
                     ", position=" + position +
                     ", isErrorNode=" + isErrorNode +
                     '}';
@@ -114,7 +113,7 @@ public final class LCAnnotationDeclaration extends LCObjectDeclaration {
 
         @Override
         public LCAnnotationBody clone() throws CloneNotSupportedException {
-            return new LCAnnotationBody(Arrays.copyOf(fields, fields.length), position.clone(), isErrorNode);
+            return new LCAnnotationBody(new ArrayList<>(fields), position.clone(), isErrorNode);
         }
     }
 

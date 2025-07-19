@@ -10,19 +10,20 @@ import ldk.l.lc.semantic.types.Type;
 import ldk.l.lc.util.Position;
 import ldk.l.lc.util.symbol.MethodSymbol;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 
-public class LCLambda extends LCExpressionWithScope {
+public final class LCLambda extends LCExpressionWithScope {
     public MethodSymbol symbol = null;
     public LCModifier modifier;
-    public LCTypeParameter[] typeParameters;
+    public List<LCTypeParameter> typeParameters;
     public LCParameterList parameterList;
     public LCTypeExpression returnTypeExpression;
-    public LCTypeReferenceExpression[] threwExceptions;
+    public List<LCTypeReferenceExpression> threwExceptions;
     public LCStatement body;
     public Type returnType = SystemTypes.AUTO;
 
-    public LCLambda(LCTypeParameter[] typeParameters, LCParameterList parameterList, LCTypeExpression returnTypeExpression, boolean hasThisReadonly, LCTypeReferenceExpression[] threwExceptions, LCStatement body, Position pos, boolean isErrorNode) {
+    public LCLambda(List<LCTypeParameter> typeParameters, LCParameterList parameterList, LCTypeExpression returnTypeExpression, boolean hasThisReadonly, List<LCTypeReferenceExpression> threwExceptions, LCStatement body, Position pos, boolean isErrorNode) {
         super(pos, isErrorNode);
         this.typeParameters = typeParameters;
         for (LCTypeParameter typeParameter : this.typeParameters) typeParameter.parentNode = this;
@@ -51,10 +52,10 @@ public class LCLambda extends LCExpressionWithScope {
         return "LCLambda{" +
                 "symbol=" + symbol +
                 ", modifier=" + modifier +
-                ", typeParameters=" + Arrays.toString(typeParameters) +
+                ", typeParameters=" + typeParameters +
                 ", callSignature=" + parameterList +
                 ", returnTypeExpression=" + returnTypeExpression +
-                ", threwExceptions=" + Arrays.toString(threwExceptions) +
+                ", threwExceptions=" + threwExceptions +
                 ", body=" + body +
                 ", returnType=" + returnType +
                 ", scope=" + scope +
@@ -69,6 +70,6 @@ public class LCLambda extends LCExpressionWithScope {
 
     @Override
     public LCLambda clone() throws CloneNotSupportedException {
-        return new LCLambda(Arrays.copyOf(typeParameters, typeParameters.length), parameterList.clone(), returnTypeExpression != null ? returnTypeExpression.clone() : null, LCFlags.hasThisReadonly(modifier.flags), Arrays.copyOf(threwExceptions, threwExceptions.length), body.clone(), position.clone(), isErrorNode);
+        return new LCLambda(new ArrayList<>(typeParameters), parameterList.clone(), returnTypeExpression != null ? returnTypeExpression.clone() : null, LCFlags.hasThisReadonly(modifier.flags), new ArrayList<>(threwExceptions), body.clone(), position.clone(), isErrorNode);
     }
 }

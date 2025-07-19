@@ -12,9 +12,10 @@ import ldk.l.lc.util.scope.Scope;
 import ldk.l.lc.util.symbol.MethodKind;
 import ldk.l.lc.util.symbol.MethodSymbol;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
-public class LCMethodDeclaration extends LCDeclaration {
+public final class LCMethodDeclaration extends LCDeclaration {
     public static final List<String> operatorMethodNames = new ArrayList<>() {{
         add("contains");
         add("plus");
@@ -54,17 +55,17 @@ public class LCMethodDeclaration extends LCDeclaration {
     public LCModifier modifier = null;
     public MethodKind methodKind;
     public String name;
-    public LCTypeParameter[] typeParameters;
+    public List<LCTypeParameter> typeParameters;
     public LCParameterList parameterList;
     public LCTypeExpression returnTypeExpression;
     public boolean hasThisReadonly;
-    public LCTypeReferenceExpression[] threwExceptions;
+    public List<LCTypeReferenceExpression> threwExceptions;
     public LCTypeReferenceExpression extended;
     public LCBlock body;
     public MethodSymbol symbol = null;
     public Type returnType = SystemTypes.AUTO;
 
-    public LCMethodDeclaration(MethodKind methodKind, String name, LCTypeParameter[] typeParameters, LCParameterList parameterList, LCTypeExpression returnTypeExpression, boolean hasThisReadonly, LCTypeReferenceExpression[] threwExceptions, LCTypeReferenceExpression extended) {
+    public LCMethodDeclaration(MethodKind methodKind, String name, List<LCTypeParameter> typeParameters, LCParameterList parameterList, LCTypeExpression returnTypeExpression, boolean hasThisReadonly, List<LCTypeReferenceExpression> threwExceptions, LCTypeReferenceExpression extended) {
         super(Position.origin, true);
         this.methodKind = methodKind;
         this.name = name;
@@ -95,7 +96,7 @@ public class LCMethodDeclaration extends LCDeclaration {
         this.isErrorNode = isErrorNode;
     }
 
-    public final void setModifier(LCModifier modifier) {
+    public void setModifier(LCModifier modifier) {
         this.modifier = modifier;
         if (hasThisReadonly) this.modifier.flags |= LCFlags.THIS_READONLY;
         this.modifier.parentNode = this;
@@ -113,15 +114,15 @@ public class LCMethodDeclaration extends LCDeclaration {
                 ", modifier=" + modifier +
                 ", methodKind=" + methodKind +
                 ", name='" + name + '\'' +
-                ", typeParameters=" + Arrays.toString(typeParameters) +
+                ", typeParameters=" + typeParameters +
                 ", callSignature=" + parameterList +
                 ", returnTypeExpression=" + returnTypeExpression +
-                ", threwExceptions=" + Arrays.toString(threwExceptions) +
+                ", threwExceptions=" + threwExceptions +
                 ", extended=" + extended +
                 ", body=" + body +
                 ", symbol=" + symbol +
                 ", returnType=" + returnType +
-                ", annotations=" + Arrays.toString(annotations) +
+                ", annotations=" + annotations +
                 ", position=" + position +
                 ", isErrorNode=" + isErrorNode +
                 '}';
@@ -129,7 +130,7 @@ public class LCMethodDeclaration extends LCDeclaration {
 
     @Override
     public LCMethodDeclaration clone() throws CloneNotSupportedException {
-        LCMethodDeclaration lcMethodDeclaration = new LCMethodDeclaration(this.methodKind, this.name, Arrays.copyOf(this.typeParameters, this.typeParameters.length), this.parameterList.clone(), this.returnTypeExpression != null ? this.returnTypeExpression.clone() : null, LCFlags.hasThisReadonly(this.modifier.flags), Arrays.copyOf(this.threwExceptions, this.threwExceptions.length), this.extended.clone());
+        LCMethodDeclaration lcMethodDeclaration = new LCMethodDeclaration(this.methodKind, this.name, new ArrayList<>(this.typeParameters), this.parameterList.clone(), this.returnTypeExpression != null ? this.returnTypeExpression.clone() : null, LCFlags.hasThisReadonly(this.modifier.flags), new ArrayList<>(this.threwExceptions), this.extended.clone());
         lcMethodDeclaration.init(this.body.clone(), this.position, this.isErrorNode);
         return lcMethodDeclaration;
     }

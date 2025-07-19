@@ -6,16 +6,16 @@ import ldk.l.lc.ast.expression.type.LCTypeExpression;
 import ldk.l.lc.util.Position;
 import ldk.l.lc.util.symbol.MethodSymbol;
 
-import java.util.Arrays;
-import java.util.Objects;
+import java.util.ArrayList;
+import java.util.List;
 
-public class LCNewObject extends LCExpression {
+public final class LCNewObject extends LCExpression {
     public LCExpression place;
     public LCTypeExpression typeExpression;
-    public LCExpression[] arguments;
+    public List<LCExpression> arguments;
     public MethodSymbol constructorSymbol = null;
 
-    public LCNewObject(LCExpression place, LCTypeExpression typeExpression, LCExpression[] arguments, Position pos, boolean isErrorNode) {
+    public LCNewObject(LCExpression place, LCTypeExpression typeExpression, List<LCExpression> arguments, Position pos, boolean isErrorNode) {
         super(pos, isErrorNode);
         this.place = place;
         if (this.place != null) this.place.parentNode = this;
@@ -37,7 +37,7 @@ public class LCNewObject extends LCExpression {
         return "LCNewObject{" +
                 "place=" + place +
                 ", typeExpression=" + typeExpression +
-                ", arguments=" + Arrays.toString(arguments) +
+                ", arguments=" + arguments +
                 ", theType=" + theType +
                 ", shouldBeLeftValue=" + shouldBeLeftValue +
                 ", isLeftValue=" + isLeftValue +
@@ -49,7 +49,7 @@ public class LCNewObject extends LCExpression {
 
     @Override
     public LCNewObject clone() throws CloneNotSupportedException {
-        LCNewObject lcNewObject = new LCNewObject(place != null ? place.clone() : null, typeExpression.clone(), arguments.clone(), position.clone(), isErrorNode);
+        LCNewObject lcNewObject = new LCNewObject(place != null ? place.clone() : null, typeExpression.clone(), new ArrayList<>(arguments), position.clone(), isErrorNode);
         lcNewObject.theType = theType;
         lcNewObject.isLeftValue = isLeftValue;
         lcNewObject.shouldBeLeftValue = shouldBeLeftValue;

@@ -4,9 +4,7 @@ import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.ast.base.LCExpression;
 import ldk.l.lc.util.Position;
 
-import java.util.Objects;
-
-public class LCSourceFileProxy extends LCExpression {
+public final class LCSourceFileProxy extends LCExpression {
     public LCSourceFile sourceFile;
 
     public LCSourceFileProxy(LCSourceFile lcSourceFile, boolean isErrorNode) {

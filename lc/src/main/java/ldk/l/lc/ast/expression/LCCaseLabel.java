@@ -6,8 +6,6 @@ import ldk.l.lc.ast.base.LCExpression;
 import ldk.l.lc.ast.expression.type.LCTypeExpression;
 import ldk.l.lc.util.Position;
 
-import java.util.Objects;
-
 public abstract class LCCaseLabel extends LCAstNode {
     public LCCaseLabel(Position pos, boolean isErrorNode) {
         super(pos, isErrorNode);
@@ -16,7 +14,7 @@ public abstract class LCCaseLabel extends LCAstNode {
     @Override
     public abstract LCCaseLabel clone() throws CloneNotSupportedException;
 
-    public static class LCDefaultCaseLabel extends LCCaseLabel {
+    public static final class LCDefaultCaseLabel extends LCCaseLabel {
         public LCDefaultCaseLabel(Position pos, boolean isErrorNode) {
             super(pos, isErrorNode);
         }
@@ -40,7 +38,7 @@ public abstract class LCCaseLabel extends LCAstNode {
         }
     }
 
-    public static class LCConstantCaseLabel extends LCCaseLabel {
+    public static final class LCConstantCaseLabel extends LCCaseLabel {
         public LCExpression expression;
 
         public LCConstantCaseLabel(LCExpression expression, Position pos, boolean isErrorNode) {
@@ -69,7 +67,7 @@ public abstract class LCCaseLabel extends LCAstNode {
         }
     }
 
-    public static class LCTypeCaseLabel extends LCCaseLabel {
+    public static final class LCTypeCaseLabel extends LCCaseLabel {
         public LCTypeExpression typeExpression;
 
         public LCTypeCaseLabel(LCTypeExpression typeExpression, Position position, boolean isErrorNode) {

@@ -55,19 +55,16 @@ public final class Enter extends LCAstVisitor {
 
         LCAst ast = this.getAST(lcClassDeclaration);
 
-        ArrayList<TemplateTypeParameterSymbol> templateTypeParameters = new ArrayList<>();
-        ArrayList<TypeParameterSymbol> typeParameters = new ArrayList<>();
-        ArrayList<VariableSymbol> props = new ArrayList<>();
-        ArrayList<MethodSymbol> constructors = new ArrayList<>();
-        ArrayList<MethodSymbol> methods = new ArrayList<>();
+        List<TypeParameterSymbol> typeParameters = new ArrayList<>();
+        List<VariableSymbol> props = new ArrayList<>();
+        List<MethodSymbol> constructors = new ArrayList<>();
+        List<MethodSymbol> methods = new ArrayList<>();
         MethodSymbol destructor = null;
 
         Scope classScope = lcClassDeclaration.body.scope;
         for (Symbol symbol : scope.name2symbol.values()) {
             if (symbol instanceof TypeParameterSymbol typeParameterSymbol) {
                 typeParameters.add(typeParameterSymbol);
-            } else if (symbol instanceof TemplateTypeParameterSymbol templateTypeParameterSymbol) {
-                templateTypeParameters.add(templateTypeParameterSymbol);
             }
         }
         for (Symbol symbol : classScope.name2symbol.values()) {
@@ -84,7 +81,7 @@ public final class Enter extends LCAstVisitor {
             }
         }
 
-        ClassSymbol classSymbol = new ClassSymbol(lcClassDeclaration, ast.getType(lcClassDeclaration.getFullName()), templateTypeParameters.toArray(new TemplateTypeParameterSymbol[0]), typeParameters.toArray(new TypeParameterSymbol[0]), lcClassDeclaration.modifier.flags, lcClassDeclaration.modifier.attributes, props.toArray(new VariableSymbol[0]), constructors.toArray(new MethodSymbol[0]), methods.toArray(new MethodSymbol[0]), destructor);
+        ClassSymbol classSymbol = new ClassSymbol(lcClassDeclaration, ast.getType(lcClassDeclaration.getFullName()), typeParameters, lcClassDeclaration.modifier.flags, lcClassDeclaration.modifier.attributes, props, constructors, methods, destructor);
         lcClassDeclaration.symbol = classSymbol;
         currentScope.enter(lcClassDeclaration.name, classSymbol);
 
@@ -107,7 +104,6 @@ public final class Enter extends LCAstVisitor {
 
         LCAst ast = this.getAST(lcInterfaceDeclaration);
 
-        ArrayList<TemplateTypeParameterSymbol> templateTypeParameters = new ArrayList<>();
         ArrayList<TypeParameterSymbol> typeParameters = new ArrayList<>();
         ArrayList<MethodSymbol> methods = new ArrayList<>();
 
@@ -115,8 +111,6 @@ public final class Enter extends LCAstVisitor {
         for (Symbol symbol : scope.name2symbol.values()) {
             if (symbol instanceof TypeParameterSymbol typeParameterSymbol) {
                 typeParameters.add(typeParameterSymbol);
-            } else if (symbol instanceof TemplateTypeParameterSymbol templateTypeParameterSymbol) {
-                templateTypeParameters.add(templateTypeParameterSymbol);
             }
         }
         for (Symbol symbol : interfaceScope.name2symbol.values()) {
@@ -125,7 +119,7 @@ public final class Enter extends LCAstVisitor {
             }
         }
 
-        InterfaceSymbol interfaceSymbol = new InterfaceSymbol(lcInterfaceDeclaration, ast.getType(lcInterfaceDeclaration.getFullName()), templateTypeParameters.toArray(new TemplateTypeParameterSymbol[0]), typeParameters.toArray(new TypeParameterSymbol[0]), lcInterfaceDeclaration.modifier.flags, lcInterfaceDeclaration.modifier.attributes, methods.toArray(new MethodSymbol[0]));
+        InterfaceSymbol interfaceSymbol = new InterfaceSymbol(lcInterfaceDeclaration, ast.getType(lcInterfaceDeclaration.getFullName()), typeParameters, lcInterfaceDeclaration.modifier.flags, lcInterfaceDeclaration.modifier.attributes, methods);
         lcInterfaceDeclaration.symbol = interfaceSymbol;
         currentScope.enter(lcInterfaceDeclaration.name, interfaceSymbol);
 
@@ -148,12 +142,11 @@ public final class Enter extends LCAstVisitor {
 
         LCAst ast = this.getAST(lcEnumDeclaration);
 
-        ArrayList<TemplateTypeParameterSymbol> templateTypeParameters = new ArrayList<>();
-        ArrayList<TypeParameterSymbol> typeParameters = new ArrayList<>();
-        ArrayList<EnumSymbol.EnumFieldSymbol> fields = new ArrayList<>();
-        ArrayList<VariableSymbol> props = new ArrayList<>();
-        ArrayList<MethodSymbol> constructors = new ArrayList<>();
-        ArrayList<MethodSymbol> methods = new ArrayList<>();
+        List<TypeParameterSymbol> typeParameters = new ArrayList<>();
+        List<EnumSymbol.EnumFieldSymbol> fields = new ArrayList<>();
+        List<VariableSymbol> props = new ArrayList<>();
+        List<MethodSymbol> constructors = new ArrayList<>();
+        List<MethodSymbol> methods = new ArrayList<>();
         MethodSymbol destructor = null;
 
         Scope enumScope = lcEnumDeclaration.body.scope;
@@ -162,8 +155,6 @@ public final class Enter extends LCAstVisitor {
                 fields.add(enumFieldSymbol);
             } else if (symbol instanceof TypeParameterSymbol typeParameterSymbol) {
                 typeParameters.add(typeParameterSymbol);
-            } else if (symbol instanceof TemplateTypeParameterSymbol templateTypeParameterSymbol) {
-                templateTypeParameters.add(templateTypeParameterSymbol);
             }
         }
         for (Symbol symbol : enumScope.name2symbol.values()) {
@@ -180,7 +171,7 @@ public final class Enter extends LCAstVisitor {
             }
         }
 
-        EnumSymbol enumSymbol = new EnumSymbol(lcEnumDeclaration, ast.getType(lcEnumDeclaration.getFullName()), templateTypeParameters.toArray(new TemplateTypeParameterSymbol[0]), typeParameters.toArray(new TypeParameterSymbol[0]), lcEnumDeclaration.modifier.flags, lcEnumDeclaration.modifier.attributes, fields.toArray(new EnumSymbol.EnumFieldSymbol[0]), props.toArray(new VariableSymbol[0]), constructors.toArray(new MethodSymbol[0]), methods.toArray(new MethodSymbol[0]), destructor);
+        EnumSymbol enumSymbol = new EnumSymbol(lcEnumDeclaration, ast.getType(lcEnumDeclaration.getFullName()), typeParameters, lcEnumDeclaration.modifier.flags, lcEnumDeclaration.modifier.attributes, fields, props, constructors, methods, destructor);
         lcEnumDeclaration.symbol = enumSymbol;
         currentScope.enter(lcEnumDeclaration.name, enumSymbol);
 
@@ -217,16 +208,13 @@ public final class Enter extends LCAstVisitor {
 
         LCAst ast = this.getAST(lcAnnotationDeclaration);
 
-        ArrayList<TemplateTypeParameterSymbol> templateTypeParameters = new ArrayList<>();
-        ArrayList<TypeParameterSymbol> typeParameters = new ArrayList<>();
-        ArrayList<AnnotationSymbol.AnnotationFieldSymbol> fields = new ArrayList<>();
+        List<TypeParameterSymbol> typeParameters = new ArrayList<>();
+        List<AnnotationSymbol.AnnotationFieldSymbol> fields = new ArrayList<>();
 
         Scope annotationScope = lcAnnotationDeclaration.annotationBody.scope;
         for (Symbol symbol : scope.name2symbol.values()) {
             if (symbol instanceof TypeParameterSymbol typeParameterSymbol) {
                 typeParameters.add(typeParameterSymbol);
-            } else if (symbol instanceof TemplateTypeParameterSymbol templateTypeParameterSymbol) {
-                templateTypeParameters.add(templateTypeParameterSymbol);
             }
         }
         for (Symbol symbol : annotationScope.name2symbol.values()) {
@@ -235,7 +223,7 @@ public final class Enter extends LCAstVisitor {
             }
         }
 
-        AnnotationSymbol annotationSymbol = new AnnotationSymbol(lcAnnotationDeclaration, ast.getType(lcAnnotationDeclaration.getFullName()), templateTypeParameters.toArray(new TemplateTypeParameterSymbol[0]), typeParameters.toArray(new TypeParameterSymbol[0]), lcAnnotationDeclaration.modifier.flags, lcAnnotationDeclaration.modifier.attributes, fields.toArray(new AnnotationSymbol.AnnotationFieldSymbol[0]));
+        AnnotationSymbol annotationSymbol = new AnnotationSymbol(lcAnnotationDeclaration, ast.getType(lcAnnotationDeclaration.getFullName()), typeParameters, lcAnnotationDeclaration.modifier.flags, lcAnnotationDeclaration.modifier.attributes, fields);
         lcAnnotationDeclaration.symbol = annotationSymbol;
         currentScope.enter(lcAnnotationDeclaration.name, annotationSymbol);
 
@@ -280,12 +268,11 @@ public final class Enter extends LCAstVisitor {
 
         LCAst ast = this.getAST(lcRecordDeclaration);
 
-        ArrayList<TemplateTypeParameterSymbol> templateTypeParameters = new ArrayList<>();
-        ArrayList<TypeParameterSymbol> typeParameters = new ArrayList<>();
-        ArrayList<VariableSymbol> fields = new ArrayList<>();
-        ArrayList<VariableSymbol> props = new ArrayList<>();
-        ArrayList<MethodSymbol> constructors = new ArrayList<>();
-        ArrayList<MethodSymbol> methods = new ArrayList<>();
+        List<TypeParameterSymbol> typeParameters = new ArrayList<>();
+        List<VariableSymbol> fields = new ArrayList<>();
+        List<VariableSymbol> props = new ArrayList<>();
+        List<MethodSymbol> constructors = new ArrayList<>();
+        List<MethodSymbol> methods = new ArrayList<>();
         MethodSymbol destructor = null;
 
         for (Symbol symbol : recordScope.name2symbol.values()) {
@@ -293,8 +280,6 @@ public final class Enter extends LCAstVisitor {
                 fields.add(variableSymbol);
             } else if (symbol instanceof TypeParameterSymbol typeParameterSymbol) {
                 typeParameters.add(typeParameterSymbol);
-            } else if (symbol instanceof TemplateTypeParameterSymbol templateTypeParameterSymbol) {
-                templateTypeParameters.add(templateTypeParameterSymbol);
             }
         }
         Scope recordBodyScope = lcRecordDeclaration.body.scope;
@@ -312,7 +297,7 @@ public final class Enter extends LCAstVisitor {
             }
         }
 
-        RecordSymbol recordSymbol = new RecordSymbol(lcRecordDeclaration, ast.getType(lcRecordDeclaration.getFullName()), templateTypeParameters.toArray(new TemplateTypeParameterSymbol[0]), typeParameters.toArray(new TypeParameterSymbol[0]), lcRecordDeclaration.modifier.flags, lcRecordDeclaration.modifier.attributes, fields.toArray(new VariableSymbol[0]), props.toArray(new VariableSymbol[0]), constructors.toArray(new MethodSymbol[0]), methods.toArray(new MethodSymbol[0]), destructor);
+        RecordSymbol recordSymbol = new RecordSymbol(lcRecordDeclaration, ast.getType(lcRecordDeclaration.getFullName()), typeParameters, lcRecordDeclaration.modifier.flags, lcRecordDeclaration.modifier.attributes, fields, props, constructors, methods, destructor);
         lcRecordDeclaration.symbol = recordSymbol;
         currentScope.enter(lcRecordDeclaration.name, recordSymbol);
 

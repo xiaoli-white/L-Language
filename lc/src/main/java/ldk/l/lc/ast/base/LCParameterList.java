@@ -4,17 +4,17 @@ import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.ast.statement.declaration.LCVariableDeclaration;
 import ldk.l.lc.util.Position;
 
-import java.util.Arrays;
-import java.util.Objects;
+import java.util.ArrayList;
+import java.util.List;
 
-public class LCParameterList extends LCAstNode {
-    public LCVariableDeclaration[] parameters;
+public final class LCParameterList extends LCAstNode {
+    public List<LCVariableDeclaration> parameters;
 
-    public LCParameterList(LCVariableDeclaration[] parameters, Position pos) {
+    public LCParameterList(List<LCVariableDeclaration> parameters, Position pos) {
         this(parameters, pos, false);
     }
 
-    public LCParameterList(LCVariableDeclaration[] parameters, Position pos, boolean isErrorNode) {
+    public LCParameterList(List<LCVariableDeclaration> parameters, Position pos, boolean isErrorNode) {
         super(pos, isErrorNode);
         this.parameters = parameters;
         for (LCVariableDeclaration p : this.parameters) p.parentNode = this;
@@ -28,7 +28,7 @@ public class LCParameterList extends LCAstNode {
     @Override
     public String toString() {
         return "LCParameterList{" +
-                "parameters=" + Arrays.toString(parameters) +
+                "parameters=" + parameters +
                 ", position=" + position +
                 ", isErrorNode=" + isErrorNode +
                 '}';
@@ -36,6 +36,6 @@ public class LCParameterList extends LCAstNode {
 
     @Override
     public LCParameterList clone() throws CloneNotSupportedException {
-        return new LCParameterList(Arrays.copyOf(this.parameters, this.parameters.length), this.position.clone(), this.isErrorNode);
+        return new LCParameterList(new ArrayList<>(this.parameters), this.position.clone(), this.isErrorNode);
     }
 }

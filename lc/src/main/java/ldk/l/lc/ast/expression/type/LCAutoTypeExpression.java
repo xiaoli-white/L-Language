@@ -3,9 +3,7 @@ package ldk.l.lc.ast.expression.type;
 import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.util.Position;
 
-import java.util.Objects;
-
-public class LCAutoTypeExpression extends LCTypeExpression {
+public final class LCAutoTypeExpression extends LCTypeExpression {
     public LCAutoTypeExpression(Position pos, boolean isErrorNode) {
         super(pos, isErrorNode);
     }

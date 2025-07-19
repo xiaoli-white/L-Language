@@ -5,9 +5,7 @@ import ldk.l.lc.ast.base.LCExpression;
 import ldk.l.lc.util.Position;
 import ldk.l.lc.util.symbol.object.ObjectSymbol;
 
-import java.util.Objects;
-
-public class LCSuper extends LCExpression {
+public final class LCSuper extends LCExpression {
     public ObjectSymbol symbol = null;
 
     public LCSuper(Position pos) {

@@ -33,10 +33,7 @@ import ldk.l.lc.util.symbol.*;
 import ldk.l.lc.util.symbol.object.ObjectSymbol;
 import ldk.l.util.option.Options;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Stack;
+import java.util.*;
 
 public final class TypeChecker extends LCAstVisitor {
     private final CharStream charStream;
@@ -295,14 +292,14 @@ public final class TypeChecker extends LCAstVisitor {
                     NamedType namedType = (NamedType) t1;
                     LCTypeReferenceExpression typeReferenceExpression = new LCTypeReferenceExpression(namedType.name, Position.origin);
                     typeReferenceExpression.theType = namedType;
-                    LCBinary binary = new LCBinary(Tokens.Operator.Dot, typeReferenceExpression, new LCMethodCall("valueOf", init.position, new LCTypeExpression[0], new LCExpression[]{init}, init.position, init.isErrorNode), init.isErrorNode);
+                    LCBinary binary = new LCBinary(Tokens.Operator.Dot, typeReferenceExpression, new LCMethodCall("valueOf", init.position, new ArrayList<>(), new ArrayList<>(List.of(init)), init.position, init.isErrorNode), init.isErrorNode);
                     binary.parentNode = lcVariableDeclaration;
                     this.semanticAnalyzer.referenceResolver.visitBinary(binary, additional);
                     this.visitBinary(binary, additional);
                     lcVariableDeclaration.init = binary;
                 } else if (SystemTypes.isPrimitiveType(t1) && SystemTypes.isWrapperType(t2) && t2.equals(SystemTypes.getWrapperTypeByPrimitiveType(t1))) {
                     LCExpression init = lcVariableDeclaration.init;
-                    LCBinary binary = new LCBinary(Tokens.Operator.Dot, init, new LCMethodCall("getValue", Position.origin, new LCTypeExpression[0], new LCExpression[0], init.position, init.isErrorNode), init.isErrorNode);
+                    LCBinary binary = new LCBinary(Tokens.Operator.Dot, init, new LCMethodCall("getValue", Position.origin, new ArrayList<>(), new ArrayList<>(), init.position, init.isErrorNode), init.isErrorNode);
                     binary.parentNode = lcVariableDeclaration;
                     this.semanticAnalyzer.referenceResolver.visitBinary(binary, additional);
                     this.visitBinary(binary, additional);
@@ -590,7 +587,7 @@ public final class TypeChecker extends LCAstVisitor {
 
     @Override
     public Object visitVariable(LCVariable v, Object additional) {
-        Object c = this.getVarConstValue((VariableSymbol) v.aSymbol);
+        Object c = this.getVarConstValue(v.symbol);
         if (c != null) {
             v.constValue = new ConstValue(c);
         }
@@ -680,8 +677,8 @@ public final class TypeChecker extends LCAstVisitor {
     public Object visitSwitchExpression(LCSwitchExpression lcSwitchExpression, Object additional) {
         super.visitSwitchExpression(lcSwitchExpression, additional);
 
-        if (lcSwitchExpression.cases.length > 0) {
-            lcSwitchExpression.theType = lcSwitchExpression.cases[0].theType;
+        if (!lcSwitchExpression.cases.isEmpty()) {
+            lcSwitchExpression.theType = lcSwitchExpression.cases.getFirst().theType;
         }
 
         return null;
@@ -690,7 +687,7 @@ public final class TypeChecker extends LCAstVisitor {
     @Override
     public Object visitCase(LCCase lcCase, Object additional) {
         super.visitCase(lcCase, additional);
-        if (lcCase.statements.length > 0 && lcCase.statements[lcCase.statements.length - 1] instanceof LCExpressionStatement lcExpressionStatement) {
+        if (!lcCase.statements.isEmpty() && lcCase.statements.get(lcCase.statements.size() - 1) instanceof LCExpressionStatement lcExpressionStatement) {
             lcCase.theType = lcExpressionStatement.expression.theType;
         }
         return null;

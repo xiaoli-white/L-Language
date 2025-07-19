@@ -5,10 +5,7 @@ import ldk.l.lc.ast.base.LCStatement;
 import ldk.l.lc.util.Position;
 import ldk.l.lc.ast.base.LCExpression;
 
-import java.util.Arrays;
-import java.util.Objects;
-
-public class LCReturn extends LCStatement {
+public final class LCReturn extends LCStatement {
     public LCExpression returnedValue;
 
     public LCReturn(LCExpression returnedValue, Position pos) {
@@ -30,7 +27,7 @@ public class LCReturn extends LCStatement {
     public String toString() {
         return "LCReturn{" +
                 "returnedValue=" + returnedValue +
-                ", annotations=" + Arrays.toString(annotations) +
+                ", annotations=" + annotations +
                 ", position=" + position +
                 ", isErrorNode=" + isErrorNode +
                 '}';

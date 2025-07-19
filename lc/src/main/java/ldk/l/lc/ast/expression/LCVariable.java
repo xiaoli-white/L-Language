@@ -3,16 +3,11 @@ package ldk.l.lc.ast.expression;
 import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.ast.base.LCExpression;
 import ldk.l.lc.util.Position;
-import ldk.l.lc.util.symbol.Symbol;
 import ldk.l.lc.util.symbol.VariableSymbol;
 
-import java.util.Objects;
-
-public class LCVariable extends LCExpression {
+public final class LCVariable extends LCExpression {
     public String name;
     public VariableSymbol symbol = null;
-    // This field has been discarded.
-    public Symbol aSymbol = null;
 
     public LCVariable(String name, Position pos) {
         this(name, pos, false);

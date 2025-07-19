@@ -2,13 +2,10 @@ package ldk.l.lc.ast.statement.loops;
 
 import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.ast.base.LCExpression;
-import ldk.l.lc.ast.base.LCStatementWithScope;
 import ldk.l.lc.util.Position;
 import ldk.l.lc.ast.base.LCStatement;
 
-import java.util.Arrays;
-
-public class LCFor extends LCAbstractLoop {
+public final class LCFor extends LCAbstractLoop {
     public LCStatement init;
     public LCExpression condition;
     public LCExpression increment;
@@ -40,7 +37,7 @@ public class LCFor extends LCAbstractLoop {
                 ", increment=" + increment +
                 ", body=" + body +
                 ", scope=" + scope +
-                ", annotations=" + Arrays.toString(annotations) +
+                ", annotations=" + annotations +
                 ", position=" + position +
                 ", isErrorNode=" + isErrorNode +
                 '}';

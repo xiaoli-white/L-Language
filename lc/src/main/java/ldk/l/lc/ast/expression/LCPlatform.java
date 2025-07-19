@@ -5,9 +5,7 @@ import ldk.l.lc.util.ConstValue;
 import ldk.l.lc.ast.base.LCExpression;
 import ldk.l.lc.util.Position;
 
-import java.util.Objects;
-
-public class LCPlatform extends LCExpression {
+public final class LCPlatform extends LCExpression {
     public LCPlatform(String _platform, Position pos, boolean isErrorNode) {
         super(pos, isErrorNode);
         this.constValue = new ConstValue(_platform);

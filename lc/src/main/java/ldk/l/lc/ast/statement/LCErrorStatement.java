@@ -4,9 +4,7 @@ import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.ast.base.LCStatement;
 import ldk.l.lc.util.Position;
 
-import java.util.Objects;
-
-public class LCErrorStatement extends LCStatement {
+public final class LCErrorStatement extends LCStatement {
     public LCStatement statement;
 
     public LCErrorStatement(Position pos) {

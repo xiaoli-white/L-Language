@@ -64,7 +64,7 @@ public final class SyntaxChecker extends LCAstVisitor {
 
     @Override
     public Object visitSwitchExpression(LCSwitchExpression lcSwitchExpression, Object additional) {
-        if (lcSwitchExpression.cases.length == 0) {
+        if (lcSwitchExpression.cases.isEmpty()) {
             System.err.println("switch 表达式中没有任何 case 子句");
         }
         return super.visitSwitchExpression(lcSwitchExpression, additional);
@@ -80,7 +80,7 @@ public final class SyntaxChecker extends LCAstVisitor {
 
     @Override
     public Object visitNewArray(LCNewArray lcNewArray, Object additional) {
-        if ((lcNewArray.dimensions[0] == null) == (lcNewArray.elements == null)) {
+        if ((lcNewArray.dimensions.get(0) == null) == (lcNewArray.elements == null)) {
             System.err.println("Either the dimensions or the elements of the new array must be specified.");
         }
         return super.visitNewArray(lcNewArray, additional);

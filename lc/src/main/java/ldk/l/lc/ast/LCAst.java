@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class LCAst extends LCAstNode {
+public final class LCAst extends LCAstNode {
     public LCObjectDeclaration mainObjectDeclaration = null;
     public MethodSymbol mainMethod = null;
     public final ArrayList<LCSourceFile> sourceFiles = new ArrayList<>();

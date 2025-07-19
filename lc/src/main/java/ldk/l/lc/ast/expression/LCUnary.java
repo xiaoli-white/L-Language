@@ -6,9 +6,7 @@ import ldk.l.lc.token.Tokens;
 import ldk.l.lc.util.Position;
 import ldk.l.lc.util.symbol.MethodSymbol;
 
-import java.util.Objects;
-
-public class LCUnary extends LCExpression {
+public final class LCUnary extends LCExpression {
     public Tokens.Operator _operator;
     public boolean isPrefix;
     public LCExpression expression;

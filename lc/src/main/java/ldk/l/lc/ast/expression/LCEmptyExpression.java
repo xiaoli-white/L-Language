@@ -4,9 +4,7 @@ import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.ast.base.LCExpression;
 import ldk.l.lc.util.Position;
 
-import java.util.Objects;
-
-public class LCEmptyExpression extends LCExpression {
+public final class LCEmptyExpression extends LCExpression {
     public LCEmptyExpression(Position pos) {
         super(pos, false);
     }
@@ -18,7 +16,7 @@ public class LCEmptyExpression extends LCExpression {
 
     @Override
     public String toString() {
-        return "LCEmptyExpression";
+        return "LCEmptyExpression{}";
     }
 
     @Override

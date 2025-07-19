@@ -4,15 +4,15 @@ import ldk.l.lc.ast.statement.declaration.LCVariableDeclaration;
 import ldk.l.lc.semantic.types.Type;
 import ldk.l.lc.util.symbol.object.ObjectSymbol;
 
-import java.util.Arrays;
+import java.util.List;
 
-public class VariableSymbol extends Symbol {
+public final class VariableSymbol extends Symbol {
     public ObjectSymbol objectSymbol = null;
     public LCVariableDeclaration declaration;
     public long flags;
-    public String[] attributes;
+    public List<String> attributes;
 
-    public VariableSymbol(LCVariableDeclaration declaration, Type theType, long flags, String[] attributes) {
+    public VariableSymbol(LCVariableDeclaration declaration, Type theType, long flags, List<String> attributes) {
         super(declaration.name, theType, SymbolKind.Variable);
         this.declaration = declaration;
 
@@ -29,7 +29,7 @@ public class VariableSymbol extends Symbol {
     public String toString() {
         return "VariableSymbol{" +
                 "flags=" + flags +
-                ", attributes=" + Arrays.toString(attributes) +
+                ", attributes=" + attributes +
                 ", name='" + name + '\'' +
                 ", theType=" + theType +
                 '}';

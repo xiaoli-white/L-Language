@@ -3,9 +3,7 @@ package ldk.l.lc.ast.expression.type;
 import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.util.Position;
 
-import java.util.Objects;
-
-public class LCPointerTypeExpression extends LCTypeExpression {
+public final class LCPointerTypeExpression extends LCTypeExpression {
     public LCTypeExpression base;
 
     public LCPointerTypeExpression(LCTypeExpression base, Position pos) {

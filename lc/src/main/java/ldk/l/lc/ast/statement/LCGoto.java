@@ -4,10 +4,9 @@ import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.ast.base.LCStatement;
 import ldk.l.lc.util.Position;
 
-import java.util.Arrays;
-import java.util.Objects;
+import java.util.ArrayList;
 
-public class LCGoto extends LCStatement {
+public final class LCGoto extends LCStatement {
     public String label;
 
     public LCGoto(String label, Position pos, boolean isErrorNode) {
@@ -24,7 +23,7 @@ public class LCGoto extends LCStatement {
     public String toString() {
         return "LCGoto{" +
                 "label='" + label + '\'' +
-                ", annotations=" + Arrays.toString(annotations) +
+                ", annotations=" + annotations +
                 ", position=" + position +
                 ", isErrorNode=" + isErrorNode +
                 '}';
@@ -33,7 +32,7 @@ public class LCGoto extends LCStatement {
     @Override
     public LCGoto clone() throws CloneNotSupportedException {
         LCGoto lcGoto = new LCGoto(label, position.clone(), isErrorNode);
-        lcGoto.annotations = annotations != null ? Arrays.copyOf(annotations, annotations.length) : null;
+        lcGoto.annotations = annotations != null ? new ArrayList<>(annotations) : null;
         return lcGoto;
     }
 }

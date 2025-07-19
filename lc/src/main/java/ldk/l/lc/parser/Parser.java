@@ -122,7 +122,7 @@ public final class Parser {
         Position mainBeginPosition = this.getPos();
         int mainBeginIndex = statements.size();
         while (t.kind() != TokenKind.EOF) {
-            LCAnnotation[] annotations = this.parseAnnotations();
+            List<LCAnnotation> annotations = this.parseAnnotations();
             LCModifier modifier = this.parseModifier();
 
             t = this.peek();
@@ -187,9 +187,9 @@ public final class Parser {
 
         Position mainPosition = new Position(mainBeginPosition.beginPos(), endPosition.endPos(), mainBeginPosition.beginLine(), endPosition.endLine(), mainBeginPosition.beginCol(), endPosition.endCol());
         List<LCStatement> body = new ArrayList<>(statements.subList(0, mainBeginIndex));
-        LCClassDeclaration lcClassDeclaration = new LCClassDeclaration(fileNameWithoutExtension, new LCTypeParameter[0], null, new LCTypeReferenceExpression[0], new LCTypeReferenceExpression[0], null,
+        LCClassDeclaration lcClassDeclaration = new LCClassDeclaration(fileNameWithoutExtension, new ArrayList<>(), null, new ArrayList<>(), new ArrayList<>(), null,
                 new LCBlock(statements.subList(mainBeginIndex, statements.size()), mainPosition, isErrorNode), mainPosition, isErrorNode);
-        lcClassDeclaration.setAnnotations(new LCAnnotation[0]);
+        lcClassDeclaration.setAnnotations(new ArrayList<>());
         lcClassDeclaration.setModifier(new LCModifier(LCFlags.PUBLIC, Position.origin));
         body.add(lcClassDeclaration);
         return new LCBlock(body, position, isErrorNode);
@@ -338,11 +338,11 @@ public final class Parser {
             isErrorNode = true;
             this.errorStream.printError(true, this.getPos(), 6);
         }
-        LCTypeParameter[] typeParameters;
+        List<LCTypeParameter> typeParameters;
         if (this.peek().code() == Tokens.Operator.Less) {
             typeParameters = this.parseGenericParameters();
         } else {
-            typeParameters = new LCTypeParameter[0];
+            typeParameters = new ArrayList<>();
         }
 
         LCTypeReferenceExpression extended = null;
@@ -435,7 +435,7 @@ public final class Parser {
 
         Position endPos = this.getPos();
         Position position = new Position(beginPos.beginPos(), endPos.endPos(), beginPos.beginLine(), endPos.endLine(), beginPos.beginCol(), endPos.endCol());
-        return new LCClassDeclaration(name.text(), typeParameters, extended, implementedInterfaces.toArray(new LCTypeReferenceExpression[0]), permittedClasses.toArray(new LCTypeReferenceExpression[0]), delegated, body, position, isErrorNode);
+        return new LCClassDeclaration(name.text(), typeParameters, extended, implementedInterfaces, permittedClasses, delegated, body, position, isErrorNode);
     }
 
     public LCBlock parseClassBody() {
@@ -472,11 +472,11 @@ public final class Parser {
             isErrorNode = true;
         }
 
-        LCTypeParameter[] typeParameters;
+        List<LCTypeParameter> typeParameters;
         if (this.peek().code() == Tokens.Operator.Less) {
             typeParameters = this.parseGenericParameters();
         } else {
-            typeParameters = new LCTypeParameter[0];
+            typeParameters = new ArrayList<>();
         }
 
         ArrayList<LCTypeReferenceExpression> superInterfaces = new ArrayList<>();
@@ -521,7 +521,7 @@ public final class Parser {
 
         Position endPos = this.getPos();
         Position position = new Position(beginPos.beginPos(), endPos.endPos(), beginPos.beginLine(), endPos.endLine(), beginPos.beginCol(), endPos.endCol());
-        return new LCInterfaceDeclaration(name.text(), typeParameters, superInterfaces.toArray(new LCTypeReferenceExpression[0]), body, position, isErrorNode);
+        return new LCInterfaceDeclaration(name.text(), typeParameters, superInterfaces, body, position, isErrorNode);
     }
 
     private LCBlock parseInterfaceBody() {
@@ -553,11 +553,11 @@ public final class Parser {
                             this.errorStream.printError(true, getPos(), 12);
                         }
 
-                        LCTypeParameter[] typeParameters;
+                        List<LCTypeParameter> typeParameters;
                         if (this.peek().code() == Tokens.Operator.Less) {
                             typeParameters = this.parseGenericParameters();
                         } else {
-                            typeParameters = new LCTypeParameter[0];
+                            typeParameters = new ArrayList<>();
                         }
 
                         LCParameterList parameterList;
@@ -570,7 +570,7 @@ public final class Parser {
                             this.skip();
                             Position endPos = this.getPos();
                             Position thePos = new Position(t_beginPos.beginPos(), endPos.endPos(), t_beginPos.beginLine(), endPos.endLine(), t_beginPos.beginCol(), endPos.endCol());
-                            parameterList = new LCParameterList(new LCVariableDeclaration[0], thePos, true);
+                            parameterList = new LCParameterList(List.of(), thePos, true);
                         }
 
                         boolean hasThisReadonly;
@@ -625,7 +625,7 @@ public final class Parser {
                             extendsObject = null;
                         }
 
-                        lcMethodDeclaration = new LCMethodDeclaration(MethodKind.Method, tName.text(), typeParameters, parameterList, returnTypeExpression, hasThisReadonly, throwsExceptions.toArray(new LCTypeReferenceExpression[0]), extendsObject);
+                        lcMethodDeclaration = new LCMethodDeclaration(MethodKind.Method, tName.text(), typeParameters, parameterList, returnTypeExpression, hasThisReadonly, throwsExceptions, extendsObject);
 
                         Position endPos = this.getPos();
                         Position pos = new Position(t_beginPos.beginPos(), endPos.endPos(), t_beginPos.beginLine(), endPos.endLine(), t_beginPos.beginCol(), endPos.endCol());
@@ -688,7 +688,7 @@ public final class Parser {
             isErrorNode = true;
             this.errorStream.printError(true, this.getPos(), 8);
             this.skip();
-            lcAnnotationBody = new LCAnnotationDeclaration.LCAnnotationBody(new LCAnnotationDeclaration.LCAnnotationFieldDeclaration[0], t2.position(), true);
+            lcAnnotationBody = new LCAnnotationDeclaration.LCAnnotationBody(new ArrayList<>(), t2.position(), true);
         }
 
 
@@ -757,7 +757,7 @@ public final class Parser {
 
         Position endPos = this.getPos();
         Position position = new Position(beginPos.beginPos(), endPos.endPos(), beginPos.beginLine(), endPos.endLine(), beginPos.beginCol(), endPos.endCol());
-        return new LCAnnotationDeclaration.LCAnnotationBody(fields.toArray(new LCAnnotationDeclaration.LCAnnotationFieldDeclaration[0]), position, isErrorNode);
+        return new LCAnnotationDeclaration.LCAnnotationBody(fields, position, isErrorNode);
     }
 
     private LCEnumDeclaration parseEnumDeclaration() {
@@ -772,11 +772,11 @@ public final class Parser {
             this.errorStream.printError(true, this.getPos(), 6);
         }
 
-        LCTypeParameter[] typeParameters;
+        List<LCTypeParameter> typeParameters;
         if (this.peek().code() == Tokens.Operator.Less) {
             typeParameters = this.parseGenericParameters();
         } else {
-            typeParameters = new LCTypeParameter[0];
+            typeParameters = new ArrayList<>();
         }
 
         List<LCTypeReferenceExpression> implementedInterfaces = new ArrayList<>();
@@ -821,7 +821,7 @@ public final class Parser {
                     fields.add(new LCEnumDeclaration.LCEnumFieldDeclaration(lcMethodCall.name, lcMethodCall.arguments, lcMethodCall.position, lcMethodCall.isErrorNode));
                 } else {
                     this.tokenIndex++;
-                    fields.add(new LCEnumDeclaration.LCEnumFieldDeclaration(t2.text(), new LCExpression[0], t2.position(), false));
+                    fields.add(new LCEnumDeclaration.LCEnumFieldDeclaration(t2.text(), new ArrayList<>(), t2.position(), false));
                 }
 
                 if (this.peek().code() == Tokens.Separator.Comma) {
@@ -856,7 +856,7 @@ public final class Parser {
 
         Position endPos = this.getPos();
         Position position = new Position(beginPos.beginPos(), endPos.endPos(), beginPos.beginLine(), endPos.endLine(), beginPos.beginCol(), endPos.endCol());
-        return new LCEnumDeclaration(name.text(), typeParameters, implementedInterfaces.toArray(new LCTypeReferenceExpression[0]), delegated, fields.toArray(new LCEnumDeclaration.LCEnumFieldDeclaration[0]), body, position, isErrorNode);
+        return new LCEnumDeclaration(name.text(), typeParameters, implementedInterfaces, delegated, fields, body, position, isErrorNode);
     }
 
     private LCBlock parseEnumBody() {
@@ -891,20 +891,20 @@ public final class Parser {
             this.errorStream.printError(true, this.getPos(), 6);
         }
 
-        LCTypeParameter[] typeParameters;
+        List<LCTypeParameter> typeParameters;
         if (this.peek().code() == Tokens.Operator.Less) {
             typeParameters = this.parseGenericParameters();
         } else {
-            typeParameters = new LCTypeParameter[0];
+            typeParameters = new ArrayList<>();
         }
 
-        LCVariableDeclaration[] fields;
+        List<LCVariableDeclaration> fields;
         Token t1 = this.peek();
         if (t1.code() == Tokens.Separator.OpenParen) {
             LCParameterList parameterList = this.parseParameterList(false);
             fields = parameterList.parameters;
         } else {
-            fields = new LCVariableDeclaration[0];
+            fields = List.of();
             isErrorNode = true;
             // TODO dump error
             this.skip();
@@ -956,10 +956,10 @@ public final class Parser {
         Position endPos = this.getPos();
         Position position = new Position(beginPos.beginPos(), endPos.endPos(), beginPos.beginLine(), endPos.endLine(), beginPos.beginCol(), endPos.endCol());
 
-        return new LCRecordDeclaration(name.text(), typeParameters, fields, implementedInterfaces.toArray(new LCTypeReferenceExpression[0]), delegated, body, position, isErrorNode);
+        return new LCRecordDeclaration(name.text(), typeParameters, fields, implementedInterfaces, delegated, body, position, isErrorNode);
     }
 
-    public LCTypeParameter[] parseGenericParameters() {
+    public List<LCTypeParameter> parseGenericParameters() {
         this.tokenIndex++;
 
         ArrayList<LCTypeParameter> typeParameters = new ArrayList<>();
@@ -1039,7 +1039,7 @@ public final class Parser {
 
             Position endPosition = this.getPos();
             Position position = new Position(beginPosition.beginPos(), endPosition.endPos(), beginPosition.beginLine(), endPosition.endLine(), beginPosition.beginCol(), endPosition.endCol());
-            typeParameters.add(new LCTypeParameter(name.text(), extended, implemented.toArray(new LCTypeReferenceExpression[0]), supered, _default, position, isErrorNode));
+            typeParameters.add(new LCTypeParameter(name.text(), extended, implemented, supered, _default, position, isErrorNode));
 
             t = this.peek();
         }
@@ -1051,7 +1051,7 @@ public final class Parser {
             this.skip();
         }
 
-        return typeParameters.toArray(new LCTypeParameter[0]);
+        return typeParameters;
     }
 
     private List<LCStatement> parseStatementsOfClass() {
@@ -1059,7 +1059,7 @@ public final class Parser {
         this.anonymousClassDeclarationsStack.push(new ArrayList<>());
         Token t = this.peek();
         while (t.kind() != TokenKind.EOF && t.code() != Tokens.Separator.CloseBrace) {
-            LCAnnotation[] annotations = this.parseAnnotations();
+            List<LCAnnotation> annotations = this.parseAnnotations();
 
             LCModifier modifier = this.parseModifier();
 
@@ -1175,12 +1175,12 @@ public final class Parser {
         return statements;
     }
 
-    private LCAnnotation[] parseAnnotations() {
+    private List<LCAnnotation> parseAnnotations() {
         ArrayList<LCAnnotation> annotations = new ArrayList<>();
         while (this.peek().code() == Tokens.Operator.At && this.peek2().code() != Tokens.Keyword.Interface) {
             annotations.add(this.parseAnnotation());
         }
-        return annotations.toArray(new LCAnnotation[0]);
+        return annotations;
     }
 
     private LCAnnotation parseAnnotation() {
@@ -1231,7 +1231,7 @@ public final class Parser {
 
         Position endPos = this.getPos();
         Position position = new Position(beginPos.beginPos(), endPos.endPos(), beginPos.beginLine(), endPos.endLine(), beginPos.beginCol(), endPos.endCol());
-        return new LCAnnotation(name.text(), arguments.toArray(new LCAnnotation.LCAnnotationField[0]), position, isErrorNode);
+        return new LCAnnotation(name.text(), arguments, position, isErrorNode);
     }
 
     private LCReturn parseReturn() {
@@ -1314,11 +1314,11 @@ public final class Parser {
             }
         }
 
-        LCTypeParameter[] typeParameters;
+        List<LCTypeParameter> typeParameters;
         if (this.peek().code() == Tokens.Operator.Less) {
             typeParameters = this.parseGenericParameters();
         } else {
-            typeParameters = new LCTypeParameter[0];
+            typeParameters = new ArrayList<>();
         }
 
         LCParameterList parameterList;
@@ -1331,10 +1331,10 @@ public final class Parser {
             this.skip();
             Position endPos = this.getPos();
             Position thePos = new Position(beginPos.beginPos(), endPos.endPos(), beginPos.beginLine(), endPos.endLine(), beginPos.beginCol(), endPos.endCol());
-            parameterList = new LCParameterList(new LCVariableDeclaration[0], thePos, true);
+            parameterList = new LCParameterList(List.of(), thePos, true);
         }
 
-        if (methodKind == MethodKind.Destructor && parameterList.parameters != null && parameterList.parameters.length != 0) {
+        if (methodKind == MethodKind.Destructor && parameterList.parameters != null && !parameterList.parameters.isEmpty()) {
             isErrorNode = true;
             // TODO dump error
         }
@@ -1397,7 +1397,7 @@ public final class Parser {
             extendsObject = null;
         }
 
-        LCMethodDeclaration lcMethodDeclaration = new LCMethodDeclaration(methodKind, name, typeParameters, parameterList, returnTypeExpression, hasThisReadonly, throwsExceptions.toArray(new LCTypeReferenceExpression[0]), extendsObject);
+        LCMethodDeclaration lcMethodDeclaration = new LCMethodDeclaration(methodKind, name, typeParameters, parameterList, returnTypeExpression, hasThisReadonly, throwsExceptions, extendsObject);
 
         LCBlock methodBody;
         if (LCFlags.hasAbstract(flags) || LCFlags.hasExtern(flags)) {
@@ -1533,7 +1533,7 @@ public final class Parser {
                 }
             }
         };
-        statement.labels = labels.toArray(new String[0]);
+        statement.labels = labels;
 
         return statement;
     }
@@ -1589,7 +1589,7 @@ public final class Parser {
 
         this.tokenIndex++;
 
-        LCNative.LCResourceForNative[] resources;
+        List<LCNative.LCResourceForNative> resources;
         if (this.peek().code() == Tokens.Separator.OpenParen) {
             this.tokenIndex++;
             resources = this.parseResourcesForNative();
@@ -1601,7 +1601,7 @@ public final class Parser {
                 this.skip();
             }
         } else {
-            resources = new LCNative.LCResourceForNative[0];
+            resources = new ArrayList<>();
         }
 
         if (this.peek().code() == Tokens.Separator.OpenBrace) {
@@ -1612,7 +1612,7 @@ public final class Parser {
             this.skip();
         }
 
-        LCNativeSection[] sections = this.parseNativeSections();
+        List<LCNativeSection> sections = this.parseNativeSections();
 
         if (this.peek().code() == Tokens.Separator.CloseBrace) {
             this.tokenIndex++;
@@ -1627,7 +1627,7 @@ public final class Parser {
         return new LCNative(resources, sections, position, isErrorNode);
     }
 
-    private LCNative.LCResourceForNative[] parseResourcesForNative() {
+    private List<LCNative.LCResourceForNative> parseResourcesForNative() {
         ArrayList<LCNative.LCResourceForNative> resources = new ArrayList<>();
         Token t = this.peek();
         while (t.kind() != TokenKind.EOF && t.code() != Tokens.Separator.CloseParen) {
@@ -1661,10 +1661,10 @@ public final class Parser {
 
             t = this.peek();
         }
-        return resources.toArray(new LCNative.LCResourceForNative[0]);
+        return resources;
     }
 
-    private LCNativeSection[] parseNativeSections() {
+    private List<LCNativeSection> parseNativeSections() {
         ArrayList<LCNativeSection> sections = new ArrayList<>();
         Token t = this.peek();
         while (t.kind() == TokenKind.StringLiteral || t.kind() == TokenKind.Identifier) {
@@ -1728,7 +1728,7 @@ public final class Parser {
             }
             t = this.peek();
         }
-        return sections.toArray(new LCNativeSection[0]);
+        return sections;
     }
 
     private LCAssert parseAssert() {
@@ -1794,7 +1794,7 @@ public final class Parser {
 
         Position endPosition = this.getPos();
         Position position = new Position(beginPosition.beginPos(), endPosition.endPos(), beginPosition.beginLine(), endPosition.endLine(), beginPosition.beginCol(), endPosition.endCol());
-        return new LCTry(resources.toArray(new LCStatement[0]), base, catchers.toArray(new LCTry.LCCatch[0]), _finally, position, isErrorNode);
+        return new LCTry(resources, base, catchers, _finally, position, isErrorNode);
     }
 
     private LCTry.LCCatch parseCatchBlock() {
@@ -2209,7 +2209,7 @@ public final class Parser {
 
         Position endPos = this.getPos();
         Position pos = new Position(beginPos.beginPos(), endPos.endPos(), beginPos.beginLine(), endPos.endLine(), beginPos.beginCol(), endPos.endCol());
-        return new LCParameterList(params.toArray(new LCVariableDeclaration[0]), pos, isErrorNode);
+        return new LCParameterList(params, pos, isErrorNode);
     }
 
     private LCVariableDeclaration parseVariableDeclaration(boolean isVal) {
@@ -2537,9 +2537,9 @@ public final class Parser {
                                 try {
                                     List<LCClassDeclaration> anonymousClassDeclarations = this.anonymousClassDeclarationsStack.peek();
                                     String anonymousClassName = "<class_" + anonymousClassDeclarations.size() + ">";
-                                    LCClassDeclaration classDeclaration = new LCClassDeclaration(anonymousClassName, new LCTypeParameter[0], typeReferenceExpression.clone(), new LCTypeReferenceExpression[0], new LCTypeReferenceExpression[0], null, body, body.position.clone(), false);
+                                    LCClassDeclaration classDeclaration = new LCClassDeclaration(anonymousClassName, new ArrayList<>(), typeReferenceExpression.clone(), new ArrayList<>(), new ArrayList<>(), null, body, body.position.clone(), false);
                                     classDeclaration.setModifier(new LCModifier(Position.origin));
-                                    classDeclaration.setAnnotations(new LCAnnotation[0]);
+                                    classDeclaration.setAnnotations(new ArrayList<>());
                                     anonymousClassDeclarations.add(classDeclaration);
                                     lcTypeExpression = new LCTypeReferenceExpression(anonymousClassName, classDeclaration.position.clone(), false);
                                 } catch (CloneNotSupportedException e) {
@@ -2552,7 +2552,7 @@ public final class Parser {
                         }
                         Position endPosition = this.getPos();
                         Position pos = new Position(beginPosition.beginPos(), endPosition.endPos(), beginPosition.beginLine(), endPosition.endLine(), beginPosition.beginCol(), endPosition.endCol());
-                        expression = new LCNewObject(place, lcTypeExpression, params.toArray(new LCExpression[0]), pos, isErrorNode);
+                        expression = new LCNewObject(place, lcTypeExpression, params, pos, isErrorNode);
                     }
                 } else if (t1.code() == Tokens.Separator.OpenBracket) {
                     ArrayList<LCExpression> dimensions = new ArrayList<>();
@@ -2594,7 +2594,7 @@ public final class Parser {
                     }
                     Position endPosition = this.getPos();
                     Position position = new Position(t.position().beginPos(), endPosition.endPos(), t.position().beginLine(), endPosition.endLine(), t.position().beginCol(), endPosition.endCol());
-                    expression = new LCNewArray(place, lcTypeExpression, dimensions.toArray(new LCExpression[0]), elements != null ? elements.toArray(new LCExpression[0]) : null, position, isErrorNode);
+                    expression = new LCNewArray(place, lcTypeExpression, dimensions, elements, position, isErrorNode);
                 } else {
                     Position pos = new Position(t.position().beginPos(), lcTypeExpression.position.endPos(), t.position().beginLine(), lcTypeExpression.position.endLine(), t.position().beginLine(), lcTypeExpression.position.endCol());
                     expression = new LCErrorExpression(pos);
@@ -2953,7 +2953,7 @@ public final class Parser {
                                 this.skip();
                                 Position endPos = this.getPos();
                                 Position pos = new Position(expression.position.beginPos(), endPos.endPos(), expression.position.beginLine(), endPos.endLine(), expression.position.beginCol(), endPos.endCol());
-                                expression = new LCMethodCall(expression, params.toArray(new LCExpression[0]), pos, true);
+                                expression = new LCMethodCall(expression, params, pos, true);
                                 break;
                             }
                         }
@@ -2970,7 +2970,7 @@ public final class Parser {
 
                     Position endPos = this.getPos();
                     Position position = new Position(expression.position.beginPos(), endPos.endPos(), expression.position.beginLine(), endPos.endLine(), expression.position.beginCol(), endPos.endCol());
-                    expression = new LCMethodCall(expression, params.toArray(new LCExpression[0]), position, isErrorNode);
+                    expression = new LCMethodCall(expression, params, position, isErrorNode);
                 }
                 case Tokens.Separator.OpenBracket -> {
                     this.tokenIndex++;
@@ -3023,11 +3023,11 @@ public final class Parser {
 
         this.tokenIndex++;
 
-        LCTypeParameter[] typeParameters;
+        List<LCTypeParameter> typeParameters;
         if (this.peek().code() == Tokens.Operator.Less) {
             typeParameters = this.parseGenericParameters();
         } else {
-            typeParameters = new LCTypeParameter[0];
+            typeParameters = new ArrayList<>();
         }
         LCParameterList parameterList;
         Token t1 = this.peek();
@@ -3039,7 +3039,7 @@ public final class Parser {
             this.skip();
             Position endPosition = getPos();
             Position position = new Position(beginPosition.beginPos(), endPosition.endPos(), beginPosition.beginLine(), endPosition.endLine(), beginPosition.beginCol(), endPosition.endCol());
-            parameterList = new LCParameterList(new LCVariableDeclaration[0], position, true);
+            parameterList = new LCParameterList(List.of(), position, true);
         }
         boolean hasThisReadonly;
         if (this.peek().code() == Tokens.Keyword.Readonly) {
@@ -3089,7 +3089,7 @@ public final class Parser {
 
         Position endPosition = this.getPos();
         Position position = new Position(beginPosition.beginPos(), endPosition.endPos(), beginPosition.beginLine(), endPosition.endLine(), beginPosition.beginCol(), endPosition.endCol());
-        return new LCLambda(typeParameters, parameterList, returnTypeExpression, hasThisReadonly, throwsExceptions.toArray(new LCTypeReferenceExpression[0]), body, position, isErrorNode);
+        return new LCLambda(typeParameters, parameterList, returnTypeExpression, hasThisReadonly, throwsExceptions, body, position, isErrorNode);
     }
 
     private LCSwitchStatement parseSwitchStatement() {
@@ -3128,7 +3128,7 @@ public final class Parser {
             this.skip();
         }
 
-        LCCase[] cases = this.parseCases(false);
+        List<LCCase> cases = this.parseCases();
 
         t = this.peek();
         if (t.code() == Tokens.Separator.CloseBrace) {  //'}'
@@ -3180,7 +3180,7 @@ public final class Parser {
             this.skip();
         }
 
-        LCCase[] cases = this.parseCases(true);
+        List<LCCase> cases = this.parseCases();
 
         t = this.peek();
         if (t.code() == Tokens.Separator.CloseBrace) {  //'}'
@@ -3197,7 +3197,7 @@ public final class Parser {
         return new LCSwitchExpression(selector, cases, position, isErrorNode);
     }
 
-    private LCCase[] parseCases(boolean isExpression) {
+    private List<LCCase> parseCases() {
         ArrayList<LCCase> cases = new ArrayList<>();
         Token t = this.peek();
         while (t.code() == Tokens.Keyword.Case || t.code() == Tokens.Keyword.Default) {
@@ -3209,10 +3209,6 @@ public final class Parser {
                 Token t2 = this.peek();
                 if (t2.code() == Tokens.Separator.Colon) {
                     this.tokenIndex++;
-                    if (isExpression) {
-                        isErrorNode = true;
-                        // TODO dump error
-                    }
                     ArrayList<LCStatement> statements = new ArrayList<>();
                     boolean completesNormally = false;
                     Token t3 = this.peek();
@@ -3224,13 +3220,13 @@ public final class Parser {
                     }
                     Position endPosition = this.getPos();
                     Position position = new Position(beginPosition.beginPos(), endPosition.endPos(), beginPosition.beginLine(), endPosition.endLine(), beginPosition.beginCol(), endPosition.endCol());
-                    cases.add(new LCCase(LCCase.LCCaseKind.STATEMENT, new LCCaseLabel[]{new LCCaseLabel.LCDefaultCaseLabel(t.position(), false)}, null, statements.toArray(new LCStatement[0]), completesNormally, position, isErrorNode));
+                    cases.add(new LCCase(LCCase.LCCaseKind.STATEMENT, new ArrayList<>(List.of(new LCCaseLabel.LCDefaultCaseLabel(t.position(), false))), null, statements, completesNormally, position, isErrorNode));
                 } else if (t2.code() == Tokens.Operator.Arrow) {
                     this.tokenIndex++;
                     LCStatement statement = this.parseMethodBlockStatement();
                     Position endPosition = this.getPos();
                     Position position = new Position(beginPosition.beginPos(), endPosition.endPos(), beginPosition.beginLine(), endPosition.endLine(), beginPosition.beginCol(), endPosition.endCol());
-                    cases.add(new LCCase(LCCase.LCCaseKind.RULE, new LCCaseLabel[]{new LCCaseLabel.LCDefaultCaseLabel(t.position(), false)}, null, new LCStatement[]{statement}, true, position, isErrorNode));
+                    cases.add(new LCCase(LCCase.LCCaseKind.RULE, new ArrayList<>(List.of(new LCCaseLabel.LCDefaultCaseLabel(t.position(), false))), null, new ArrayList<>(List.of(statement)), true, position, isErrorNode));
                 }
             } else {
                 ArrayList<LCCaseLabel> labels = new ArrayList<>();
@@ -3258,10 +3254,6 @@ public final class Parser {
                 Token t2 = this.peek();
                 if (t2.code() == Tokens.Separator.Colon) {
                     this.tokenIndex++;
-                    if (isExpression) {
-                        isErrorNode = true;
-                        // TODO dump error
-                    }
                     ArrayList<LCStatement> statements = new ArrayList<>();
                     boolean completesNormally = false;
                     Token t3 = this.peek();
@@ -3273,18 +3265,18 @@ public final class Parser {
                     }
                     Position endPosition = this.getPos();
                     Position position = new Position(beginPosition.beginPos(), endPosition.endPos(), beginPosition.beginLine(), endPosition.endLine(), beginPosition.beginCol(), endPosition.endCol());
-                    cases.add(new LCCase(LCCase.LCCaseKind.STATEMENT, labels.toArray(new LCCaseLabel[0]), guard, statements.toArray(new LCStatement[0]), completesNormally, position, isErrorNode));
+                    cases.add(new LCCase(LCCase.LCCaseKind.STATEMENT, labels, guard, statements, completesNormally, position, isErrorNode));
                 } else if (t2.code() == Tokens.Operator.Arrow) {
                     this.tokenIndex++;
                     LCStatement statement = this.parseMethodBlockStatement();
                     Position endPosition = this.getPos();
                     Position position = new Position(beginPosition.beginPos(), endPosition.endPos(), beginPosition.beginLine(), endPosition.endLine(), beginPosition.beginCol(), endPosition.endCol());
-                    cases.add(new LCCase(LCCase.LCCaseKind.RULE, labels.toArray(new LCCaseLabel[0]), guard, new LCStatement[]{statement}, true, position, isErrorNode));
+                    cases.add(new LCCase(LCCase.LCCaseKind.RULE, labels, guard, new ArrayList<>(List.of(statement)), true, position, isErrorNode));
                 }
             }
             t = this.peek();
         }
-        return cases.toArray(new LCCase[0]);
+        return cases;
     }
 
     private LCMethodCall parseMethodCall() {
@@ -3345,7 +3337,7 @@ public final class Parser {
                     this.skip();
                     Position endPos = getPos();
                     Position pos = new Position(beginPos.beginPos(), endPos.endPos(), beginPos.beginLine(), endPos.endLine(), beginPos.beginCol(), endPos.endCol());
-                    return new LCMethodCall(name, tName.position(), typeArguments.toArray(new LCTypeExpression[0]), params.toArray(new LCExpression[0]), pos, true);
+                    return new LCMethodCall(name, tName.position(), typeArguments, params, pos, true);
                 }
             }
         }
@@ -3361,7 +3353,7 @@ public final class Parser {
 
         Position endPos = getPos();
         Position pos = new Position(beginPos.beginPos(), endPos.endPos(), beginPos.beginLine(), endPos.endLine(), beginPos.beginCol(), endPos.endCol());
-        return new LCMethodCall(name, tName.position(), typeArguments.toArray(new LCTypeExpression[0]), params.toArray(new LCExpression[0]), pos, isErrorNode);
+        return new LCMethodCall(name, tName.position(), typeArguments, params, pos, isErrorNode);
     }
 
     private int getPrec(Tokens.TokenCode op) {
@@ -3537,7 +3529,7 @@ public final class Parser {
                     // TODO dump error
                     this.skip();
                 }
-                if (!typeArgs.isEmpty()) typeReferenceExpression.setTypeArgs(typeArgs.toArray(new LCTypeExpression[0]));
+                if (!typeArgs.isEmpty()) typeReferenceExpression.setTypeArgs(typeArgs);
             }
         }
 
@@ -3707,7 +3699,7 @@ public final class Parser {
 
         Position endPos = this.getPos();
         Position pos = new Position(beginPos.beginPos(), endPos.endPos(), beginPos.beginLine(), endPos.endLine(), beginPos.beginCol(), endPos.endCol());
-        return new LCModifier(flags, attributes.toArray(new String[0]), bitRange, pos, isErrorNode);
+        return new LCModifier(flags, attributes, bitRange, pos, isErrorNode);
     }
 
 

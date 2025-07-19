@@ -4,14 +4,15 @@ import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.util.Position;
 import ldk.l.lc.util.symbol.object.AnnotationSymbol;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 
-public class LCAnnotation extends LCAstNode {
+public final class LCAnnotation extends LCAstNode {
     public String name;
-    public LCAnnotationField[] arguments;
+    public List<LCAnnotationField> arguments;
     public AnnotationSymbol symbol = null;
 
-    public LCAnnotation(String name, LCAnnotationField[] arguments, Position pos, boolean isErrorNode) {
+    public LCAnnotation(String name, List<LCAnnotationField> arguments, Position pos, boolean isErrorNode) {
         super(pos, isErrorNode);
         this.name = name;
         this.arguments = arguments;
@@ -28,7 +29,7 @@ public class LCAnnotation extends LCAstNode {
     public String toString() {
         return "LCAnnotation{" +
                 "name='" + name + '\'' +
-                ", arguments=" + Arrays.toString(arguments) +
+                ", arguments=" + arguments +
                 ", position=" + position +
                 ", isErrorNode=" + isErrorNode +
                 '}';
@@ -36,7 +37,7 @@ public class LCAnnotation extends LCAstNode {
 
     @Override
     public LCAnnotation clone() throws CloneNotSupportedException {
-        return new LCAnnotation(name, Arrays.copyOf(arguments, arguments.length), position.clone(), isErrorNode);
+        return new LCAnnotation(name, new ArrayList<>(arguments.size()), position.clone(), isErrorNode);
     }
 
     public static class LCAnnotationField extends LCAstNode {

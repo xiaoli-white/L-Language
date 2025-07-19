@@ -28,6 +28,4 @@ public abstract class SymbolVisitor {
     public abstract Object visitResourceForNativeSymbol(ResourceForNativeSymbol resourceForNativeSymbol, Object additional);
 
     public abstract Object visitTypeParameterSymbol(TypeParameterSymbol typeParameterSymbol, Object additional);
-
-    public abstract Object visitTemplateTypeParameterSymbol(TemplateTypeParameterSymbol templateTypeParameterSymbol, Object additional);
 }

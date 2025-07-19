@@ -5,7 +5,7 @@ import ldk.l.lc.ast.base.LCExpression;
 import ldk.l.lc.util.Position;
 import ldk.l.lc.util.symbol.MethodSymbol;
 
-public class LCIn extends LCExpression {
+public final class LCIn extends LCExpression {
     public LCExpression expression1;
     public LCExpression expression2;
     public MethodSymbol symbol = null;

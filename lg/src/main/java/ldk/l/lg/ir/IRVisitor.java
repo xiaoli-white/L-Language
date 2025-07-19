@@ -58,6 +58,25 @@ public abstract class IRVisitor {
         return null;
     }
 
+    public Object visitGlobalDataSection(IRGlobalDataSection irGlobalDataSection, Object additional) {
+        for (IRGlobalDataSection.GlobalData data : irGlobalDataSection.data) {
+            this.visitGlobalData(data, additional);
+        }
+        return null;
+    }
+
+    public Object visitGlobalData(IRGlobalDataSection.GlobalData globalData, Object additional) {
+        if (globalData.size != null) {
+            this.visit(globalData.size, additional);
+        }
+        if (globalData.values != null) {
+            for (IROperand operand : globalData.values) {
+                this.visit(operand, additional);
+            }
+        }
+        return null;
+    }
+
     public Object visitIntegerType(IRIntegerType irIntegerType, Object additional) {
         return null;
     }
@@ -164,6 +183,7 @@ public abstract class IRVisitor {
             this.visit(irInvoke.argumentTypes[i], additional);
             this.visit(irInvoke.arguments[i], additional);
         }
+        this.visit(irInvoke.returnType, additional);
         if (irInvoke.target != null) {
             this.visitVirtualRegister(irInvoke.target, additional);
         }
@@ -242,25 +262,6 @@ public abstract class IRVisitor {
     }
 
     public Object visitInterfaceTable(IRInterfaceTable irInterfaceTable, Object additional) {
-        return null;
-    }
-
-    public Object visitGlobalDataSection(IRGlobalDataSection irGlobalDataSection, Object additional) {
-        for (IRGlobalDataSection.GlobalData data : irGlobalDataSection.data) {
-            this.visitGlobalData(data, additional);
-        }
-        return null;
-    }
-
-    public Object visitGlobalData(IRGlobalDataSection.GlobalData globalData, Object additional) {
-        if (globalData.size != null) {
-            this.visit(globalData.size, additional);
-        }
-        if (globalData.values != null) {
-            for (IROperand operand : globalData.values) {
-                this.visit(operand, additional);
-            }
-        }
         return null;
     }
 }

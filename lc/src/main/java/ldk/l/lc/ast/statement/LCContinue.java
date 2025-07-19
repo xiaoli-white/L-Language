@@ -4,10 +4,7 @@ import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.ast.base.LCStatement;
 import ldk.l.lc.util.Position;
 
-import java.util.Arrays;
-import java.util.Objects;
-
-public class LCContinue extends LCStatement {
+public final class LCContinue extends LCStatement {
     public String label;
 
     public LCContinue(String label, Position pos, boolean isErrorNode) {
@@ -24,7 +21,7 @@ public class LCContinue extends LCStatement {
     public String toString() {
         return "LCContinue{" +
                 "label='" + label + '\'' +
-                ", annotations=" + Arrays.toString(annotations) +
+                ", annotations=" + annotations +
                 ", position=" + position +
                 ", isErrorNode=" + isErrorNode +
                 '}';

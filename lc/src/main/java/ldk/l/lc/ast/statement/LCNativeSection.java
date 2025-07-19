@@ -15,7 +15,7 @@ public abstract class LCNativeSection extends LCAstNode {
     @Override
     public abstract LCNativeSection clone() throws CloneNotSupportedException;
 
-    public static class LCNativeCode extends LCNativeSection {
+    public static final class LCNativeCode extends LCNativeSection {
         public LCNativeCode(String code, Position pos) {
             this(code, pos, false);
         }
@@ -45,7 +45,7 @@ public abstract class LCNativeSection extends LCAstNode {
         }
     }
 
-    public static class LCReferenceNativeFile extends LCNativeSection {
+    public static final class LCReferenceNativeFile extends LCNativeSection {
         public String name;
         public LCIntegerLiteral beginLine;
         public LCIntegerLiteral endLine;

@@ -120,9 +120,9 @@ public final class ReferenceResolver extends LCAstVisitor {
 
     @Override
     public Object visitEnumFieldDeclaration(LCEnumDeclaration.LCEnumFieldDeclaration lcEnumFieldDeclaration, Object additional) {
-        Type[] types = new Type[lcEnumFieldDeclaration.arguments.length];
-        for (int i = 0; i < lcEnumFieldDeclaration.arguments.length; i++) {
-            LCExpression expression = lcEnumFieldDeclaration.arguments[i];
+        Type[] types = new Type[lcEnumFieldDeclaration.arguments.size()];
+        for (int i = 0; i < lcEnumFieldDeclaration.arguments.size(); i++) {
+            LCExpression expression = lcEnumFieldDeclaration.arguments.get(i);
             this.visit(expression, additional);
             types[i] = expression.theType;
         }
@@ -288,8 +288,8 @@ public final class ReferenceResolver extends LCAstVisitor {
         this.declaredVarsMap.put(this.scope, new HashMap<>());
         super.visitSwitchExpression(lcSwitchExpression, additional);
 
-        if (lcSwitchExpression.cases.length > 0) {
-            lcSwitchExpression.theType = lcSwitchExpression.cases[0].theType;
+        if (!lcSwitchExpression.cases.isEmpty()) {
+            lcSwitchExpression.theType = lcSwitchExpression.cases.get(0).theType;
         }
 
         this.scope = oldScope;
@@ -735,13 +735,13 @@ public final class ReferenceResolver extends LCAstVisitor {
     public Object visitGetAddress(LCGetAddress lcGetAddress, Object additional) {
         super.visitGetAddress(lcGetAddress, additional);
 
-        if (lcGetAddress.paramTypeExpressions == null) {
+        if (lcGetAddress.parameterTypeExpressions == null) {
             lcGetAddress.theType = new PointerType(lcGetAddress.expression.theType);
         } else {
             if (!(lcGetAddress.expression instanceof LCTypeReferenceExpression) || !(lcGetAddress.expression.theType instanceof NamedType namedType))
                 return null;
             ArrayList<Type> paramTypes = new ArrayList<>();
-            for (LCTypeExpression paramTypeExpression : lcGetAddress.paramTypeExpressions) {
+            for (LCTypeExpression paramTypeExpression : lcGetAddress.parameterTypeExpressions) {
                 paramTypes.add(paramTypeExpression.theType);
             }
             MethodSymbol methodSymbol = findMethodSymbolOfObjectSymbol(Objects.requireNonNull(LCAstUtil.getObjectSymbol(Objects.requireNonNull(LCAstUtil.getObjectDeclarationByFullName(lcGetAddress, namedType.name)))), lcGetAddress.name, paramTypes.toArray(new Type[0]));
@@ -843,7 +843,7 @@ public final class ReferenceResolver extends LCAstVisitor {
                         // TODO dump error
                     }
                 }
-                MethodSymbol[] methods = "<init>".equals(name) ? classSymbol.constructors : classSymbol.methods;
+                List<MethodSymbol> methods = "<init>".equals(name) ? classSymbol.constructors : classSymbol.methods;
                 MethodSymbol methodSymbol = null;
                 for (MethodSymbol method : methods) {
                     if (method.name.equals(name) && checkTypesOfMethod(method, paramTypes)) {
@@ -876,7 +876,7 @@ public final class ReferenceResolver extends LCAstVisitor {
                         // TODO dump error
                     }
                 }
-                MethodSymbol[] methods = "<init>".equals(name) ? enumSymbol.constructors : enumSymbol.methods;
+                List<MethodSymbol> methods = "<init>".equals(name) ? enumSymbol.constructors : enumSymbol.methods;
                 MethodSymbol methodSymbol = null;
                 for (MethodSymbol method : methods) {
                     if (method.name.equals(name) && checkTypesOfMethod(method, paramTypes)) {
@@ -926,7 +926,7 @@ public final class ReferenceResolver extends LCAstVisitor {
                         // TODO dump error
                     }
                 }
-                MethodSymbol[] methods = "<init>".equals(name) ? recordSymbol.constructors : recordSymbol.methods;
+                List<MethodSymbol> methods = "<init>".equals(name) ? recordSymbol.constructors : recordSymbol.methods;
                 MethodSymbol methodSymbol = null;
                 for (MethodSymbol method : methods) {
                     if (method.name.equals(name) && checkTypesOfMethod(method, paramTypes)) {
@@ -951,10 +951,10 @@ public final class ReferenceResolver extends LCAstVisitor {
     }
 
     private static boolean checkTypesOfMethod(MethodSymbol methodSymbol, Type[] parameterTypes) {
-        if (methodSymbol.declaration.parameterList.parameters.length != parameterTypes.length)
+        if (methodSymbol.declaration.parameterList.parameters.size() != parameterTypes.length)
             return false;
         for (int i = 0; i < parameterTypes.length; i++) {
-            Type parameterTypeOfMethod = methodSymbol.declaration.parameterList.parameters[i].theType;
+            Type parameterTypeOfMethod = methodSymbol.declaration.parameterList.parameters.get(i).theType;
             if (parameterTypeOfMethod == null || !TypeUtil.LE(parameterTypes[i], parameterTypeOfMethod))
                 return false;
         }
@@ -962,13 +962,13 @@ public final class ReferenceResolver extends LCAstVisitor {
     }
 
     private static boolean isSubMethod(MethodSymbol method1, MethodSymbol method2) {
-        LCVariableDeclaration[] method1Params = method1.getParams();
-        LCVariableDeclaration[] method2Params = method2.getParams();
+        List<LCVariableDeclaration> method1Params = method1.getParams();
+        List<LCVariableDeclaration> method2Params = method2.getParams();
         int count = 0;
-        for (int i = 0; i < method2Params.length; i++) {
-            if (method1Params[i].theType.equals(method2Params[i].theType)) count++;
-            else if (!TypeUtil.LE(method2Params[i].theType, method1Params[i].theType)) return false;
+        for (int i = 0; i < method2Params.size(); i++) {
+            if (method1Params.get(i).theType.equals(method2Params.get(i).theType)) count++;
+            else if (!TypeUtil.LE(method2Params.get(i).theType, method1Params.get(i).theType)) return false;
         }
-        return count < method1Params.length;
+        return count < method1Params.size();
     }
 }

@@ -5,10 +5,7 @@ import ldk.l.lc.ast.base.LCStatement;
 import ldk.l.lc.ast.expression.literal.LCIntegerLiteral;
 import ldk.l.lc.util.Position;
 
-import java.util.Arrays;
-import java.util.Objects;
-
-public class LCInclude extends LCStatement {
+public final class LCInclude extends LCStatement {
     public String filepath;
     public LCIntegerLiteral beginLine;
     public LCIntegerLiteral endLine;
@@ -35,7 +32,7 @@ public class LCInclude extends LCStatement {
                 "filepath='" + filepath + '\'' +
                 ", beginLine=" + beginLine +
                 ", endLine=" + endLine +
-                ", annotations=" + Arrays.toString(annotations) +
+                ", annotations=" + annotations +
                 ", isErrorNode=" + isErrorNode +
                 ", position=" + position +
                 '}';

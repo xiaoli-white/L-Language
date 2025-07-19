@@ -7,10 +7,9 @@ import ldk.l.lc.util.Position;
 import ldk.l.lc.util.symbol.VariableSymbol;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-public class LCInit extends LCStatement {
+public final class LCInit extends LCStatement {
     public boolean isStatic;
     public LCBlock body;
     public List<VariableSymbol> vars;
@@ -33,7 +32,7 @@ public class LCInit extends LCStatement {
         return "LCInit{" +
                 "isStatic=" + isStatic +
                 ", body=" + body +
-                ", annotations=" + Arrays.toString(annotations) +
+                ", annotations=" + annotations +
                 ", position=" + position +
                 ", isErrorNode=" + isErrorNode +
                 '}';

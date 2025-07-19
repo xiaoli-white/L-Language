@@ -4,7 +4,7 @@ import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.ast.base.LCExpression;
 import ldk.l.lc.util.Position;
 
-public class LCClone extends LCExpression {
+public final class LCClone extends LCExpression {
     public LCExpression expression;
 
     public LCClone(LCExpression expression, Position pos) {

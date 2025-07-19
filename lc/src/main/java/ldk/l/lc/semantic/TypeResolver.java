@@ -138,7 +138,7 @@ public final class TypeResolver extends LCAstVisitor {
     public Object visitNewArray(LCNewArray lcNewArray, Object additional) {
         super.visitNewArray(lcNewArray, additional);
         lcNewArray.theType = lcNewArray.typeExpression.theType;
-        for (int i = 0; i < lcNewArray.dimensions.length; i++) {
+        for (int i = 0; i < lcNewArray.dimensions.size(); i++) {
             lcNewArray.theType = new ArrayType(lcNewArray.theType);
         }
         return null;

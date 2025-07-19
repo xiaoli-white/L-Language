@@ -5,9 +5,7 @@ import ldk.l.lc.ast.base.LCExpression;
 import ldk.l.lc.semantic.types.SystemTypes;
 import ldk.l.lc.util.Position;
 
-import java.util.Objects;
-
-public class LCIs extends LCExpression {
+public final class LCIs extends LCExpression {
     public LCExpression expression1;
     public LCExpression expression2;
 

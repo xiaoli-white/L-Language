@@ -10,15 +10,14 @@ import ldk.l.lc.util.Position;
 import ldk.l.lc.util.scope.Scope;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
-public class LCSourceCodeFile extends LCSourceFile {
+public final class LCSourceCodeFile extends LCSourceFile {
     public String packageName = null;
     public Scope scope = null;
     public LCBlock body;
-    public LCSourceFileProxy[] proxies = new LCSourceFileProxy[0];
+    public List<LCSourceFileProxy> proxies = new ArrayList<>();
+
 
     public LCSourceCodeFile(String filename, LCBlock body, Position pos, boolean isErrorNode) {
         super(filename, pos, isErrorNode);
@@ -36,7 +35,7 @@ public class LCSourceCodeFile extends LCSourceFile {
         return "LCSourceCodeFile{" +
                 "packageName='" + packageName + '\'' +
                 ", body=" + body +
-                ", proxies=" + Arrays.toString(proxies) +
+                ", proxies=" + proxies +
                 ", filepath='" + filepath + '\'' +
                 ", isErrorNode=" + isErrorNode +
                 ", position=" + position +

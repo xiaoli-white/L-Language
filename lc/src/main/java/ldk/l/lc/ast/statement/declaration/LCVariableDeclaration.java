@@ -4,16 +4,12 @@ import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.ast.base.*;
 import ldk.l.lc.ast.expression.type.LCTypeExpression;
 import ldk.l.lc.ast.expression.type.LCTypeReferenceExpression;
-import ldk.l.lc.ast.base.LCAnnotation;
 import ldk.l.lc.semantic.types.SystemTypes;
 import ldk.l.lc.semantic.types.Type;
 import ldk.l.lc.util.Position;
 import ldk.l.lc.util.symbol.VariableSymbol;
 
-import java.util.Arrays;
-
-public class LCVariableDeclaration extends LCDeclaration {
-    public LCAnnotation[] annotations = null;
+public final class LCVariableDeclaration extends LCDeclaration {
     public LCModifier modifier = null;
     public boolean isVal;
     public String name;
@@ -69,7 +65,7 @@ public class LCVariableDeclaration extends LCDeclaration {
         if (this.setter != null) this.setter.parentNode = this;
     }
 
-    public final void setModifier(LCModifier LCModifier) {
+    public void setModifier(LCModifier LCModifier) {
         this.modifier = LCModifier;
         this.modifier.parentNode = this;
 
@@ -86,7 +82,7 @@ public class LCVariableDeclaration extends LCDeclaration {
     @Override
     public String toString() {
         return "LCVariableDeclaration{" +
-                "annotations=" + Arrays.toString(annotations) +
+                "annotations=" + annotations +
                 ", modifier=" + modifier +
                 ", isVal=" + isVal +
                 ", name='" + name + '\'' +
@@ -98,7 +94,7 @@ public class LCVariableDeclaration extends LCDeclaration {
                 ", setter=" + setter +
                 ", theType=" + theType +
                 ", symbol=" + symbol +
-                ", annotations=" + Arrays.toString(annotations) +
+                ", annotations=" + annotations +
                 ", position=" + position +
                 ", isErrorNode=" + isErrorNode +
                 '}';

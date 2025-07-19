@@ -5,7 +5,7 @@ import ldk.l.lc.ast.base.LCStatement;
 import ldk.l.lc.ast.base.LCStatementWithScope;
 import ldk.l.lc.util.Position;
 
-public class LCLoop extends LCAbstractLoop {
+public final class LCLoop extends LCAbstractLoop {
     public LCStatement body;
 
     public LCLoop(LCStatement body, Position pos, boolean isErrorNode) {

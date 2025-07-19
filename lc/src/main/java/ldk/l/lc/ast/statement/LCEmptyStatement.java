@@ -4,9 +4,9 @@ import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.ast.base.LCStatement;
 import ldk.l.lc.util.Position;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 
-public class LCEmptyStatement extends LCStatement {
+public final class LCEmptyStatement extends LCStatement {
     public LCEmptyStatement(Position pos) {
         super(pos, false);
     }
@@ -24,7 +24,7 @@ public class LCEmptyStatement extends LCStatement {
     @Override
     public LCEmptyStatement clone() throws CloneNotSupportedException {
         LCEmptyStatement lcEmptyStatement = new LCEmptyStatement(position.clone());
-        lcEmptyStatement.annotations = Arrays.copyOf(annotations, annotations.length);
+        lcEmptyStatement.annotations = new ArrayList<>(annotations);
         return lcEmptyStatement;
     }
 }

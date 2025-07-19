@@ -5,16 +5,18 @@ import ldk.l.lc.ast.statement.declaration.object.LCInterfaceDeclaration;
 import ldk.l.lc.semantic.types.Type;
 import ldk.l.lc.util.symbol.*;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 public final class InterfaceSymbol extends ObjectSymbol {
     public LCInterfaceDeclaration declaration;
-    public MethodSymbol[] methods;
-    public InterfaceSymbol[] extendedInterfaces = null;
+    public List<MethodSymbol> methods;
+    public List<InterfaceSymbol> extendedInterfaces = null;
 
-    public InterfaceSymbol(LCInterfaceDeclaration declaration, Type theType, TemplateTypeParameterSymbol[] templateTypeParameters, TypeParameterSymbol[] typeParameters, long flags, String[] attributes, MethodSymbol[] methods) {
-        super(declaration.getPackageName(), declaration.name, theType, SymbolKind.Interface, templateTypeParameters, typeParameters, flags, attributes);
+    public InterfaceSymbol(LCInterfaceDeclaration declaration, Type theType, List<TypeParameterSymbol> typeParameters, long flags, List<String> attributes, List<MethodSymbol> methods) {
+        super(declaration.getPackageName(), declaration.name, theType, SymbolKind.Interface, typeParameters, flags, attributes);
         this.declaration = declaration;
 
         this.methods = methods;
@@ -30,19 +32,18 @@ public final class InterfaceSymbol extends ObjectSymbol {
     @Override
     public String toString() {
         return "InterfaceSymbol{" +
-                "methods=" + Arrays.toString(methods) +
-                ", extendedInterfaces=" + Arrays.toString(extendedInterfaces) +
+                "methods=" + methods +
+                ", extendedInterfaces=" + extendedInterfaces+
                 ", _package='" + _package + '\'' +
-                ", templateTypeParameters=" + Arrays.toString(templateTypeParameters) +
-                ", typeParameters=" + Arrays.toString(typeParameters) +
+                ", typeParameters=" + typeParameters +
                 ", name='" + name + '\'' +
                 ", theType=" + theType +
                 '}';
     }
 
     @Override
-    public MethodSymbol[] getMethods() {
-        return this.methods;
+    public List<MethodSymbol> getMethods() {
+        return new ArrayList<>(this.methods);
     }
 
     public MethodSymbol getDefaultMethodCascade(String simpleName) {

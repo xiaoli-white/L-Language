@@ -6,23 +6,21 @@ import ldk.l.lc.semantic.types.Type;
 import ldk.l.lc.util.symbol.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Stream;
 
 public final class ClassSymbol extends ObjectSymbol {
     public LCClassDeclaration declaration;
-    public VariableSymbol[] properties;
-    public MethodSymbol[] constructors;
-    public MethodSymbol[] methods;
+    public List<VariableSymbol> properties;
+    public List<MethodSymbol> constructors;
+    public List<MethodSymbol> methods;
     public MethodSymbol destructor;
     public ClassSymbol extended = null;
-    public InterfaceSymbol[] implementedInterfaces = null;
-    public ClassSymbol[] permittedClasses = null;
+    public List<InterfaceSymbol> implementedInterfaces = null;
+    public List<ClassSymbol> permittedClasses = null;
 
-    public ClassSymbol(LCClassDeclaration declaration, Type theType, TemplateTypeParameterSymbol[] templateTypeParameters, TypeParameterSymbol[] typeParameters, long flags, String[] attributes, VariableSymbol[] properties, MethodSymbol[] constructors, MethodSymbol[] methods, MethodSymbol destructors) {
-        super(declaration.getPackageName(), declaration.name, theType, SymbolKind.Class, templateTypeParameters, typeParameters, flags, attributes);
+    public ClassSymbol(LCClassDeclaration declaration, Type theType, List<TypeParameterSymbol> typeParameters, long flags, List<String> attributes, List<VariableSymbol> properties, List<MethodSymbol> constructors, List<MethodSymbol> methods, MethodSymbol destructor) {
+        super(declaration.getPackageName(), declaration.name, theType, SymbolKind.Class, typeParameters, flags, attributes);
         this.declaration = declaration;
 
         this.properties = properties;
@@ -39,7 +37,7 @@ public final class ClassSymbol extends ObjectSymbol {
             if (LCFlags.hasFinal(this.flags)) method.flags |= LCFlags.FINAL;
         }
 
-        this.destructor = destructors;
+        this.destructor = destructor;
         if (this.destructor != null) {
             this.destructor.objectSymbol = this;
             if (LCFlags.hasFinal(this.flags)) this.destructor.flags |= LCFlags.FINAL;
@@ -54,22 +52,21 @@ public final class ClassSymbol extends ObjectSymbol {
     @Override
     public String toString() {
         return "ClassSymbol{" +
-                "properties=" + Arrays.toString(properties) +
-                ", constructors=" + Arrays.toString(constructors) +
+                "properties=" + properties +
+                ", constructors=" + constructors +
                 ", destructor=" + destructor +
-                ", methods=" + Arrays.toString(methods) +
+                ", methods=" + methods +
                 ", extended=" + extended +
-                ", implementedInterfaces=" + Arrays.toString(implementedInterfaces) +
+                ", implementedInterfaces=" + implementedInterfaces +
                 ", _package='" + _package + '\'' +
-                ", templateTypeParameters=" + Arrays.toString(templateTypeParameters) +
-                ", typeParameters=" + Arrays.toString(typeParameters) +
+                ", typeParameters=" + typeParameters +
                 ", name='" + name + '\'' +
                 ", theType=" + theType +
                 '}';
     }
 
     public int getNumTotalProps() {
-        int num = this.properties.length;
+        int num = this.properties.size();
         if (this.extended != null) {
             num += this.extended.getNumTotalProps();
         }
@@ -77,7 +74,7 @@ public final class ClassSymbol extends ObjectSymbol {
     }
 
     public int getNumTotalMethods() {
-        int num = this.methods.length;
+        int num = this.methods.size();
         if (this.extended != null) {
             num += this.extended.getNumTotalMethods();
         }
@@ -94,7 +91,7 @@ public final class ClassSymbol extends ObjectSymbol {
         return index;
     }
 
-    public MethodSymbol[] getSuperClassConstructors() {
+    public List<MethodSymbol> getSuperClassConstructors() {
         if (this.extended != null) {
             if (this.extended.constructors == null) {
                 this.extended.constructors = this.extended.getSuperClassConstructors();
@@ -152,8 +149,8 @@ public final class ClassSymbol extends ObjectSymbol {
     }
 
     @Override
-    public MethodSymbol[] getMethods() {
-        return this.methods;
+    public List<MethodSymbol> getMethods() {
+        return new ArrayList<>(this.methods);
     }
 
     public VariableSymbol[] getAllProperties() {
@@ -161,7 +158,7 @@ public final class ClassSymbol extends ObjectSymbol {
         if (this.extended != null) {
             properties.addAll(List.of(this.extended.getAllProperties()));
         }
-        properties.addAll(Stream.of(this.properties).filter(variableSymbol -> !LCFlags.hasStatic(variableSymbol.flags)).toList());
+        properties.addAll(this.properties.stream().filter(variableSymbol -> !LCFlags.hasStatic(variableSymbol.flags)).toList());
         return properties.toArray(new VariableSymbol[0]);
     }
 }

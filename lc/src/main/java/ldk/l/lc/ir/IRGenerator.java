@@ -100,7 +100,7 @@ public final class IRGenerator extends LCAstVisitor {
     @Override
     public Object visit(LCAstNode node, Object additional) {
         if (node instanceof LCStatement statement) {
-            if (statement.labels != null && statement.labels.length > 0) {
+            if (statement.labels != null && !statement.labels.isEmpty()) {
                 var basicBlock = createBasicBlock();
                 for (String label : statement.labels)
                     this.label2BasicBlock.get(currentCFG).put(label, basicBlock.name);
@@ -206,7 +206,7 @@ public final class IRGenerator extends LCAstVisitor {
 
         super.visitInterfaceDeclaration(lcInterfaceDeclaration, additional);
 
-        List<String> keys = new ArrayList<>(Arrays.stream(lcInterfaceDeclaration.symbol.methods).map(MethodSymbol::getSimpleName).toList());
+        List<String> keys = new ArrayList<>(lcInterfaceDeclaration.symbol.methods.stream().map(MethodSymbol::getSimpleName).toList());
         keys.add("<deinit>()V");
         this.module.name2ITableKeys.put(lcInterfaceDeclaration.getFullName(), keys);
 
@@ -226,7 +226,7 @@ public final class IRGenerator extends LCAstVisitor {
         fields.add(new IRField("<class_ptr>", new IRPointerType(IRType.getVoidType())));
         fields.add(new IRField("<reference_count>", IRType.getUnsignedLongType()));
 
-        for (VariableSymbol variableSymbol : ((LCClassDeclaration) getAST(lcEnumDeclaration).getObjectDeclaration("l.lang.Enum")).symbol.getAllProperties())
+        for (VariableSymbol variableSymbol : ((LCClassDeclaration) Objects.requireNonNull(getAST(lcEnumDeclaration).getObjectDeclaration("l.lang.Enum"))).symbol.getAllProperties())
             if (!LCFlags.hasStatic(variableSymbol.flags))
                 fields.add(new IRField(variableSymbol.name, parseType(variableSymbol.theType)));
         for (VariableSymbol variableSymbol : lcEnumDeclaration.symbol.properties)
@@ -288,13 +288,13 @@ public final class IRGenerator extends LCAstVisitor {
         addInstruction(new IRMalloc(new IRMacro("structure_length", new String[]{enumName}), new IRVirtualRegister(place)));
         addInstruction(new IRInvoke(IRType.getVoidType(), new IRMacro("function_address", new String[]{enumName + ".<__init__>()V"}), new IRType[]{new IRPointerType(IRType.getVoidType())}, new IROperand[]{new IRVirtualRegister(place)}, null));
 
-        IRType[] operandTypes = new IRType[lcEnumFieldDeclaration.arguments.length + 1];
-        IROperand[] operands = new IROperand[lcEnumFieldDeclaration.arguments.length + 1];
+        IRType[] operandTypes = new IRType[lcEnumFieldDeclaration.arguments.size() + 1];
+        IROperand[] operands = new IROperand[lcEnumFieldDeclaration.arguments.size() + 1];
         operandTypes[0] = new IRPointerType(IRType.getVoidType());
         operands[0] = new IRVirtualRegister(place);
-        for (int i = 0; i < lcEnumFieldDeclaration.arguments.length; i++) {
-            operandTypes[i + 1] = parseType(lcEnumFieldDeclaration.arguments[i].theType);
-            this.visit(lcEnumFieldDeclaration.arguments[i], additional);
+        for (int i = 0; i < lcEnumFieldDeclaration.arguments.size(); i++) {
+            operandTypes[i + 1] = parseType(lcEnumFieldDeclaration.arguments.get(i).theType);
+            this.visit(lcEnumFieldDeclaration.arguments.get(i), additional);
             operands[i + 1] = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
         }
         addInstruction(new IRInvoke(IRType.getVoidType(), new IRMacro("function_address", new String[]{lcEnumFieldDeclaration.symbol.constructor.getFullName()}), operandTypes, operands, null));
@@ -316,7 +316,7 @@ public final class IRGenerator extends LCAstVisitor {
         fields.add(new IRField("<class_ptr>", new IRPointerType(IRType.getVoidType())));
         fields.add(new IRField("<reference_count>", IRType.getUnsignedLongType()));
 
-        for (VariableSymbol variableSymbol : ((LCClassDeclaration) getAST(lcRecordDeclaration).getObjectDeclaration("l.lang.Record")).symbol.getAllProperties())
+        for (VariableSymbol variableSymbol : ((LCClassDeclaration) Objects.requireNonNull(getAST(lcRecordDeclaration).getObjectDeclaration("l.lang.Record"))).symbol.getAllProperties())
             if (!LCFlags.hasStatic(variableSymbol.flags))
                 fields.add(new IRField(variableSymbol.name, parseType(variableSymbol.theType)));
         for (VariableSymbol variableSymbol : lcRecordDeclaration.symbol.fields)
@@ -365,7 +365,7 @@ public final class IRGenerator extends LCAstVisitor {
 
         this.currentCFG = createControlFlowGraph();
 
-        int argumentsCount = lcMethodDeclaration.parameterList.parameters.length;
+        int argumentsCount = lcMethodDeclaration.parameterList.parameters.size();
 
         List<IRField> fields = new ArrayList<>();
         boolean hasStatic = LCFlags.hasStatic(lcMethodDeclaration.modifier.flags);
@@ -621,9 +621,9 @@ public final class IRGenerator extends LCAstVisitor {
         addInstruction(new IRGoto(condition.name));
 
         IRControlFlowGraph.BasicBlock end = createBasicBlock();
-        Symbol[] symbols = lcFor.scope.name2symbol.values().toArray(new Symbol[0]);
-        for (int i = symbols.length - 1; i >= 0; i--) {
-            if (symbols[i] instanceof VariableSymbol variableSymbol)
+        List<Symbol> symbols = lcFor.scope.name2symbol.values().stream().toList();
+        for (int i = symbols.size() - 1; i >= 0; i--) {
+            if (symbols.get(i) instanceof VariableSymbol variableSymbol)
                 variableName2FieldName.get(variableSymbol.name).pop();
         }
 
@@ -713,11 +713,11 @@ public final class IRGenerator extends LCAstVisitor {
 
     @Override
     public Object visitNative(LCNative lcNative, Object additional) {
-        IRType[] types = new IRType[lcNative.resources.length];
-        IROperand[] resources = new IROperand[lcNative.resources.length];
-        String[] names = new String[lcNative.resources.length];
-        for (int i = 0; i < lcNative.resources.length; i++) {
-            LCNative.LCResourceForNative resource = lcNative.resources[i];
+        IRType[] types = new IRType[lcNative.resources.size()];
+        IROperand[] resources = new IROperand[lcNative.resources.size()];
+        String[] names = new String[lcNative.resources.size()];
+        for (int i = 0; i < lcNative.resources.size(); i++) {
+            LCNative.LCResourceForNative resource = lcNative.resources.get(i);
             types[i] = parseType(resource.resource.theType);
             this.visitResourceForNative(resource, additional);
             resources[i] = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
@@ -752,7 +752,7 @@ public final class IRGenerator extends LCAstVisitor {
             LCStatement statement = lcBlock.statements.get(i);
             this.visit(statement, additional);
 //            IROperand operand;
-//            if (i + 1 == lcBlock.statements.length && statement instanceof LCExpressionStatement) {
+//            if (i + 1 == lcBlock.statements.size() && statement instanceof LCExpressionStatement) {
 //                operand = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
 //            } else {
 //                operand = null;
@@ -764,9 +764,9 @@ public final class IRGenerator extends LCAstVisitor {
         }
         if (this.getEnclosingMethodDeclaration(lcBlock) != null || this.getEnclosingInit(lcBlock) != null) {
             releaseScope(lcBlock.scope);
-            Symbol[] symbols = lcBlock.scope.name2symbol.values().toArray(new Symbol[0]);
-            for (int i = symbols.length - 1; i >= 0; i--) {
-                if (symbols[i] instanceof VariableSymbol variableSymbol)
+            List<Symbol> symbols = lcBlock.scope.name2symbol.values().stream().toList();
+            for (int i = symbols.size() - 1; i >= 0; i--) {
+                if (symbols.get(i) instanceof VariableSymbol variableSymbol)
                     variableName2FieldName.get(variableSymbol.name).pop();
             }
         }
@@ -1106,21 +1106,21 @@ public final class IRGenerator extends LCAstVisitor {
         List<IROperand> arguments;
         List<Type> types;
         if (LCFlags.hasStatic(lcMethodCall.symbol.flags)) {
-            irTypes = new ArrayList<>(lcMethodCall.arguments.length);
-            arguments = new ArrayList<>(lcMethodCall.arguments.length);
-            types = new ArrayList<>(lcMethodCall.arguments.length);
+            irTypes = new ArrayList<>(lcMethodCall.arguments.size());
+            arguments = new ArrayList<>(lcMethodCall.arguments.size());
+            types = new ArrayList<>(lcMethodCall.arguments.size());
 
-            for (int i = 0; i < lcMethodCall.arguments.length; i++) {
-                LCExpression argument = lcMethodCall.arguments[i];
+            for (int i = 0; i < lcMethodCall.arguments.size(); i++) {
+                LCExpression argument = lcMethodCall.arguments.get(i);
                 irTypes.add(parseType(argument.theType));
                 this.visit(argument, additional);
                 arguments.add(operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop());
                 types.add(argument.theType);
             }
         } else {
-            irTypes = new ArrayList<>(lcMethodCall.arguments.length + 1);
-            arguments = new ArrayList<>(lcMethodCall.arguments.length + 1);
-            types = new ArrayList<>(lcMethodCall.arguments.length + 1);
+            irTypes = new ArrayList<>(lcMethodCall.arguments.size() + 1);
+            arguments = new ArrayList<>(lcMethodCall.arguments.size() + 1);
+            types = new ArrayList<>(lcMethodCall.arguments.size() + 1);
 
             if (operandStack.isEmpty()) this.getThisInstance();
             IROperand thisInstance = operandStack.pop();
@@ -1129,8 +1129,8 @@ public final class IRGenerator extends LCAstVisitor {
             arguments.add(thisInstance);
             types.add(lcMethodCall.symbol.objectSymbol.theType);
 
-            for (int i = 0; i < lcMethodCall.arguments.length; i++) {
-                LCExpression argument = lcMethodCall.arguments[i];
+            for (int i = 0; i < lcMethodCall.arguments.size(); i++) {
+                LCExpression argument = lcMethodCall.arguments.get(i);
                 irTypes.add(parseType(argument.theType));
                 this.visit(argument, additional);
                 arguments.add(operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop());
@@ -1284,7 +1284,7 @@ public final class IRGenerator extends LCAstVisitor {
 
     @Override
     public Object visitGetAddress(LCGetAddress lcGetAddress, Object additional) {
-        if (lcGetAddress.paramTypeExpressions == null) {
+        if (lcGetAddress.parameterTypeExpressions == null) {
             this.visit(lcGetAddress.expression, additional);
         } else {
             operandStack.push(new IRMacro("function_address", new String[]{lcGetAddress.methodSymbol.getFullName()}));
@@ -1459,7 +1459,7 @@ public final class IRGenerator extends LCAstVisitor {
             String operandClassInstanceAddressRegister = allocateVirtualRegister();
             addInstruction(new IRGet(IRType.getUnsignedLongType(), operand, new IRVirtualRegister(operandClassInstanceAddressRegister)));
             String classInstanceName = String.format("<class_instance %s>", lcTypeCast.typeExpression.theType.toTypeString());
-            ClassSymbol classSymbol = ((LCClassDeclaration) this.ast.getObjectDeclaration(SystemTypes.Class_Type.name)).symbol;
+            ClassSymbol classSymbol = ((LCClassDeclaration) Objects.requireNonNull(this.ast.getObjectDeclaration(SystemTypes.Class_Type.name))).symbol;
             MethodSymbol methodSymbol = null;
             for (MethodSymbol method : classSymbol.methods) {
                 if (method.name.equals("isSubClassOf")) {
@@ -1556,13 +1556,13 @@ public final class IRGenerator extends LCAstVisitor {
         retain(place, lcNewObject.theType);
         addInstruction(new IRInvoke(IRType.getVoidType(), new IRMacro("function_address", new String[]{typeName + ".<__init__>()V"}), new IRType[]{new IRPointerType(IRType.getVoidType())}, new IROperand[]{place}, null));
 
-        IRType[] argumentTypes = new IRType[lcNewObject.arguments.length + 1];
-        IROperand[] args = new IROperand[lcNewObject.arguments.length + 1];
+        IRType[] argumentTypes = new IRType[lcNewObject.arguments.size() + 1];
+        IROperand[] args = new IROperand[lcNewObject.arguments.size() + 1];
         argumentTypes[0] = new IRPointerType(IRType.getVoidType());
         args[0] = place;
-        for (int i = 0; i < lcNewObject.arguments.length; i++) {
-            argumentTypes[i + 1] = parseType(lcNewObject.arguments[i].theType);
-            this.visit(lcNewObject.arguments[i], additional);
+        for (int i = 0; i < lcNewObject.arguments.size(); i++) {
+            argumentTypes[i + 1] = parseType(lcNewObject.arguments.get(i).theType);
+            this.visit(lcNewObject.arguments.get(i), additional);
             args[i + 1] = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
         }
         addInstruction(new IRInvoke(IRType.getVoidType(), new IRMacro("function_address", new String[]{lcNewObject.constructorSymbol.getFullName()}), argumentTypes, args, null));
@@ -1583,10 +1583,10 @@ public final class IRGenerator extends LCAstVisitor {
         } else {
             IROperand length;
             if (lcNewArray.elements != null) {
-                int constantLengthIndex = module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), lcNewArray.elements.length));
+                int constantLengthIndex = module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), lcNewArray.elements.size()));
                 length = new IRConstant(constantLengthIndex);
             } else {
-                this.visit(lcNewArray.dimensions[0], additional);
+                this.visit(lcNewArray.dimensions.getFirst(), additional);
                 length = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
             }
             newArray(typeSize, length);
@@ -1603,8 +1603,8 @@ public final class IRGenerator extends LCAstVisitor {
             int constant8Index = module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 8));
             addInstruction(new IRStackAllocate(new IRConstant(constant8Index), new IRVirtualRegister(address)));
             addInstruction(new IRSet(new IRPointerType(elementType), new IRVirtualRegister(address), new IRVirtualRegister(temp)));
-            for (int i = 0; i < lcNewArray.elements.length; i++) {
-                LCExpression element = lcNewArray.elements[i];
+            for (int i = 0; i < lcNewArray.elements.size(); i++) {
+                LCExpression element = lcNewArray.elements.get(i);
                 this.visit(element, additional);
                 IROperand elem = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
                 retain(elem, element.theType);
@@ -1688,7 +1688,7 @@ public final class IRGenerator extends LCAstVisitor {
         String operandClassInstanceAddressRegister = allocateVirtualRegister();
         addInstruction(new IRGet(IRType.getUnsignedLongType(), operand, new IRVirtualRegister(operandClassInstanceAddressRegister)));
         String classInstanceName = String.format("<class_instance %s>", lcInstanceof.typeExpression.theType.toTypeString());
-        ClassSymbol classSymbol = ((LCClassDeclaration) this.ast.getObjectDeclaration(SystemTypes.Class_Type.name)).symbol;
+        ClassSymbol classSymbol = ((LCClassDeclaration) Objects.requireNonNull(this.ast.getObjectDeclaration(SystemTypes.Class_Type.name))).symbol;
         MethodSymbol methodSymbol = null;
         for (MethodSymbol method : classSymbol.methods) {
             if (method.name.equals("isSubClassOf")) {
@@ -1863,8 +1863,8 @@ public final class IRGenerator extends LCAstVisitor {
         IRControlFlowGraph lastCFG = this.currentCFG;
         this.currentCFG = this.module.globalInitSection;
         createBasicBlock();
-        ClassSymbol classSymbol = ((LCClassDeclaration) this.ast.getObjectDeclaration(SystemTypes.Class_Type.name)).symbol;
-        String constructorName = classSymbol.constructors[0].getFullName();
+        ClassSymbol classSymbol = ((LCClassDeclaration) Objects.requireNonNull(this.ast.getObjectDeclaration(SystemTypes.Class_Type.name))).symbol;
+        String constructorName = classSymbol.constructors.get(0).getFullName();
         addInstruction(new IRInvoke(IRType.getVoidType(), new IRMacro("function_address", new String[]{classSymbol.getFullName() + ".<__init__>()V"}), new IRType[]{new IRPointerType(IRType.getVoidType())}, new IROperand[]{classInstanceAddress}, null));
         int constantITableLengthIndex = module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), itableLength));
         addInstruction(new IRInvoke(IRType.getVoidType(), new IRMacro("function_address", new String[]{constructorName}), new IRType[]{new IRPointerType(IRType.getVoidType()), new IRPointerType(new IRPointerType(IRPointerType.getVoidType())), IRType.getUnsignedLongType(), new IRPointerType(new IRPointerType(new IRPointerType(IRType.getVoidType()))), new IRPointerType(IRType.getVoidType())}, new IROperand[]{classInstanceAddress, hasVTable ? new IRMacro("global_data_address", new String[]{vtableName}) : new IRConstant(constantNullptrIndex), new IRConstant(constantITableLengthIndex), hasITable ? new IRMacro("global_data_address", new String[]{itableName}) : new IRConstant(constantNullptrIndex), superClassInstanceAddress}, null));
@@ -1889,7 +1889,7 @@ public final class IRGenerator extends LCAstVisitor {
     }
 
     private Map<String, String> getVirtualMethods(RecordSymbol recordSymbol) {
-        Map<String, String> result = getVirtualMethods(((LCClassDeclaration) getAST(recordSymbol.declaration).getObjectDeclaration(SystemTypes.Record_Type.name)).symbol);
+        Map<String, String> result = getVirtualMethods(((LCClassDeclaration) Objects.requireNonNull(getAST(recordSymbol.declaration).getObjectDeclaration(SystemTypes.Record_Type.name))).symbol);
         for (MethodSymbol methodSymbol : recordSymbol.methods) {
             if (LCFlags.hasStatic(methodSymbol.flags)) continue;
             result.put(methodSymbol.getSimpleName(), LCFlags.hasAbstract(methodSymbol.flags) ? "" : methodSymbol.getFullName());
@@ -1901,7 +1901,7 @@ public final class IRGenerator extends LCAstVisitor {
     }
 
     private Map<String, String> getVirtualMethods(EnumSymbol enumSymbol) {
-        Map<String, String> result = getVirtualMethods(((LCClassDeclaration) getAST(enumSymbol.declaration).getObjectDeclaration(SystemTypes.Enum_Type.name)).symbol);
+        Map<String, String> result = getVirtualMethods(((LCClassDeclaration) Objects.requireNonNull(getAST(enumSymbol.declaration).getObjectDeclaration(SystemTypes.Enum_Type.name))).symbol);
         for (MethodSymbol methodSymbol : enumSymbol.methods) {
             if (LCFlags.hasStatic(methodSymbol.flags)) continue;
             result.put(methodSymbol.getSimpleName(), LCFlags.hasAbstract(methodSymbol.flags) ? "" : methodSymbol.getFullName());
@@ -1919,7 +1919,7 @@ public final class IRGenerator extends LCAstVisitor {
         } else {
             result = new LinkedHashMap<>();
         }
-        Queue<InterfaceSymbol> queue = new LinkedList<>(List.of(classSymbol.implementedInterfaces));
+        Queue<InterfaceSymbol> queue = new LinkedList<>(classSymbol.implementedInterfaces);
         while (!queue.isEmpty()) {
             InterfaceSymbol interfaceSymbol = queue.poll();
             Map<String, String> map = new LinkedHashMap<>();
@@ -1929,14 +1929,14 @@ public final class IRGenerator extends LCAstVisitor {
             }
             map.put("<deinit>()V", classSymbol.getFullName() + ".<deinit>()V");
             result.put(interfaceSymbol.getFullName(), map);
-            queue.addAll(Arrays.asList(interfaceSymbol.extendedInterfaces));
+            queue.addAll(interfaceSymbol.extendedInterfaces);
         }
         return result;
     }
 
     private Map<String, Map<String, String>> getInterfacesMethodMap(RecordSymbol recordSymbol) {
         Map<String, Map<String, String>> result = new LinkedHashMap<>();
-        Queue<InterfaceSymbol> queue = new LinkedList<>(List.of(recordSymbol.implementedInterfaces));
+        Queue<InterfaceSymbol> queue = new LinkedList<>(recordSymbol.implementedInterfaces);
         while (!queue.isEmpty()) {
             InterfaceSymbol interfaceSymbol = queue.poll();
             Map<String, String> map = new LinkedHashMap<>();
@@ -1946,14 +1946,14 @@ public final class IRGenerator extends LCAstVisitor {
             }
             map.put("<deinit>()V", recordSymbol.getFullName() + ".<deinit>()V");
             result.put(interfaceSymbol.getFullName(), map);
-            queue.addAll(Arrays.asList(interfaceSymbol.extendedInterfaces));
+            queue.addAll(interfaceSymbol.extendedInterfaces);
         }
         return result;
     }
 
     private Map<String, Map<String, String>> getInterfacesMethodMap(EnumSymbol enumSymbol) {
         Map<String, Map<String, String>> result = new LinkedHashMap<>();
-        Queue<InterfaceSymbol> queue = new LinkedList<>(List.of(enumSymbol.implementedInterfaces));
+        Queue<InterfaceSymbol> queue = new LinkedList<>(enumSymbol.implementedInterfaces);
         while (!queue.isEmpty()) {
             InterfaceSymbol interfaceSymbol = queue.poll();
             Map<String, String> map = new LinkedHashMap<>();
@@ -1963,7 +1963,7 @@ public final class IRGenerator extends LCAstVisitor {
             }
             map.put("<deinit>()V", enumSymbol.getFullName() + ".<deinit>()V");
             result.put(interfaceSymbol.getFullName(), map);
-            queue.addAll(Arrays.asList(interfaceSymbol.extendedInterfaces));
+            queue.addAll(interfaceSymbol.extendedInterfaces);
         }
         return result;
     }
@@ -2044,7 +2044,7 @@ public final class IRGenerator extends LCAstVisitor {
             case InterfaceSymbol interfaceSymbol -> {
                 String classInstanceAddressRegister = allocateVirtualRegister();
                 addInstruction(new IRGet(new IRPointerType(IRType.getVoidType()), arguments.getFirst(), new IRVirtualRegister(classInstanceAddressRegister)));
-                ClassSymbol symbol = ((LCClassDeclaration) this.ast.getObjectDeclaration(SystemTypes.Class_Type.name)).symbol;
+                ClassSymbol symbol = ((LCClassDeclaration) Objects.requireNonNull(this.ast.getObjectDeclaration(SystemTypes.Class_Type.name))).symbol;
                 MethodSymbol methodSymbol2 = null;
                 for (MethodSymbol method : symbol.methods) {
                     if (method.name.equals("getITableEntry")) {
@@ -2106,11 +2106,11 @@ public final class IRGenerator extends LCAstVisitor {
 
     }
 
-    private void initArray(IROperand place, IROperand typeSize, LCExpression[] dimensions, int index) {
-        if (index + 1 >= dimensions.length) return;
+    private void initArray(IROperand place, IROperand typeSize, List<LCExpression> dimensions, int index) {
+        if (index + 1 >= dimensions.size()) return;
 
-        LCExpression dimension = dimensions[index];
-        LCExpression length = dimensions[index + 1];
+        LCExpression dimension = dimensions.get(index);
+        LCExpression length = dimensions.get(index + 1);
         if (dimension == null || length == null) return;
 
         this.visit(dimension, null);
@@ -2185,10 +2185,10 @@ public final class IRGenerator extends LCAstVisitor {
     private void deleteObject(IROperand object, NamedType objectType) {
         String classInstanceAddressRegister = allocateVirtualRegister();
         addInstruction(new IRGet(new IRPointerType(IRType.getVoidType()), object, new IRVirtualRegister(classInstanceAddressRegister)));
-        ObjectSymbol objectSymbol = LCAstUtil.getObjectSymbol(ast.getObjectDeclaration(objectType.name));
+        ObjectSymbol objectSymbol = LCAstUtil.getObjectSymbol(Objects.requireNonNull(ast.getObjectDeclaration(objectType.name)));
         String destructorAddress = allocateVirtualRegister();
         if (objectSymbol instanceof InterfaceSymbol interfaceSymbol) {
-            ClassSymbol classSymbol = ((LCClassDeclaration) this.ast.getObjectDeclaration(SystemTypes.Class_Type.name)).symbol;
+            ClassSymbol classSymbol = ((LCClassDeclaration) Objects.requireNonNull(this.ast.getObjectDeclaration(SystemTypes.Class_Type.name))).symbol;
             MethodSymbol methodSymbol = null;
             for (MethodSymbol method : classSymbol.methods) {
                 if (method.name.equals("getITableEntry")) {

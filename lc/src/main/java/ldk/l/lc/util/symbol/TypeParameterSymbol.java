@@ -4,17 +4,18 @@ import ldk.l.lc.ast.base.LCTypeParameter;
 import ldk.l.lc.util.symbol.object.ObjectSymbol;
 
 import java.util.Arrays;
+import java.util.List;
 
-public class TypeParameterSymbol extends Symbol {
-    public LCTypeParameter decl;
+public final class TypeParameterSymbol extends Symbol {
+    public LCTypeParameter declaration;
     public ObjectSymbol extended;
-    public ObjectSymbol[] implemented;
+    public List<ObjectSymbol> implemented;
     public ObjectSymbol supered;
     public ObjectSymbol _default;
 
-    public TypeParameterSymbol(LCTypeParameter decl, ObjectSymbol extended, ObjectSymbol[] implemented, ObjectSymbol supered, ObjectSymbol _default) {
-        super(decl.name, null, SymbolKind.TypeParameter);
-        this.decl = decl;
+    public TypeParameterSymbol(LCTypeParameter declaration, ObjectSymbol extended, List<ObjectSymbol> implemented, ObjectSymbol supered, ObjectSymbol _default) {
+        super(declaration.name, null, SymbolKind.TypeParameter);
+        this.declaration = declaration;
         this.extended = extended;
         this.implemented = implemented;
         this.supered = supered;
@@ -30,7 +31,7 @@ public class TypeParameterSymbol extends Symbol {
     public String toString() {
         return "TypeParameterSymbol{" +
                 "extended=" + extended +
-                ", implemented=" + Arrays.toString(implemented) +
+                ", implemented=" + implemented +
                 ", supered=" + supered +
                 ", _default=" + _default +
                 ", name='" + name + '\'' +

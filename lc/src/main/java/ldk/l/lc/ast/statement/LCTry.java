@@ -8,16 +8,16 @@ import ldk.l.lc.ast.statement.declaration.LCVariableDeclaration;
 import ldk.l.lc.util.Position;
 import ldk.l.lc.util.scope.Scope;
 
-import java.util.Arrays;
-import java.util.Objects;
+import java.util.ArrayList;
+import java.util.List;
 
-public class LCTry extends LCStatementWithScope {
-    public LCStatement[] resources;
+public final class LCTry extends LCStatementWithScope {
+    public List<LCStatement> resources;
     public LCStatement base;
-    public LCCatch[] catchers;
+    public List<LCCatch> catchers;
     public LCStatement _finally;
 
-    public LCTry(LCStatement[] resources, LCStatement base, LCCatch[] catchers, LCStatement _finally, Position pos, boolean isErrorNode) {
+    public LCTry(List<LCStatement> resources, LCStatement base, List<LCCatch> catchers, LCStatement _finally, Position pos, boolean isErrorNode) {
         super(pos, isErrorNode);
         this.resources = resources;
         for (LCStatement resource : this.resources) resource.parentNode = this;
@@ -40,11 +40,11 @@ public class LCTry extends LCStatementWithScope {
     @Override
     public String toString() {
         return "LCTry{" +
-                "resources=" + Arrays.toString(resources) +
+                "resources=" + resources +
                 ", base=" + base +
-                ", catchers=" + Arrays.toString(catchers) +
+                ", catchers=" + catchers +
                 ", _finally=" + _finally +
-                ", annotations=" + Arrays.toString(annotations) +
+                ", annotations=" + annotations +
                 ", position=" + position +
                 ", isErrorNode=" + isErrorNode +
                 '}';
@@ -52,10 +52,10 @@ public class LCTry extends LCStatementWithScope {
 
     @Override
     public LCTry clone() throws CloneNotSupportedException {
-        return new LCTry(Arrays.copyOf(resources, resources.length), base.clone(), Arrays.copyOf(catchers, catchers.length), _finally != null ? _finally.clone() : null, position.clone(), isErrorNode);
+        return new LCTry(new ArrayList<>(resources), base.clone(), new ArrayList<>(catchers), _finally != null ? _finally.clone() : null, position.clone(), isErrorNode);
     }
 
-    public static class LCCatch extends LCAstNode {
+    public static final class LCCatch extends LCAstNode {
         public Scope scope = null;
         public LCVariableDeclaration exceptionVariableDeclaration;
         public LCStatement then;

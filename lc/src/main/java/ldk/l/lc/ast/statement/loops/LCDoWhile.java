@@ -6,7 +6,7 @@ import ldk.l.lc.ast.base.LCStatement;
 import ldk.l.lc.ast.base.LCStatementWithScope;
 import ldk.l.lc.util.Position;
 
-public class LCDoWhile extends LCAbstractLoop {
+public final class LCDoWhile extends LCAbstractLoop {
     public LCStatement body;
     public LCExpression condition;
 

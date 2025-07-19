@@ -6,7 +6,7 @@ import ldk.l.lc.ast.base.LCExpressionWithScope;
 import ldk.l.lc.util.Position;
 import ldk.l.lc.ast.base.LCStatement;
 
-public class LCIf extends LCExpressionWithScope {
+public final class LCIf extends LCExpressionWithScope {
     public LCExpression condition;
     public LCStatement then;
     public LCStatement _else;

@@ -6,17 +6,18 @@ import ldk.l.lc.ast.expression.type.LCTypeExpression;
 import ldk.l.lc.util.Position;
 import ldk.l.lc.util.symbol.MethodSymbol;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class LCMethodCall extends LCExpression {
     public String name;
     public LCExpression expression;
-    public LCTypeExpression[] typeArguments;
-    public LCExpression[] arguments;
+    public List<LCTypeExpression> typeArguments;
+    public List<LCExpression> arguments;
     public MethodSymbol symbol = null;
     public Position positionOfName;
 
-    public LCMethodCall(LCExpression expression, LCExpression[] arguments, Position pos, boolean isErrorNode) {
+    public LCMethodCall(LCExpression expression, List<LCExpression> arguments, Position pos, boolean isErrorNode) {
         super(pos, isErrorNode);
         this.typeArguments = null;
         this.name = null;
@@ -28,7 +29,7 @@ public final class LCMethodCall extends LCExpression {
         this.positionOfName = null;
     }
 
-    public LCMethodCall(String name, Position positionOfName, LCTypeExpression[] typeArguments, LCExpression[] arguments, Position pos, boolean isErrorNode) {
+    public LCMethodCall(String name, Position positionOfName, List<LCTypeExpression> typeArguments, List<LCExpression> arguments, Position pos, boolean isErrorNode) {
         super(pos, isErrorNode);
         this.name = name;
         this.expression = null;
@@ -41,7 +42,7 @@ public final class LCMethodCall extends LCExpression {
         this.positionOfName = positionOfName;
     }
 
-    private LCMethodCall(String name, Position positionOfName, LCExpression expression, LCTypeExpression[] typeArguments, LCExpression[] arguments, Position pos, boolean isErrorNode) {
+    private LCMethodCall(String name, Position positionOfName, LCExpression expression, List<LCTypeExpression> typeArguments, List<LCExpression> arguments, Position pos, boolean isErrorNode) {
         super(pos, isErrorNode);
         this.name = name;
         this.positionOfName = positionOfName;
@@ -67,8 +68,8 @@ public final class LCMethodCall extends LCExpression {
         return "LCMethodCall{" +
                 "name='" + name + '\'' +
                 ", expression=" + expression +
-                ", typeArguments=" + Arrays.toString(typeArguments) +
-                ", arguments=" + Arrays.toString(arguments) +
+                ", typeArguments=" + typeArguments +
+                ", arguments=" + arguments +
                 ", symbol=" + symbol +
                 ", positionOfName=" + positionOfName +
                 ", theType=" + theType +
@@ -82,6 +83,6 @@ public final class LCMethodCall extends LCExpression {
 
     @Override
     public LCMethodCall clone() throws CloneNotSupportedException {
-        return new LCMethodCall(this.name, this.positionOfName != null ? this.positionOfName.clone() : null, this.expression != null ? this.expression.clone() : null, this.typeArguments != null ? Arrays.copyOf(this.typeArguments, this.typeArguments.length) : null, this.arguments != null ? Arrays.copyOf(this.arguments, this.arguments.length) : null, this.position.clone(), this.isErrorNode);
+        return new LCMethodCall(this.name, this.positionOfName != null ? this.positionOfName.clone() : null, this.expression != null ? this.expression.clone() : null, this.typeArguments != null ? new ArrayList<>(this.typeArguments) : null, this.arguments != null ? new ArrayList<>(this.arguments) : null, this.position.clone(), this.isErrorNode);
     }
 }

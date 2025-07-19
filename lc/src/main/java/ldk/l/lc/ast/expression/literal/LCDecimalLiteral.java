@@ -4,8 +4,6 @@ import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.semantic.types.SystemTypes;
 import ldk.l.lc.util.Position;
 
-import java.util.Objects;
-
 public final class LCDecimalLiteral extends LCLiteral<Double> {
     public LCDecimalLiteral(double value, boolean isFloat, Position pos) {
         this(value, isFloat, pos, false);

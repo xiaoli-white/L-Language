@@ -5,10 +5,7 @@ import ldk.l.lc.ast.base.LCExpression;
 import ldk.l.lc.ast.base.LCStatement;
 import ldk.l.lc.util.Position;
 
-import java.util.Arrays;
-import java.util.Objects;
-
-public class LCYield extends LCStatement {
+public final class LCYield extends LCStatement {
     public LCExpression value;
 
     public LCYield(LCExpression value, Position pos, boolean isErrorNode) {
@@ -26,7 +23,7 @@ public class LCYield extends LCStatement {
     public String toString() {
         return "LCYield{" +
                 "value=" + value +
-                ", annotations=" + Arrays.toString(annotations) +
+                ", annotations=" + annotations +
                 ", position=" + position +
                 ", isErrorNode=" + isErrorNode +
                 '}';

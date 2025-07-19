@@ -15,6 +15,7 @@ import ldk.l.lc.util.symbol.object.ObjectSymbol;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 public final class ObjectSymbolResolver extends LCAstVisitor {
@@ -30,64 +31,64 @@ public final class ObjectSymbolResolver extends LCAstVisitor {
             ObjectSymbol objectSymbol = LCAstUtil.getObjectSymbol(Objects.requireNonNull(LCAstUtil.getObjectDeclarationByName(lcClassDeclaration, lcClassDeclaration.extended.name)));
             if (objectSymbol instanceof ClassSymbol classSymbol)
                 lcClassDeclaration.symbol.extended = classSymbol;
-        } else if (!Arrays.stream(lcClassDeclaration.modifier.attributes).toList().contains("no_extend")) {
-            lcClassDeclaration.symbol.extended = ((LCClassDeclaration) this.getAST(lcClassDeclaration).getObjectDeclaration(SystemTypes.Object_Type.name)).symbol;
+        } else if (!lcClassDeclaration.modifier.attributes.contains("no_extend")) {
+            lcClassDeclaration.symbol.extended = ((LCClassDeclaration) Objects.requireNonNull(this.getAST(lcClassDeclaration).getObjectDeclaration(SystemTypes.Object_Type.name))).symbol;
             this.getAST(lcClassDeclaration).name2Type.get(lcClassDeclaration.getFullName()).upperTypes.add(SystemTypes.Object_Type);
         }
 
-        ArrayList<InterfaceSymbol> implementedInterfaces = new ArrayList<>();
+        List<InterfaceSymbol> implementedInterfaces = new ArrayList<>();
         for (LCTypeReferenceExpression implementedInterface : lcClassDeclaration.implementedInterfaces) {
             ObjectSymbol objectSymbol = LCAstUtil.getObjectSymbol(Objects.requireNonNull(LCAstUtil.getObjectDeclarationByName(lcClassDeclaration, implementedInterface.name)));
             if (objectSymbol instanceof InterfaceSymbol interfaceSymbol)
                 implementedInterfaces.add(interfaceSymbol);
         }
-        lcClassDeclaration.symbol.implementedInterfaces = implementedInterfaces.toArray(new InterfaceSymbol[0]);
+        lcClassDeclaration.symbol.implementedInterfaces = implementedInterfaces;
 
-        ArrayList<ClassSymbol> permittedClasses = new ArrayList<>();
+        List<ClassSymbol> permittedClasses = new ArrayList<>();
         for (LCTypeReferenceExpression permittedClass : lcClassDeclaration.permittedClasses) {
             ObjectSymbol objectSymbol = LCAstUtil.getObjectSymbol(Objects.requireNonNull(LCAstUtil.getObjectDeclarationByName(lcClassDeclaration, permittedClass.name)));
             if (objectSymbol instanceof ClassSymbol classSymbol)
                 permittedClasses.add(classSymbol);
         }
-        lcClassDeclaration.symbol.permittedClasses = permittedClasses.toArray(new ClassSymbol[0]);
+        lcClassDeclaration.symbol.permittedClasses = permittedClasses;
 
         return super.visitClassDeclaration(lcClassDeclaration, additional);
     }
 
     @Override
     public Object visitInterfaceDeclaration(LCInterfaceDeclaration lcInterfaceDeclaration, Object additional) {
-        ArrayList<InterfaceSymbol> extendedInterfaces = new ArrayList<>();
+        List<InterfaceSymbol> extendedInterfaces = new ArrayList<>();
         for (LCTypeReferenceExpression extendedInterface : lcInterfaceDeclaration.extendedInterfaces) {
             ObjectSymbol objectSymbol = LCAstUtil.getObjectSymbol(Objects.requireNonNull(LCAstUtil.getObjectDeclarationByName(lcInterfaceDeclaration, extendedInterface.name)));
             if (objectSymbol instanceof InterfaceSymbol interfaceSymbol)
                 extendedInterfaces.add(interfaceSymbol);
         }
-        lcInterfaceDeclaration.symbol.extendedInterfaces = extendedInterfaces.toArray(new InterfaceSymbol[0]);
+        lcInterfaceDeclaration.symbol.extendedInterfaces = extendedInterfaces;
 
         return super.visitInterfaceDeclaration(lcInterfaceDeclaration, additional);
     }
 
     @Override
     public Object visitEnumDeclaration(LCEnumDeclaration lcEnumDeclaration, Object additional) {
-        ArrayList<InterfaceSymbol> implementedInterfaces = new ArrayList<>();
+        List<InterfaceSymbol> implementedInterfaces = new ArrayList<>();
         for (LCTypeReferenceExpression implementedInterface : lcEnumDeclaration.implementedInterfaces) {
             ObjectSymbol objectSymbol = LCAstUtil.getObjectSymbol(Objects.requireNonNull(LCAstUtil.getObjectDeclarationByName(lcEnumDeclaration, implementedInterface.name)));
             if (objectSymbol instanceof InterfaceSymbol interfaceSymbol)
                 implementedInterfaces.add(interfaceSymbol);
         }
-        lcEnumDeclaration.symbol.implementedInterfaces = implementedInterfaces.toArray(new InterfaceSymbol[0]);
+        lcEnumDeclaration.symbol.implementedInterfaces = implementedInterfaces;
         return super.visitEnumDeclaration(lcEnumDeclaration, additional);
     }
 
     @Override
     public Object visitRecordDeclaration(LCRecordDeclaration lcRecordDeclaration, Object additional) {
-        ArrayList<InterfaceSymbol> implementedInterfaces = new ArrayList<>();
+        List<InterfaceSymbol> implementedInterfaces = new ArrayList<>();
         for (LCTypeReferenceExpression implementedInterface : lcRecordDeclaration.implementedInterfaces) {
             ObjectSymbol objectSymbol = LCAstUtil.getObjectSymbol(Objects.requireNonNull(LCAstUtil.getObjectDeclarationByName(lcRecordDeclaration, implementedInterface.name)));
             if (objectSymbol instanceof InterfaceSymbol interfaceSymbol)
                 implementedInterfaces.add(interfaceSymbol);
         }
-        lcRecordDeclaration.symbol.implementedInterfaces = implementedInterfaces.toArray(new InterfaceSymbol[0]);
+        lcRecordDeclaration.symbol.implementedInterfaces = implementedInterfaces;
         return super.visitRecordDeclaration(lcRecordDeclaration, additional);
     }
 }

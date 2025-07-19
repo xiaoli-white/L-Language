@@ -72,7 +72,7 @@ public final class ImportProcessor extends LCAstVisitor {
                     if (!source.equals(lcSourceCodeFile) && !proxies.contains(proxy))
                         proxies.add(proxy);
                 }
-                lcSourceCodeFile.proxies = proxies.toArray(new LCSourceFileProxy[0]);
+                lcSourceCodeFile.proxies.addAll(proxies);
             }
         }
 

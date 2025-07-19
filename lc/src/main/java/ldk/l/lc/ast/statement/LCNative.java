@@ -6,25 +6,26 @@ import ldk.l.lc.ast.base.LCExpression;
 import ldk.l.lc.ast.base.LCStatementWithScope;
 import ldk.l.lc.util.Position;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 
-public class LCNative extends LCStatementWithScope {
-    public LCResourceForNative[] resources;
-    public LCNativeSection[] sections;
+public final class LCNative extends LCStatementWithScope {
+    public List<LCResourceForNative> resources;
+    public List<LCNativeSection> sections;
 
-    public LCNative(LCNativeSection[] sections, Position pos) {
+    public LCNative(List<LCNativeSection> sections, Position pos) {
         this(sections, pos, false);
     }
 
-    public LCNative(LCNativeSection[] sections, Position pos, boolean isErrorNode) {
-        this(new LCResourceForNative[0], sections, pos, isErrorNode);
+    public LCNative(List<LCNativeSection> sections, Position pos, boolean isErrorNode) {
+        this(new ArrayList<>(), sections, pos, isErrorNode);
     }
 
-    public LCNative(LCNative.LCResourceForNative[] resources, LCNativeSection[] sections, Position pos) {
+    public LCNative(List<LCResourceForNative> resources, List<LCNativeSection> sections, Position pos) {
         this(resources, sections, pos, false);
     }
 
-    public LCNative(LCNative.LCResourceForNative[] resources, LCNativeSection[] sections, Position pos, boolean isErrorNode) {
+    public LCNative(List<LCResourceForNative> resources, List<LCNativeSection> sections, Position pos, boolean isErrorNode) {
         super(pos, isErrorNode);
         this.resources = resources;
         for (LCResourceForNative resource : resources) resource.parentNode = this;
@@ -41,10 +42,10 @@ public class LCNative extends LCStatementWithScope {
     @Override
     public String toString() {
         return "LCNative{" +
-                "resources=" + Arrays.toString(resources) +
-                ", sections=" + Arrays.toString(sections) +
+                "resources=" + resources +
+                ", sections=" + sections +
                 ", scope=" + scope +
-                ", annotations=" + Arrays.toString(annotations) +
+                ", annotations=" + annotations +
                 ", position=" + position +
                 ", isErrorNode=" + isErrorNode +
                 '}';
@@ -52,10 +53,10 @@ public class LCNative extends LCStatementWithScope {
 
     @Override
     public LCNative clone() throws CloneNotSupportedException {
-        return new LCNative(Arrays.copyOf(resources, resources.length), Arrays.copyOf(sections, sections.length), position.clone(), isErrorNode);
+        return new LCNative(new ArrayList<>(resources), new ArrayList<>(sections), position.clone(), isErrorNode);
     }
 
-    public static class LCResourceForNative extends LCAstNode {
+    public static final class LCResourceForNative extends LCAstNode {
         public LCExpression resource;
         public String name;
 

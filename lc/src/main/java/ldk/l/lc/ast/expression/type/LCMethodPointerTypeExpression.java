@@ -2,12 +2,11 @@ package ldk.l.lc.ast.expression.type;
 
 import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.ast.base.LCParameterList;
-import ldk.l.lc.ast.statement.declaration.LCVariableDeclaration;
 import ldk.l.lc.util.Position;
 
-import java.util.Objects;
+import java.util.stream.Collectors;
 
-public class LCMethodPointerTypeExpression extends LCTypeExpression {
+public final class LCMethodPointerTypeExpression extends LCTypeExpression {
     public LCParameterList parameterList;
     public LCTypeExpression returnTypeExpression;
 
@@ -41,18 +40,8 @@ public class LCMethodPointerTypeExpression extends LCTypeExpression {
 
     @Override
     public String toTypeString() {
-        StringBuilder result = new StringBuilder("(");
-        for (int i = 0; i < parameterList.parameters.length; i++) {
-            LCVariableDeclaration parameter = parameterList.parameters[i];
-            if (parameter.typeExpression == null) continue;
-
-            result.append(parameter.typeExpression.toTypeString());
-            if (i < parameterList.parameters.length - 1) {
-                result.append(", ");
-            }
-        }
-        result.append("):").append(returnTypeExpression.toTypeString());
-        return result.toString();
+        return "(" + parameterList.parameters.stream().map(parameter -> parameter.typeExpression.toTypeString()).collect(Collectors.joining(", ")) +
+                "):" + returnTypeExpression.toTypeString();
     }
 
     @Override
