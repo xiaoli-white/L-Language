@@ -14,7 +14,7 @@ public final class LVirtualMachine {
     public static final long DEFAULT_STACK_SIZE = 4 * 1024 * 1024;
 
     public static void main(String[] args) {
-        Options options = LVirtualMachine.getOptionsParser().parse(args);
+        Options options = LVirtualMachine.getOptionsParser().parse(List.of(args));
         VirtualMachine virtualMachine = new VirtualMachine(options.get("stackSize", Long.class));
         String file = options.args().getFirst();
         byte[] raw;

@@ -34,7 +34,7 @@ import java.util.Map;
 
 public class LCompiler {
     public static void main(String[] args) {
-        LCompiler.parse(LCompiler.getOptionsParser().parse(args));
+        LCompiler.parse(LCompiler.getOptionsParser().parse(List.of(args)));
     }
 
     public static void parse(Options options) {

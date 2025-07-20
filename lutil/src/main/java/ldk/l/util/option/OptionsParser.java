@@ -1,14 +1,12 @@
 package ldk.l.util.option;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public final class OptionsParser {
     private final boolean skip;
-    private final Map<String, String> flags2Name = new HashMap<>();
+    private final Map<String, OptionsParser> name2SubOptionsParser = new HashMap<>();
     private final Map<String, Type> name2Type = new HashMap<>();
+    private final Map<String, String> flags2Name = new HashMap<>();
     private final Map<String, Object> defaults = new HashMap<>();
     private final Map<String, String> helps = new HashMap<>();
 
@@ -18,6 +16,11 @@ public final class OptionsParser {
 
     public OptionsParser(boolean skip) {
         this.skip = skip;
+    }
+
+    public OptionsParser add(String name, OptionsParser subOptionsParser) {
+        name2SubOptionsParser.put(name, subOptionsParser);
+        return this;
     }
 
     public OptionsParser add(List<String> flags, String name, Type type) {
@@ -39,56 +42,75 @@ public final class OptionsParser {
         return this;
     }
 
-    public Options parse(String[] args) {
-        Map<String, Object> options = new HashMap<>();
-        List<String> others = new ArrayList<>();
-        int i = 0;
-        for (; i < args.length; i++) {
-            String arg = args[i];
-            if (!flags2Name.containsKey(arg)) {
-                others.add(arg);
-                continue;
+    public Options parse(List<String> args) {
+        if (!name2SubOptionsParser.isEmpty()) {
+            int i = 0;
+            for (; i < args.size(); i++) {
+                String arg = args.get(i);
+                if (!arg.startsWith("-")) break;
+                if (name2Type.get(arg) == Type.Boolean) {
+                    if (i + 1 < args.size()) {
+                        String next = args.get(i + 1);
+                        if ("true".equals(next) || "false".equals(next)) ++i;
+                    }
+                } else {
+                    ++i;
+                }
             }
-            String name = flags2Name.get(arg);
-            Type type = name2Type.get(name);
-            switch (type) {
-                case Boolean -> {
-                    if (i + 1 < args.length) {
-                        String next = args[i + 1];
-                        if ("true".equals(next) || "false".equals(next)) {
-                            options.put(name, Boolean.parseBoolean(next));
-                            i++;
-                            break;
+            return name2SubOptionsParser.get(args.get(i)).parse(args);
+        } else {
+            Map<String, Object> options = new HashMap<>();
+            List<String> others = new ArrayList<>();
+            int i = 0;
+            for (; i < args.size(); i++) {
+                String arg = args.get(i);
+                if (!arg.startsWith("-")) {
+                    others.add(arg);
+                    continue;
+                }
+                String name = flags2Name.get(arg);
+                Type type = name2Type.get(name);
+                switch (type) {
+                    case Boolean -> {
+                        if (i + 1 < args.size()) {
+                            String next = args.get(i + 1);
+                            if ("true".equals(next) || "false".equals(next)) {
+                                options.put(name, Boolean.parseBoolean(next));
+                                i++;
+                            } else {
+                                options.put(name, true);
+                            }
+                        } else {
+                            options.put(name, true);
                         }
                     }
-                    options.put(name, true);
-                }
-                case String -> {
-                    if (i + 1 < args.length)
-                        options.put(name, args[++i]);
-                    else
-                        throw new IllegalArgumentException("Missing argument for " + name);
+                    case String -> {
+                        if (i + 1 < args.size())
+                            options.put(name, args.get(++i));
+                        else
+                            throw new IllegalArgumentException("Missing argument for " + name);
 
+                    }
+                    case Integer -> {
+                        if (i + 1 < args.size())
+                            options.put(name, Long.parseLong(args.get(++i)));
+                        else
+                            throw new IllegalArgumentException("Missing argument for " + name);
+                    }
+                    case Decimal -> {
+                        if (i + 1 < args.size())
+                            options.put(name, Double.parseDouble(args.get(++i)));
+                        else
+                            throw new IllegalArgumentException("Missing argument for " + name);
+                    }
                 }
-                case Integer -> {
-                    if (i + 1 < args.length)
-                        options.put(name, Long.parseLong(args[++i]));
-                    else
-                        throw new IllegalArgumentException("Missing argument for " + name);
-                }
-                case Decimal -> {
-                    if (i + 1 < args.length)
-                        options.put(name, Double.parseDouble(args[++i]));
-                    else
-                        throw new IllegalArgumentException("Missing argument for " + name);
-                }
+                if (skip) break;
             }
-            if (skip) break;
+            for (; i < args.size(); i++) others.add(args.get(i));
+            defaults.forEach((name, value) -> {
+                if (!options.containsKey(name)) options.put(name, value);
+            });
+            return new Options(options, others, helps);
         }
-        for (; i < args.length; i++) others.add(args[i]);
-        defaults.forEach((name, value) -> {
-            if (!options.containsKey(name)) options.put(name, value);
-        });
-        return new Options(options, others,  helps);
     }
 }

@@ -7,7 +7,7 @@ import java.util.List;
 
 public class LGenerator {
     public static void main(String[] args) {
-        LGenerator.getOptionsParser().parse(args);
+        LGenerator.getOptionsParser().parse(List.of(args));
     }
 
     public static OptionsParser getOptionsParser() {
