@@ -3,7 +3,7 @@ package ldk.l.util.option;
 import java.util.*;
 
 public final class OptionsParser {
-    private final boolean skip;
+    private boolean skip;
     private final Map<String, OptionsParser> name2SubOptionsParser = new HashMap<>();
     private final Map<String, Type> name2Type = new HashMap<>();
     private final Map<String, String> flags2Name = new HashMap<>();
@@ -57,6 +57,12 @@ public final class OptionsParser {
                     ++i;
                 }
             }
+            OptionsParser subOptionsParser = name2SubOptionsParser.get(args.get(i));
+            subOptionsParser.skip = skip;
+            subOptionsParser.name2Type.putAll(name2Type);
+            subOptionsParser.flags2Name.putAll(flags2Name);
+            subOptionsParser.defaults.putAll(defaults);
+            subOptionsParser.helps.putAll(helps);
             return name2SubOptionsParser.get(args.get(i)).parse(args);
         } else {
             Map<String, Object> options = new HashMap<>();
