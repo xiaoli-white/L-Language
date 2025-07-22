@@ -586,17 +586,24 @@ public final class ByteCodeGenerator extends Generator {
 
         @Override
         public Object visitGet(IRGet irGet, Object additional) {
-            this.visit(irGet.address, additional);
-            BCRegister address = registerStack.pop();
             this.visitVirtualRegister(irGet.target, additional);
             BCRegister result = registerStack.pop();
-            addInstruction(new BCInstruction(switch ((int) IRType.getLength(irGet.type)) {
-                case 1 -> ByteCode.LOAD_1;
-                case 2 -> ByteCode.LOAD_2;
-                case 4 -> ByteCode.LOAD_4;
-                case 8 -> ByteCode.LOAD_8;
-                default -> throw new RuntimeException("Unknown type size");
-            }, address, result));
+            if (irGet.address instanceof IRMacro irMacro && "field_address".equals(irMacro.name)) {
+                if (this.localVarOffsets.containsKey(irMacro.args[0]))
+                    addInstruction(new BCInstruction(ByteCode.LOAD_LOCAL, new BCImmediate1((byte) IRType.getLength(irGet.type)), new BCImmediate8(this.localVarOffsets.get(irMacro.args[0])), result));
+                else
+                    addInstruction(new BCInstruction(ByteCode.LOAD_PARAMETER, new BCImmediate1((byte) IRType.getLength(irGet.type)), new BCImmediate8(this.argumentOffsets.get(irMacro.args[0])), result));
+            } else {
+                this.visit(irGet.address, additional);
+                BCRegister address = registerStack.pop();
+                addInstruction(new BCInstruction(switch ((int) IRType.getLength(irGet.type)) {
+                    case 1 -> ByteCode.LOAD_1;
+                    case 2 -> ByteCode.LOAD_2;
+                    case 4 -> ByteCode.LOAD_4;
+                    case 8 -> ByteCode.LOAD_8;
+                    default -> throw new RuntimeException("Unknown type size");
+                }, address, result));
+            }
             return null;
         }
 
@@ -604,15 +611,22 @@ public final class ByteCodeGenerator extends Generator {
         public Object visitSet(IRSet irSet, Object additional) {
             this.visit(irSet.value, additional);
             BCRegister value = registerStack.pop();
-            this.visit(irSet.address, additional);
-            BCRegister address = registerStack.pop();
-            addInstruction(new BCInstruction(switch ((int) IRType.getLength(irSet.type)) {
-                case 1 -> ByteCode.STORE_1;
-                case 2 -> ByteCode.STORE_2;
-                case 4 -> ByteCode.STORE_4;
-                case 8 -> ByteCode.STORE_8;
-                default -> throw new RuntimeException("Unknown type size");
-            }, address, value));
+            if (irSet.address instanceof IRMacro irMacro && "field_address".equals(irMacro.name)) {
+                if (this.localVarOffsets.containsKey(irMacro.args[0]))
+                    addInstruction(new BCInstruction(ByteCode.STORE_LOCAL, new BCImmediate1((byte) IRType.getLength(irSet.type)), new BCImmediate8(this.localVarOffsets.get(irMacro.args[0])), value));
+                else
+                    addInstruction(new BCInstruction(ByteCode.STORE_PARAMETER, new BCImmediate1((byte) IRType.getLength(irSet.type)), new BCImmediate8(this.argumentOffsets.get(irMacro.args[0])), value));
+            } else {
+                this.visit(irSet.address, additional);
+                BCRegister address = registerStack.pop();
+                addInstruction(new BCInstruction(switch ((int) IRType.getLength(irSet.type)) {
+                    case 1 -> ByteCode.STORE_1;
+                    case 2 -> ByteCode.STORE_2;
+                    case 4 -> ByteCode.STORE_4;
+                    case 8 -> ByteCode.STORE_8;
+                    default -> throw new RuntimeException("Unknown type size");
+                }, address, value));
+            }
             return null;
         }
 
