@@ -589,10 +589,27 @@ public final class ByteCodeGenerator extends Generator {
             this.visitVirtualRegister(irGet.target, additional);
             BCRegister result = registerStack.pop();
             if (irGet.address instanceof IRMacro irMacro && "field_address".equals(irMacro.name)) {
-                if (this.localVarOffsets.containsKey(irMacro.args[0]))
-                    addInstruction(new BCInstruction(ByteCode.LOAD_LOCAL, new BCImmediate1((byte) IRType.getLength(irGet.type)), new BCImmediate8(this.localVarOffsets.get(irMacro.args[0])), result));
-                else
-                    addInstruction(new BCInstruction(ByteCode.LOAD_PARAMETER, new BCImmediate1((byte) IRType.getLength(irGet.type)), new BCImmediate8(this.argumentOffsets.get(irMacro.args[0])), result));
+                BCImmediate1 typeLength = new BCImmediate1((byte) IRType.getLength(irGet.type));
+                if (irMacro.args.length == 1) {
+                    if (this.localVarOffsets.containsKey(irMacro.args[0]))
+                        addInstruction(new BCInstruction(ByteCode.LOAD_LOCAL, typeLength, new BCImmediate8(this.localVarOffsets.get(irMacro.args[0])), result));
+                    else
+                        addInstruction(new BCInstruction(ByteCode.LOAD_PARAMETER, typeLength, new BCImmediate8(this.argumentOffsets.get(irMacro.args[0])), result));
+                } else {
+                    IRStructure structure = this.irModule.structures.get(irMacro.args[0]);
+                    long length = 0;
+                    long offset = -1;
+                    for (IRField field : structure.fields) {
+                        if (field.name.equals(irMacro.args[1])) {
+                            offset = length;
+                        }
+                        length += IRType.getLength(field.type);
+                    }
+                    if (offset == -1) throw new RuntimeException("Unknown field");
+                    this.visit(irMacro.additionalOperands[0], additional);
+                    BCRegister object = registerStack.pop();
+                    addInstruction(new BCInstruction(ByteCode.LOAD_FIELD, typeLength, object, new BCImmediate8(offset), result));
+                }
             } else {
                 this.visit(irGet.address, additional);
                 BCRegister address = registerStack.pop();
@@ -612,10 +629,27 @@ public final class ByteCodeGenerator extends Generator {
             this.visit(irSet.value, additional);
             BCRegister value = registerStack.pop();
             if (irSet.address instanceof IRMacro irMacro && "field_address".equals(irMacro.name)) {
-                if (this.localVarOffsets.containsKey(irMacro.args[0]))
-                    addInstruction(new BCInstruction(ByteCode.STORE_LOCAL, new BCImmediate1((byte) IRType.getLength(irSet.type)), new BCImmediate8(this.localVarOffsets.get(irMacro.args[0])), value));
-                else
-                    addInstruction(new BCInstruction(ByteCode.STORE_PARAMETER, new BCImmediate1((byte) IRType.getLength(irSet.type)), new BCImmediate8(this.argumentOffsets.get(irMacro.args[0])), value));
+                BCImmediate1 typeLength = new BCImmediate1((byte) IRType.getLength(irSet.type));
+                if (irMacro.args.length == 1) {
+                    if (this.localVarOffsets.containsKey(irMacro.args[0]))
+                        addInstruction(new BCInstruction(ByteCode.STORE_LOCAL, typeLength, new BCImmediate8(this.localVarOffsets.get(irMacro.args[0]) + 16), value));
+                    else
+                        addInstruction(new BCInstruction(ByteCode.STORE_PARAMETER, typeLength, new BCImmediate8(this.argumentOffsets.get(irMacro.args[0]) + 16), value));
+                } else {
+                    IRStructure structure = this.irModule.structures.get(irMacro.args[0]);
+                    long length = 0;
+                    long offset = -1;
+                    for (IRField field : structure.fields) {
+                        if (field.name.equals(irMacro.args[1])) {
+                            offset = length;
+                        }
+                        length += IRType.getLength(field.type);
+                    }
+                    if (offset == -1) throw new RuntimeException("Unknown field");
+                    this.visit(irMacro.additionalOperands[0], additional);
+                    BCRegister object = registerStack.pop();
+                    addInstruction(new BCInstruction(ByteCode.STORE_FIELD, typeLength, object, new BCImmediate8(offset), value));
+                }
             } else {
                 this.visit(irSet.address, additional);
                 BCRegister address = registerStack.pop();
@@ -921,14 +955,30 @@ public final class ByteCodeGenerator extends Generator {
                 registerStack.push(new BCRegister(register.virtualRegister));
             } else if ("field_address".equals(irMacro.name)) {
                 irMacro.setType(IRType.getUnsignedLongType());
-                long offset;
                 BCRegister result = allocateVirtualRegister();
-                if (this.localVarOffsets.containsKey(irMacro.args[0])) {
-                    offset = this.localVarOffsets.get(irMacro.args[0]);
-                    addInstruction(new BCInstruction(ByteCode.GET_LOCAL_ADDRESS, new BCImmediate8(offset), result));
+                if (irMacro.args.length == 1) {
+                    long offset;
+                    if (this.localVarOffsets.containsKey(irMacro.args[0])) {
+                        offset = this.localVarOffsets.get(irMacro.args[0]);
+                        addInstruction(new BCInstruction(ByteCode.GET_LOCAL_ADDRESS, new BCImmediate8(offset), result));
+                    } else {
+                        offset = this.argumentOffsets.get(irMacro.args[0]);
+                        addInstruction(new BCInstruction(ByteCode.GET_PARAMETER_ADDRESS, new BCImmediate8(offset + 16), result));
+                    }
                 } else {
-                    offset = this.argumentOffsets.get(irMacro.args[0]);
-                    addInstruction(new BCInstruction(ByteCode.GET_PARAMETER_ADDRESS, new BCImmediate8(offset + 16), result));
+                    IRStructure structure = this.irModule.structures.get(irMacro.args[0]);
+                    long length = 0;
+                    long offset = -1;
+                    for (IRField field : structure.fields) {
+                        if (field.name.equals(irMacro.args[1])) {
+                            offset = length;
+                        }
+                        length += IRType.getLength(field.type);
+                    }
+                    if (offset == -1) throw new RuntimeException("Unknown field");
+                    this.visit(irMacro.additionalOperands[0], additional);
+                    BCRegister object = registerStack.pop();
+                    addInstruction(new BCInstruction(ByteCode.GET_FIELD_ADDRESS, object, new BCImmediate8(offset), result));
                 }
                 registerStack.push(new BCRegister(result.virtualRegister));
             } else if ("structure_length".equals(irMacro.name)) {

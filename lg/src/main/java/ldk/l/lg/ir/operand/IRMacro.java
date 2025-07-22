@@ -7,10 +7,16 @@ public final class IRMacro extends IROperand {
     private IRType type = null;
     public final String name;
     public final String[] args;
+    public final IROperand[] additionalOperands;
 
     public IRMacro(String name, String[] args) {
+        this(name, args, new IROperand[0]);
+    }
+
+    public IRMacro(String name, String[] args, IROperand[] additionalOperands) {
         this.name = name;
         this.args = args;
+        this.additionalOperands = additionalOperands;
     }
 
     @Override
@@ -21,13 +27,19 @@ public final class IRMacro extends IROperand {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append("`").append(name).append("(");
+        builder.append("`").append(name).append("([");
         for (int i = 0; i < args.length; i++) {
             builder.append(args[i]);
             if (i < args.length - 1)
                 builder.append(", ");
         }
-        builder.append(")");
+        builder.append("], [");
+        for (int i = 0; i < additionalOperands.length; i++) {
+            builder.append(additionalOperands[i]);
+            if (i < additionalOperands.length - 1)
+                builder.append(", ");
+        }
+        builder.append("])");
         return builder.toString();
     }
 
