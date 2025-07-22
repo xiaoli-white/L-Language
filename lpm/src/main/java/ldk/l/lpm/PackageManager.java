@@ -10,14 +10,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public final class PackageManager {
-    public List<LPackage> listPackages(Options options) {
-        List<LPackage> packages = new ArrayList<>();
+    public Map<String, Map<String, Object>> listPackages(Options options) {
+        Map<String, Map<String, Object>> packages = new LinkedHashMap<>();
         for (File file : Objects.requireNonNull(new File(FileUtils.getUserDirectoryPath(), ".lpm/packages").listFiles())) {
             if (!file.isDirectory())
                 continue;
@@ -28,19 +25,18 @@ public final class PackageManager {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            LPackage lPackage = LPackage.fromMap(map);
-            packages.add(lPackage);
+            packages.put((String) map.get("name"), map);
         }
         return packages;
     }
 
     public void install(Options options) {
+        Map<String, Object> map;
         if (options.get("local", Boolean.class)) {
             File zipFile = new File(options.args().get(1));
             Path tempDir = Paths.get(FileUtils.getTempDirectoryPath(), "lpm", "packages", zipFile.getName());
             ZipUtil.unzip(zipFile, tempDir.toFile());
             Yaml yaml = new Yaml();
-            Map<String, Object> map;
             try {
                 map = yaml.load(Files.readString(tempDir.resolve("package-info.yaml")));
             } catch (IOException e) {
@@ -55,7 +51,10 @@ public final class PackageManager {
             }
         } else {
             System.err.println("暂不支持远程安装");
+            map = new HashMap<>();
         }
+        List<?> dependencies = (List<?>) map.get("dependencies");
+        if (dependencies != null) for (Object dependency : dependencies) installOnline((String) dependency);
     }
 
     public void uninstall(Options options) {
@@ -65,5 +64,9 @@ public final class PackageManager {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void installOnline(String packageName) {
+        // TODO
     }
 }
