@@ -142,6 +142,12 @@ public class ByteCode {
     public static final byte GET_PARAMETER_ADDRESS = 0x78;
     public static final byte CREATE_THREAD = 0x79;
     public static final byte THREAD_CONTROL = 0x7a;
+    public static final byte LOAD_FIELD = 0x7b;
+    public static final byte STORE_FIELD = 0x7c;
+    public static final byte LOAD_LOCAL = 0x7d;
+    public static final byte STORE_LOCAL = 0x7e;
+    public static final byte LOAD_PARAMETER = 0x7f;
+    public static final byte STORE_PARAMETER = (byte) 0x80;
 
     public static String getInstructionName(byte code) {
         return switch (code) {
@@ -268,6 +274,12 @@ public class ByteCode {
             case GET_PARAMETER_ADDRESS -> "GET_PARAMETER_ADDRESS";
             case CREATE_THREAD -> "CREATE_THREAD";
             case THREAD_CONTROL -> "THREAD_CONTROL";
+            case LOAD_FIELD -> "LOAD_FIELD";
+            case STORE_FIELD -> "STORE_FIELD";
+            case LOAD_LOCAL -> "LOAD_LOCAL";
+            case STORE_LOCAL -> "STORE_LOCAL";
+            case LOAD_PARAMETER -> "LOAD_PARAMETER";
+            case STORE_PARAMETER -> "STORE_PARAMETER";
             default -> throw new IllegalArgumentException("Unknown instruction code: " + code);
         };
     }
@@ -397,6 +409,12 @@ public class ByteCode {
             case "GET_PARAMETER_ADDRESS" -> GET_PARAMETER_ADDRESS;
             case "CREATE_THREAD" -> CREATE_THREAD;
             case "THREAD_CONTROL" -> THREAD_CONTROL;
+            case "LOAD_FIELD" -> LOAD_FIELD;
+            case "STORE_FIELD" -> STORE_FIELD;
+            case "LOAD_LOCAL" -> LOAD_LOCAL;
+            case "STORE_LOCAL" -> STORE_LOCAL;
+            case "LOAD_PARAMETER" -> LOAD_PARAMETER;
+            case "STORE_PARAMETER" -> STORE_PARAMETER;
             default -> throw new IllegalArgumentException("Unknown instruction code: " + code);
         };
     }

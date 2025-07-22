@@ -1096,6 +1096,101 @@ public final class ExecutionUnit implements Runnable {
                         default -> throw new RuntimeException("Unknown command: " + command);
                     }
                 }
+                case ByteCode.LOAD_FIELD -> {
+                    byte size = virtualMachine.memory.getByte(pc++);
+                    byte objectRegister = virtualMachine.memory.getByte(pc++);
+                    long offset = virtualMachine.memory.getLong(pc);
+                    pc += 8;
+                    byte targetRegister = virtualMachine.memory.getByte(pc++);
+                    setRegister(ByteCode.PC_REGISTER, pc);
+                    long address = getRegister(objectRegister) + offset;
+                    setRegister(targetRegister, switch (size) {
+                        case 1 -> virtualMachine.memory.getByte(address) & 0xFF;
+                        case 2 -> virtualMachine.memory.getShort(address) & 0xFFFF;
+                        case 4 -> virtualMachine.memory.getInt(address) & 0xFFFFFFFFL;
+                        case 8 -> virtualMachine.memory.getLong(address);
+                        default -> throw new IllegalStateException("Unexpected size: " + size);
+                    });
+                }
+                case ByteCode.STORE_FIELD -> {
+                    byte size = virtualMachine.memory.getByte(pc++);
+                    byte objectRegister = virtualMachine.memory.getByte(pc++);
+                    long offset = virtualMachine.memory.getLong(pc);
+                    pc += 8;
+                    byte valueRegister = virtualMachine.memory.getByte(pc++);
+                    setRegister(ByteCode.PC_REGISTER, pc);
+                    long address = getRegister(objectRegister) + offset;
+                    long value = getRegister(valueRegister);
+                    switch (size) {
+                        case 1 -> virtualMachine.memory.setByte(address, (byte) (value & 0xFF));
+                        case 2 -> virtualMachine.memory.setShort(address, (short) (value & 0xFFFF));
+                        case 4 -> virtualMachine.memory.setInt(address, (int) (value & 0xFFFFFFFFL));
+                        case 8 -> virtualMachine.memory.setLong(address, value);
+                        default -> throw new IllegalStateException("Unexpected size: " + size);
+                    }
+                }
+                case ByteCode.LOAD_LOCAL -> {
+                    byte size = virtualMachine.memory.getByte(pc++);
+                    long offset = virtualMachine.memory.getByte(pc);
+                    pc += 8;
+                    byte targetRegister = virtualMachine.memory.getByte(pc++);
+                    setRegister(ByteCode.PC_REGISTER, pc);
+                    long address = getRegister(ByteCode.BP_REGISTER) - offset;
+                    setRegister(targetRegister, switch (size) {
+                        case 1 -> virtualMachine.memory.getByte(address) & 0xFF;
+                        case 2 -> virtualMachine.memory.getShort(address) & 0xFFFF;
+                        case 4 -> virtualMachine.memory.getInt(address) & 0xFFFFFFFFL;
+                        case 8 -> virtualMachine.memory.getLong(address);
+                        default -> throw new IllegalStateException("Unexpected size: " + size);
+                    });
+                }
+                case ByteCode.STORE_LOCAL -> {
+                    byte size = virtualMachine.memory.getByte(pc++);
+                    long offset = virtualMachine.memory.getByte(pc);
+                    pc += 8;
+                    byte valueRegister = virtualMachine.memory.getByte(pc++);
+                    setRegister(ByteCode.PC_REGISTER, pc);
+                    long address = getRegister(ByteCode.BP_REGISTER) - offset;
+                    long value = getRegister(valueRegister);
+                    switch (size) {
+                        case 1 -> virtualMachine.memory.setByte(address, (byte) (value & 0xFF));
+                        case 2 -> virtualMachine.memory.setShort(address, (short) (value & 0xFFFF));
+                        case 4 -> virtualMachine.memory.setInt(address, (int) (value & 0xFFFFFFFFL));
+                        case 8 -> virtualMachine.memory.setLong(address, value);
+                        default -> throw new IllegalStateException("Unexpected size: " + size);
+                    }
+                }
+                case ByteCode.LOAD_PARAMETER -> {
+                    byte size = virtualMachine.memory.getByte(pc++);
+                    long offset = virtualMachine.memory.getByte(pc);
+                    pc += 8;
+                    byte targetRegister = virtualMachine.memory.getByte(pc++);
+                    setRegister(ByteCode.PC_REGISTER, pc);
+                    long address = getRegister(ByteCode.BP_REGISTER) + offset;
+                    setRegister(targetRegister, switch (size) {
+                        case 1 -> virtualMachine.memory.getByte(address) & 0xFF;
+                        case 2 -> virtualMachine.memory.getShort(address) & 0xFFFF;
+                        case 4 -> virtualMachine.memory.getInt(address) & 0xFFFFFFFFL;
+                        case 8 -> virtualMachine.memory.getLong(address);
+                        default -> throw new IllegalStateException("Unexpected size: " + size);
+                    });
+                }
+                case ByteCode.STORE_PARAMETER -> {
+                    byte size = virtualMachine.memory.getByte(pc++);
+                    long offset = virtualMachine.memory.getByte(pc);
+                    pc += 8;
+                    byte valueRegister = virtualMachine.memory.getByte(pc++);
+                    setRegister(ByteCode.PC_REGISTER, pc);
+                    long address = getRegister(ByteCode.BP_REGISTER) + offset;
+                    long value = getRegister(valueRegister);
+                    switch (size) {
+                        case 1 -> virtualMachine.memory.setByte(address, (byte) (value & 0xFF));
+                        case 2 -> virtualMachine.memory.setShort(address, (short) (value & 0xFFFF));
+                        case 4 -> virtualMachine.memory.setInt(address, (int) (value & 0xFFFFFFFFL));
+                        case 8 -> virtualMachine.memory.setLong(address, value);
+                        default -> throw new IllegalStateException("Unexpected size: " + size);
+                    }
+                }
             }
         }
     }
