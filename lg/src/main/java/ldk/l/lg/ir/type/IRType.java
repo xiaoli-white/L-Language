@@ -64,7 +64,7 @@ public abstract sealed class IRType extends IRNode permits IRIntegerType, IRFloa
     public static long getLength(IRType type) {
         return switch (type) {
             case IRIntegerType irIntegerType ->
-                    irIntegerType.size.size / 8 + (irIntegerType.size.size % 8 != 0 ? 1 : 0);
+                    (irIntegerType.size.size+7) / 8;
             case IRFloatType _ -> 4;
             case IRDoubleType _, IRPointerType _ -> 8;
             default -> throw new IllegalStateException("Unexpected value: " + type);

@@ -6,7 +6,7 @@ import ldk.l.lg.ir.type.IRType;
 
 import java.util.Arrays;
 
-public class IRStructure extends IRNode {
+public final class IRStructure extends IRNode {
     // public final String[] attributes;
     public final String name;
     public final IRField[] fields;

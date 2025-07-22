@@ -10,7 +10,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class IRModule extends IRNode {
+public final class IRModule extends IRNode {
     public final Map<String, IRStructure> structures = new LinkedHashMap<>();
     public final IRConstantPool constantPool = new IRConstantPool();
     public final IRGlobalDataSection globalDataSection = new IRGlobalDataSection();

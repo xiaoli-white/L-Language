@@ -88,7 +88,12 @@ public final class OptionsParser {
                 String name = flags2Name.get(arg);
                 Type type = name2Type.get(name);
                 if (type == Type.Boolean) {
-                    options.put(name, "true".equals(value));
+                    if ("false".equalsIgnoreCase(value)) {
+                        options.put(name, false);
+                    } else {
+                        options.put(name, true);
+                        if (!"true".equalsIgnoreCase(value)) --i;
+                    }
                 } else {
                     if (value == null) throw new IllegalArgumentException("Missing value for option: " + arg);
                     switch (type) {
