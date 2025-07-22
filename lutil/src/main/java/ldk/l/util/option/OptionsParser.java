@@ -19,6 +19,8 @@ public final class OptionsParser {
     }
 
     public OptionsParser add(String name, OptionsParser subOptionsParser) {
+        if (!subOptionsParser.name2SubOptionsParser.isEmpty())
+            throw new IllegalArgumentException("Sub options parser is not empty");
         name2SubOptionsParser.put(name, subOptionsParser);
         return this;
     }
@@ -74,40 +76,25 @@ public final class OptionsParser {
                     others.add(arg);
                     continue;
                 }
+                int assignIndex = arg.indexOf('=');
+                String value;
+                if (assignIndex != -1) {
+                    String original = arg;
+                    arg = original.substring(0, assignIndex);
+                    value = original.substring(assignIndex + 1);
+                } else {
+                    value = i + 1 < args.size() ? args.get(++i) : null;
+                }
                 String name = flags2Name.get(arg);
                 Type type = name2Type.get(name);
-                switch (type) {
-                    case Boolean -> {
-                        if (i + 1 < args.size()) {
-                            String next = args.get(i + 1);
-                            if ("true".equals(next) || "false".equals(next)) {
-                                options.put(name, Boolean.parseBoolean(next));
-                                i++;
-                            } else {
-                                options.put(name, true);
-                            }
-                        } else {
-                            options.put(name, true);
-                        }
-                    }
-                    case String -> {
-                        if (i + 1 < args.size())
-                            options.put(name, args.get(++i));
-                        else
-                            throw new IllegalArgumentException("Missing argument for " + name);
-
-                    }
-                    case Integer -> {
-                        if (i + 1 < args.size())
-                            options.put(name, Long.parseLong(args.get(++i)));
-                        else
-                            throw new IllegalArgumentException("Missing argument for " + name);
-                    }
-                    case Decimal -> {
-                        if (i + 1 < args.size())
-                            options.put(name, Double.parseDouble(args.get(++i)));
-                        else
-                            throw new IllegalArgumentException("Missing argument for " + name);
+                if (type == Type.Boolean) {
+                    options.put(name, "true".equals(value));
+                } else {
+                    if (value == null) throw new IllegalArgumentException("Missing value for option: " + arg);
+                    switch (type) {
+                        case String -> options.put(name, value);
+                        case Integer -> options.put(name, Long.parseLong(value));
+                        case Decimal -> options.put(name, Double.parseDouble(value));
                     }
                 }
                 if (skip) break;
