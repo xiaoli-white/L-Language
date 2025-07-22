@@ -2202,7 +2202,9 @@ public final class IRGenerator extends LCAstVisitor {
             addInstruction(new IRCalculate(IRCalculate.Operator.ADD, new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(classInstanceAddressRegister), new IRMacro("structure_field_offset", new String[]{SystemTypes.Class_Type.name, "vtable"}), new IRVirtualRegister(vtableAddressRegister)));
             String temp1 = allocateVirtualRegister();
             addInstruction(new IRGet(new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(vtableAddressRegister), new IRVirtualRegister(temp1)));
-            addInstruction(new IRGet(new IRPointerType(IRType.getVoidType()), new IRMacro("field_address", new String[]{objectType.name, "<deinit>()V"}, new IROperand[]{new IRVirtualRegister(temp1)}), new IRVirtualRegister(destructorAddress)));
+            String temp2 = allocateVirtualRegister();
+            addInstruction(new IRCalculate(IRCalculate.Operator.ADD, new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(temp1), new IRMacro("vtable_entry_offset", new String[]{objectType.name, "<deinit>()V"}), new IRVirtualRegister(temp2)));
+            addInstruction(new IRGet(new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(temp2), new IRVirtualRegister(destructorAddress)));
         }
         addInstruction(new IRInvoke(IRType.getVoidType(), new IRVirtualRegister(destructorAddress), new IRType[]{parseType(objectType)}, new IROperand[]{object}, null));
         addInstruction(new IRFree(object));

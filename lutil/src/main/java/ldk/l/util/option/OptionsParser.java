@@ -70,7 +70,7 @@ public final class OptionsParser {
             Map<String, Object> options = new HashMap<>();
             List<String> others = new ArrayList<>();
             int i = 0;
-            for (; i < args.size(); i++) {
+            for (; i < args.size(); ++i) {
                 String arg = args.get(i);
                 if (!arg.startsWith("-")) {
                     others.add(arg);
@@ -83,7 +83,8 @@ public final class OptionsParser {
                     arg = original.substring(0, assignIndex);
                     value = original.substring(assignIndex + 1);
                 } else {
-                    value = i + 1 < args.size() ? args.get(++i) : null;
+                    ++i;
+                    value = i < args.size() ? args.get(i) : null;
                 }
                 String name = flags2Name.get(arg);
                 Type type = name2Type.get(name);
