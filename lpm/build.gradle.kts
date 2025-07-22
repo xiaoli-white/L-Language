@@ -11,7 +11,6 @@ repositories {
 }
 
 dependencies {
-    implementation(project(":lg"))
     implementation(project(":lutil"))
     implementation("cn.hutool:hutool-all:5.8.24")
     implementation("org.yaml:snakeyaml:2.2")

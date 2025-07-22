@@ -13,7 +13,7 @@ import java.nio.file.Paths;
 import java.util.*;
 
 public final class PackageManager {
-    public Map<String, Map<String, Object>> listPackages(Options options) {
+    public Map<String, Map<String, Object>> listPackages() {
         Map<String, Map<String, Object>> packages = new LinkedHashMap<>();
         for (File file : Objects.requireNonNull(new File(FileUtils.getUserDirectoryPath(), ".lpm/packages").listFiles())) {
             if (!file.isDirectory())
@@ -44,6 +44,8 @@ public final class PackageManager {
             }
             Path packageDir = Paths.get(FileUtils.getUserDirectoryPath(), ".lpm", "packages", (String) map.get("name"));
             try {
+                FileUtils.deleteDirectory(packageDir.toFile());
+                Files.createDirectories(packageDir);
                 FileUtils.copyDirectory(tempDir.toFile(), packageDir.toFile());
                 FileUtils.deleteDirectory(tempDir.toFile());
             } catch (IOException e) {
@@ -64,6 +66,10 @@ public final class PackageManager {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public String getPackagePath(String packageName) {
+        return Paths.get(FileUtils.getUserDirectoryPath(), ".lpm", "packages", packageName).toString();
     }
 
     private void installOnline(String packageName) {

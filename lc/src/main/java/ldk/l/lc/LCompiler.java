@@ -1,6 +1,5 @@
 package ldk.l.lc;
 
-import com.xiaoli.bcg.ByteCodeGenerator;
 import ldk.l.lc.ast.LCAst;
 import ldk.l.lc.ast.LCAstDumper;
 import ldk.l.lc.ir.IRGenerator;
@@ -13,6 +12,7 @@ import ldk.l.lc.token.Scanner;
 import ldk.l.lc.token.Token;
 import ldk.l.lc.util.error.ErrorStream;
 import ldk.l.lc.util.scope.ScopeDumper;
+import ldk.l.lg.LGenerator;
 import ldk.l.lg.ir.IRDumper;
 import ldk.l.lg.ir.IRModule;
 import ldk.l.lg.ir.base.IRControlFlowGraph;
@@ -39,7 +39,7 @@ public class LCompiler {
 
     public static void parse(Options options) {
         String sourceFile = options.args().getFirst();
-        boolean verbose = options.get("verbose",Boolean.class);
+        boolean verbose = options.get("verbose", Boolean.class);
         if (sourceFile != null) {
             if (!sourceFile.endsWith(".l")) {
                 // TODO dump error
@@ -167,11 +167,7 @@ public class LCompiler {
             if (!errorStream.checkErrorNum(""))
                 return;
 
-            ByteCodeGenerator byteCodeGenerator = new ByteCodeGenerator();
-            byteCodeGenerator.generate(irModule, options);
-
-//            LLVMIRGenerator llvmIRGenerator = new LLVMIRGenerator();
-//            llvmIRGenerator.generate(irModule, options);
+            LGenerator.generate(irModule, options);
 
             errorStream.dumpErrorsAndWarnings("");
         }
