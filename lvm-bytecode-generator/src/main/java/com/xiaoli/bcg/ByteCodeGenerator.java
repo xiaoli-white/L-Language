@@ -594,7 +594,7 @@ public final class ByteCodeGenerator extends Generator {
                     if (this.localVarOffsets.containsKey(irMacro.args[0]))
                         addInstruction(new BCInstruction(ByteCode.LOAD_LOCAL, typeLength, new BCImmediate8(this.localVarOffsets.get(irMacro.args[0])), result));
                     else
-                        addInstruction(new BCInstruction(ByteCode.LOAD_PARAMETER, typeLength, new BCImmediate8(this.argumentOffsets.get(irMacro.args[0])), result));
+                        addInstruction(new BCInstruction(ByteCode.LOAD_PARAMETER, typeLength, new BCImmediate8(this.argumentOffsets.get(irMacro.args[0]) + 16), result));
                 } else {
                     IRStructure structure = this.irModule.structures.get(irMacro.args[0]);
                     long length = 0;
@@ -605,7 +605,7 @@ public final class ByteCodeGenerator extends Generator {
                         }
                         length += IRType.getLength(field.type);
                     }
-                    if (offset == -1) throw new RuntimeException("Unknown field");
+                    if (offset == -1) throw new RuntimeException("Unknown field: " + irMacro.args[1]);
                     this.visit(irMacro.additionalOperands[0], additional);
                     BCRegister object = registerStack.pop();
                     addInstruction(new BCInstruction(ByteCode.LOAD_FIELD, typeLength, object, new BCImmediate8(offset), result));
@@ -632,7 +632,7 @@ public final class ByteCodeGenerator extends Generator {
                 BCImmediate1 typeLength = new BCImmediate1((byte) IRType.getLength(irSet.type));
                 if (irMacro.args.length == 1) {
                     if (this.localVarOffsets.containsKey(irMacro.args[0]))
-                        addInstruction(new BCInstruction(ByteCode.STORE_LOCAL, typeLength, new BCImmediate8(this.localVarOffsets.get(irMacro.args[0]) + 16), value));
+                        addInstruction(new BCInstruction(ByteCode.STORE_LOCAL, typeLength, new BCImmediate8(this.localVarOffsets.get(irMacro.args[0])), value));
                     else
                         addInstruction(new BCInstruction(ByteCode.STORE_PARAMETER, typeLength, new BCImmediate8(this.argumentOffsets.get(irMacro.args[0]) + 16), value));
                 } else {
