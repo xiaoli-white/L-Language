@@ -31,7 +31,7 @@ public class LGenerator {
         String platform = options.get("platform", String.class);
         PackageManager packageManager = new PackageManager();
         Map<String, Map<String, Object>> packages = packageManager.listPackages();
-        Map<String, Object> packageInfo = packages.values().stream().filter(map -> ((List<?>) map.get("platforms")).contains(platform)).toList().getFirst();
+        Map<String, Object> packageInfo = packages.values().stream().filter(map -> "lg-plugin".equals(map.get("type"))).filter(map -> ((List<?>) map.get("platforms")).contains(platform)).toList().getFirst();
         String jarFilePath = Paths.get(packageManager.getPackagePath((String) packageInfo.get("name")), (String) packageInfo.get("main-jar")).toString();
         URL jarUrl;
         try {

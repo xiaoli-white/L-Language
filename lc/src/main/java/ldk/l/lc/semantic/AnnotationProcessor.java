@@ -1,17 +1,61 @@
 package ldk.l.lc.semantic;
 
+import l.lang.annotation.AbstractAnnotationProcessor;
 import ldk.l.lc.ast.base.LCAnnotation;
 import ldk.l.lc.util.error.ErrorStream;
+import ldk.l.lpm.PackageManager;
 
+import java.io.File;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public final class AnnotationProcessor {
     private final ErrorStream errorStream;
-    public AnnotationProcessor(ErrorStream errorStream){
+
+    public AnnotationProcessor(ErrorStream errorStream) {
         this.errorStream = errorStream;
     }
-    public void process(List<LCAnnotation> annotations){
+
+    public void process(List<LCAnnotation> annotations) {
         for (LCAnnotation annotation : annotations) {
+            String annotationName = annotation.symbol.getFullName();
+            for (AbstractAnnotationProcessor annotationProcessor : getAnnotationProcessors().getOrDefault(annotationName, new ArrayList<>())) {
+                if (!annotationProcessor.process(annotation, null)) {
+                    System.err.println("Annotation processor failed: " + annotationName);
+                }
+            }
         }
+    }
+
+    private Map<String, List<AbstractAnnotationProcessor>> getAnnotationProcessors() {
+        PackageManager packageManager = new PackageManager();
+        List<Map<String, Object>> annotationProcessors = packageManager.listPackages().values().stream().filter(map -> "lc-annotation-processor".equals(map.get("type"))).toList();
+        Map<String, List<AbstractAnnotationProcessor>> annotationProcessorsMap = new HashMap<>();
+        for (Map<String, Object> packageInfo : annotationProcessors) {
+            String jarFilePath = Paths.get(packageManager.getPackagePath((String) packageInfo.get("name")), (String) packageInfo.get("main-jar")).toString();
+            URL jarUrl;
+            try {
+                jarUrl = new File(jarFilePath).toURI().toURL();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            try (URLClassLoader classLoader = new URLClassLoader(new URL[]{jarUrl}, AnnotationProcessor.class.getClassLoader())) {
+                for (Object processorInfo : ((Map<?, ?>) packageInfo.get("processor")).values()) {
+                    Map<?, ?> info = (Map<?, ?>) processorInfo;
+                    String annotationName = (String) info.get("annotation-name");
+                    annotationProcessorsMap.putIfAbsent(annotationName, new ArrayList<>());
+                    Class<?> clazz = classLoader.loadClass((String) info.get("class-name"));
+                    annotationProcessorsMap.get(annotationName).add((AbstractAnnotationProcessor) clazz.getDeclaredConstructor().newInstance());
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return annotationProcessorsMap;
     }
 }
