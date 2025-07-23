@@ -1,6 +1,4 @@
-package ldk.l.lc.token;
-
-import ldk.l.lc.util.Position;
+package ldk.l.lg.parser;
 
 public final class CharStream {
     public final String string;
@@ -38,10 +36,6 @@ public final class CharStream {
 
     public boolean eof() {
         return this.pos == this.string.length();
-    }
-
-    public Position getPosition() {
-        return new Position(this.pos, this.pos, this.line, this.line, this.col, this.col);
     }
 
     public CharStream addPos(int n) {
@@ -96,9 +90,5 @@ public final class CharStream {
 
     public int length() {
         return this.string.length() - this.pos;
-    }
-
-    public String getStringByPosition(Position position) {
-        return this.string.substring(position.beginPos(), position.endPos());
     }
 }
