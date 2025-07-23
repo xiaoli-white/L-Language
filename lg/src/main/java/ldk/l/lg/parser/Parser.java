@@ -1,6 +1,8 @@
 package ldk.l.lg.parser;
 
 import ldk.l.lg.ir.IRModule;
+import ldk.l.lg.ir.base.IRFunction;
+import ldk.l.lg.ir.instruction.IRInstruction;
 import ldk.l.lg.ir.structure.IRField;
 import ldk.l.lg.ir.structure.IRStructure;
 import ldk.l.lg.ir.type.IRPointerType;
@@ -31,14 +33,15 @@ public final class Parser {
 
     public void parseStructure() {
         charStream.addPos(9);
-        if (charStream.peek() == ' ') {
+        if (Character.isWhitespace(charStream.peek())) {
             charStream.addPos(1);
         } else {
             // TODO dump error
         }
-        StringBuilder nameBuilder = new StringBuilder();
+        skipWhiteSpace();
+        StringBuilder name = new StringBuilder();
         while (!charStream.eof() && charStream.peek() != '{' && !Character.isWhitespace(charStream.peek())) {
-            nameBuilder.append(charStream.next());
+            name.append(charStream.next());
         }
         skipWhiteSpace();
         if (charStream.peek() == '{') {
@@ -60,18 +63,118 @@ public final class Parser {
                 // TODO dump error
             }
         }
-        IRStructure structure = new IRStructure(nameBuilder.toString(), fields.toArray(new IRField[0]));
+        IRStructure structure = new IRStructure(name.toString(), fields.toArray(new IRField[0]));
         module.putStructure(structure);
     }
 
     public void parseFunction() {
         charStream.addPos(7);
-    }
+        if (Character.isWhitespace(charStream.peek())) {
+            charStream.addPos(1);
+        } else {
+            // TODO dump error
+        }
+        skipWhiteSpace();
+        IRType returnType = parseType();
+        skipWhiteSpace();
+        if (Character.isWhitespace(charStream.peek())) {
+            charStream.addPos(1);
+        } else {
+            // TODO dump error
+        }
+        skipWhiteSpace();
+        StringBuilder name = new StringBuilder();
+        while (!charStream.eof() && charStream.peek() != '(' && !Character.isWhitespace(charStream.peek())) {
+            name.append(charStream.next());
+        }
+        skipWhiteSpace();
+        if (charStream.peek() == '(') {
+            charStream.addPos(1);
+        } else {
+            // TODO dump error
+        }
+        skipWhiteSpace();
+        List<IRField> parameters = new ArrayList<>();
+        while (!charStream.eof() && charStream.peek() != ')') {
+            IRField parameter = parseField();
+            parameters.add(parameter);
+            skipWhiteSpace();
+            char p = charStream.peek();
+            if (p == ',') {
+                charStream.addPos(1);
+                skipWhiteSpace();
+            } else if (p != ')') {
+                // TODO dump error
+            }
+        }
+        skipWhiteSpace();
+        if (charStream.peek() == '{') {
+            charStream.addPos(1);
+        } else {
+            // TODO dump error
+        }
+        skipWhiteSpace();
+        if (charStream.peek() == 'l' && charStream.pos + 6 < charStream.length() && charStream.startsWith("locals")) {
+            charStream.addPos(6);
+        } else {
+            // TODO dump error
+        }
+        skipWhiteSpace();
+        if (charStream.peek() == '{') {
+            charStream.addPos(1);
+        } else {
+            // TODO dump error
+        }
+        skipWhiteSpace();
+        List<IRField> locals = new ArrayList<>();
+        while (!charStream.eof() && charStream.peek() != '}') {
+            IRField local = parseField();
+            locals.add(local);
+            skipWhiteSpace();
+            char p = charStream.peek();
+            if (p == ',') {
+                charStream.addPos(1);
+                skipWhiteSpace();
+            } else if (p != '}') {
+                // TODO dump error
+            }
+        }
+        skipWhiteSpace();
+        if (charStream.peek() == '}') {
+            charStream.addPos(1);
+        } else {
+            // TODO dump error
+        }
+        skipWhiteSpace();
 
+        List<IRInstruction> instructions = new ArrayList<>();
+        while (!charStream.eof() && charStream.peek() != '}') {
+            IRInstruction instruction = parseInstruction();
+            instructions.add(instruction);
+            skipWhiteSpace();
+        }
+
+        if (charStream.peek() == '}') {
+            charStream.addPos(1);
+        } else {
+            // TODO dump error
+        }
+        skipWhiteSpace();
+
+
+        List<IRField> fields = new ArrayList<>(parameters);
+        fields.addAll(locals);
+        IRFunction function = new IRFunction(returnType, name.toString(), parameters.size(), fields.toArray(new IRField[0]), null);
+        module.putFunction(function);
+    }
+    public IRInstruction parseInstruction() {
+        // TODO
+        return null;
+    }
     public IRField parseField() {
-        StringBuilder nameBuilder = new StringBuilder();
+        StringBuilder name = new StringBuilder();
         while (!charStream.eof() && !Character.isWhitespace(charStream.peek())) {
-            nameBuilder.append(charStream.next());
+            name.append(charStream.next());
         }
         skipWhiteSpace();
         if (charStream.peek() == ':') {
@@ -82,7 +185,7 @@ public final class Parser {
         skipWhiteSpace();
         IRType type = parseType();
         skipWhiteSpace();
-        return new IRField(nameBuilder.toString(), type);
+        return new IRField(name.toString(), type);
     }
 
     public IRType parseType() {
