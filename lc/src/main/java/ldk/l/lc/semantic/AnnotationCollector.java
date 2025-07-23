@@ -22,6 +22,8 @@ public final class AnnotationCollector extends LCAstVisitor {
     }
 
     public List<LCAnnotation> getAnnotations() {
-        return annotations;
+        List<LCAnnotation> result = new ArrayList<>(annotations);
+        annotations.clear();
+        return result;
     }
 }

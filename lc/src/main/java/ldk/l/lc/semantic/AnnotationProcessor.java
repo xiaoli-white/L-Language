@@ -1,7 +1,10 @@
 package ldk.l.lc.semantic;
 
 import l.lang.annotation.AbstractAnnotationProcessor;
+import ldk.l.lc.ast.LCAst;
 import ldk.l.lc.ast.base.LCAnnotation;
+import ldk.l.lc.ast.file.LCSourceCodeFile;
+import ldk.l.lc.ast.file.LCSourceFile;
 import ldk.l.lc.util.error.ErrorStream;
 import ldk.l.lpm.PackageManager;
 
@@ -15,13 +18,15 @@ import java.util.List;
 import java.util.Map;
 
 public final class AnnotationProcessor {
+    private final SemanticAnalyzer semanticAnalyzer;
     private final ErrorStream errorStream;
 
-    public AnnotationProcessor(ErrorStream errorStream) {
+    public AnnotationProcessor(SemanticAnalyzer semanticAnalyzer, ErrorStream errorStream) {
+        this.semanticAnalyzer = semanticAnalyzer;
         this.errorStream = errorStream;
     }
 
-    public void process(List<LCAnnotation> annotations) {
+    public void process(LCAst ast, List<LCAnnotation> annotations) {
         for (LCAnnotation annotation : annotations) {
             String annotationName = annotation.symbol.getFullName();
             for (AbstractAnnotationProcessor annotationProcessor : getAnnotationProcessors().getOrDefault(annotationName, new ArrayList<>())) {
@@ -29,6 +34,23 @@ public final class AnnotationProcessor {
                     System.err.println("Annotation processor failed: " + annotationName);
                 }
             }
+        }
+        while (!ast.sourceFileQueue.isEmpty()) {
+            LCSourceFile sourceFile = ast.sourceFileQueue.poll();
+            semanticAnalyzer.typeBuilder.visit(sourceFile, null);
+            semanticAnalyzer.typeResolver.visit(sourceFile, null);
+            semanticAnalyzer.enter.visit(sourceFile, null);
+            semanticAnalyzer.typeParameterEnter.visit(sourceFile, null);
+            semanticAnalyzer.objectSymbolResolver.visit(sourceFile, null);
+            semanticAnalyzer.referenceResolver.visit(sourceFile, null);
+            semanticAnalyzer.typeChecker.visit(sourceFile, null);
+            semanticAnalyzer.modifierChecker.visit(sourceFile, null);
+//            semanticAnalyzer.closureAnalyzer.visit(sourceFile, null);
+//            semanticAnalyzer.assignAnalyzer.visit(sourceFile, null);
+//            semanticAnalyzer.liveAnalyzer.visit(sourceFile, null);
+            semanticAnalyzer.leftValueAttributor.visit(sourceFile, null);
+            semanticAnalyzer.annotationCollector.visit(sourceFile, null);
+            semanticAnalyzer.annotationProcessor.process(ast, semanticAnalyzer.annotationCollector.getAnnotations());
         }
     }
 

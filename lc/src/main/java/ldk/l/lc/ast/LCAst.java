@@ -8,15 +8,14 @@ import ldk.l.lc.util.Position;
 import ldk.l.lc.util.symbol.MethodSymbol;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public final class LCAst extends LCAstNode {
     public LCObjectDeclaration mainObjectDeclaration = null;
     public MethodSymbol mainMethod = null;
-    public final ArrayList<LCSourceFile> sourceFiles = new ArrayList<>();
-    public final HashMap<String, NamedType> name2Type = new HashMap<>();
+    public final List<LCSourceFile> sourceFiles = new ArrayList<>();
+    public final Map<String, NamedType> name2Type = new HashMap<>();
+    public final Queue<LCSourceFile> sourceFileQueue = new LinkedList<>();
 
     public LCAst() {
         super(Position.origin, false);
