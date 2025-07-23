@@ -43,7 +43,7 @@ public final class SemanticAnalyzer {
         this.liveAnalyzer = new LiveAnalyzer(errorStream);
         this.leftValueAttributor = new LeftValueAttributor(errorStream);
         this.annotationCollector = new AnnotationCollector();
-        this.annotationProcessor = new AnnotationProcessor(this, errorStream);
+        this.annotationProcessor = new AnnotationProcessor(this, options, errorStream);
     }
 
     public void execute() {

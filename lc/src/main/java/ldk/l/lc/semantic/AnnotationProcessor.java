@@ -3,10 +3,10 @@ package ldk.l.lc.semantic;
 import l.lang.annotation.AbstractAnnotationProcessor;
 import ldk.l.lc.ast.LCAst;
 import ldk.l.lc.ast.base.LCAnnotation;
-import ldk.l.lc.ast.file.LCSourceCodeFile;
 import ldk.l.lc.ast.file.LCSourceFile;
 import ldk.l.lc.util.error.ErrorStream;
 import ldk.l.lpm.PackageManager;
+import ldk.l.util.option.Options;
 
 import java.io.File;
 import java.net.URL;
@@ -19,10 +19,12 @@ import java.util.Map;
 
 public final class AnnotationProcessor {
     private final SemanticAnalyzer semanticAnalyzer;
+    private final Options options;
     private final ErrorStream errorStream;
 
-    public AnnotationProcessor(SemanticAnalyzer semanticAnalyzer, ErrorStream errorStream) {
+    public AnnotationProcessor(SemanticAnalyzer semanticAnalyzer, Options options, ErrorStream errorStream) {
         this.semanticAnalyzer = semanticAnalyzer;
+        this.options = options;
         this.errorStream = errorStream;
     }
 
@@ -30,7 +32,7 @@ public final class AnnotationProcessor {
         for (LCAnnotation annotation : annotations) {
             String annotationName = annotation.symbol.getFullName();
             for (AbstractAnnotationProcessor annotationProcessor : getAnnotationProcessors().getOrDefault(annotationName, new ArrayList<>())) {
-                if (!annotationProcessor.process(annotation, null)) {
+                if (!annotationProcessor.process(annotation)) {
                     System.err.println("Annotation processor failed: " + annotationName);
                 }
             }
@@ -72,7 +74,7 @@ public final class AnnotationProcessor {
                     String annotationName = (String) info.get("annotation-name");
                     annotationProcessorsMap.putIfAbsent(annotationName, new ArrayList<>());
                     Class<?> clazz = classLoader.loadClass((String) info.get("class-name"));
-                    annotationProcessorsMap.get(annotationName).add((AbstractAnnotationProcessor) clazz.getDeclaredConstructor().newInstance());
+                    annotationProcessorsMap.get(annotationName).add((AbstractAnnotationProcessor) clazz.getDeclaredConstructor(SemanticAnalyzer.class, Options.class).newInstance(semanticAnalyzer, options));
                 }
             } catch (Exception e) {
                 throw new RuntimeException(e);
