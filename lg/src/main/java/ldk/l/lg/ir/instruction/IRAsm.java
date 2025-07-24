@@ -27,7 +27,7 @@ public final class IRAsm extends IRInstruction {
         StringBuilder builder = new StringBuilder("asm \"");
         builder.append(code).append("\"");
         for (int i = 0; i < types.length; i++) {
-            builder.append(", ").append("[").append(types[i]).append(", ").append(resources[i]).append(", ").append(names[i]).append("]");
+            builder.append(", ").append("[").append(types[i]).append(", ").append(resources[i]).append(", \"").append(names[i]).append("\"]");
         }
         return builder.toString();
     }
