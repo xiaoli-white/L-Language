@@ -28,10 +28,9 @@ public final class Parser {
 
     public void parse() {
         while (!charStream.eof()) {
-            char c = charStream.peek();
-            if (c == 's' && charStream.pos + 9 < charStream.length() && charStream.startsWith("structure")) {
+            if (charStream.startsWith("structure")) {
                 parseStructure();
-            } else if (c == 'f' && charStream.pos + 7 < charStream.length() && charStream.startsWith("function")) {
+            } else if (charStream.startsWith("function")) {
                 parseFunction();
             }
             skipWhiteSpace();
@@ -120,7 +119,7 @@ public final class Parser {
             // TODO dump error
         }
         skipWhiteSpace();
-        if (charStream.peek() == 'l' && charStream.pos + 6 < charStream.length() && charStream.startsWith("locals")) {
+        if (charStream.startsWith("locals")) {
             charStream.addPos(6);
         } else {
             // TODO dump error
@@ -898,13 +897,13 @@ public final class Parser {
                     throw new RuntimeException();
                 }
             }
-        } else if (c == 'f' && charStream.pos + 5 < charStream.length() && charStream.startsWith("float")) {
+        } else if (charStream.startsWith("float")) {
             charStream.addPos(5);
             type = IRType.getFloatType();
-        } else if (c == 'd' && charStream.pos + 6 < charStream.length() && charStream.startsWith("double")) {
+        } else if (charStream.startsWith("double")) {
             charStream.addPos(6);
             type = IRType.getDoubleType();
-        } else if (c == 'v' && charStream.pos + 4 < charStream.length() && charStream.startsWith("void")) {
+        } else if (charStream.startsWith("void")) {
             charStream.addPos(4);
             type = IRType.getVoidType();
         } else {

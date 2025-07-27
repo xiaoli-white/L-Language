@@ -1003,11 +1003,11 @@ public final class ExecutionUnit implements Runnable {
                 }
                 case ByteCode.WRITE -> {
                     byte fdRegister = virtualMachine.memory.getByte(pc++);
-                    byte buFFerRegister = virtualMachine.memory.getByte(pc++);
+                    byte bufferRegister = virtualMachine.memory.getByte(pc++);
                     byte countRegister = virtualMachine.memory.getByte(pc++);
                     byte resultRegister = virtualMachine.memory.getByte(pc++);
                     setRegister(ByteCode.PC_REGISTER, pc);
-                    long address = getRegister(buFFerRegister);
+                    long address = getRegister(bufferRegister);
                     long count = getRegister(countRegister);
                     byte[] buFFer = new byte[(int) count];
                     for (int i = 0; i < count; i++) buFFer[i] = virtualMachine.memory.getByte(address + i);
