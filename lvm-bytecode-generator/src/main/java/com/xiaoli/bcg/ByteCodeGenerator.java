@@ -709,7 +709,7 @@ public final class ByteCodeGenerator extends Generator {
             if (irReturn.value != null) {
                 this.visit(irReturn.value, additional);
                 BCRegister value = registerStack.pop();
-                addInstruction(new BCInstruction(ByteCode.SET_RESULT, value));
+                addInstruction(new BCInstruction(ByteCode.MOV, value, new BCRegister(ByteCode.RETURN_VALUE_REGISTER)));
             }
             addInstruction(new BCInstruction(ByteCode.JUMP_IMMEDIATE, new BCImmediate8(0, "<end>")));
             return null;
@@ -737,7 +737,7 @@ public final class ByteCodeGenerator extends Generator {
             if (irInvoke.target != null) {
                 this.visitVirtualRegister(irInvoke.target, additional);
                 BCRegister result = registerStack.pop();
-                addInstruction(new BCInstruction(ByteCode.GET_RESULT, result));
+                addInstruction(new BCInstruction(ByteCode.MOV, result, new BCRegister(ByteCode.RETURN_VALUE_REGISTER)));
             }
             BCRegister register = allocateVirtualRegister();
             addInstruction(new BCInstruction(ByteCode.MOV_IMMEDIATE8, new BCImmediate8(argumentsSize), register));
@@ -1297,7 +1297,7 @@ public final class ByteCodeGenerator extends Generator {
         public RegisterAllocator(ByteCodeModule module, Map<String, Map<Long, BCRegister.Interval>> intervalMap) {
             this.module = module;
             this.intervalMap = intervalMap;
-            this.numRegisters = 35;
+            this.numRegisters = 35; // 36-1
             this.TEMP_REGISTER = 35;
         }
 

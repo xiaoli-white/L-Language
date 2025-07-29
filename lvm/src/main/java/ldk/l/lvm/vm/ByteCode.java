@@ -4,12 +4,16 @@ public class ByteCode {
     private ByteCode() {
     }
 
+    public static final long REGISTER_COUNT = 42;
+    public static final byte RETURN_VALUE_REGISTER = 36;
+    public static final byte BP_REGISTER = 37;
+    public static final byte SP_REGISTER = 38;
+    public static final byte PC_REGISTER = 39;
+    public static final byte FLAGS_REGISTER = 40;
+    public static final byte IDTR_REGISTER = 41;
     public static final long ZERO_MARK = 0b01L;
     public static final long CARRY_MARK = 0b10L;
     public static final long UNSIGNED_MARK = 0b100L;
-    public static final byte PC_REGISTER = 39;
-    public static final byte SP_REGISTER = 38;
-    public static final byte BP_REGISTER = 37;
     public static final byte BYTE_TYPE = 0;
     public static final byte SHORT_TYPE = 1;
     public static final byte INT_TYPE = 2;
@@ -122,8 +126,8 @@ public class ByteCode {
     public static final byte INVOKE = 0x64;
     public static final byte INVOKE_IMMEDIATE = 0x65;
     public static final byte RETURN = 0x66;
-    public static final byte GET_RESULT = 0x67;
-    public static final byte SET_RESULT = 0x68;
+    public static final byte INTERRUPT = 0x67;
+    public static final byte INTERRUPT_RETURN = 0x68;
     public static final byte TYPE_CAST = 0x69;
     public static final byte LONG_TO_DOUBLE = 0x6a;
     public static final byte DOUBLE_TO_LONG = 0x6b;
@@ -254,8 +258,8 @@ public class ByteCode {
             case INVOKE -> "INVOKE";
             case INVOKE_IMMEDIATE -> "INVOKE_IMMEDIATE";
             case RETURN -> "RETURN";
-            case GET_RESULT -> "GET_RESULT";
-            case SET_RESULT -> "SET_RESULT";
+            case INTERRUPT -> "INTERRUPT";
+            case INTERRUPT_RETURN -> "INTERRUPT_RETURN";
             case TYPE_CAST -> "TYPE_CAST";
             case LONG_TO_DOUBLE -> "LONG_TO_DOUBLE";
             case DOUBLE_TO_LONG -> "DOUBLE_TO_LONG";
@@ -389,8 +393,8 @@ public class ByteCode {
             case "INVOKE" -> INVOKE;
             case "INVOKE_IMMEDIATE" -> INVOKE_IMMEDIATE;
             case "RETURN" -> RETURN;
-            case "GET_RESULT" -> GET_RESULT;
-            case "SET_RESULT" -> SET_RESULT;
+            case "INTERRUPT" -> INTERRUPT;
+            case "INTERRUPT_RETURN" -> INTERRUPT_RETURN;
             case "TYPE_CAST" -> TYPE_CAST;
             case "LONG_TO_DOUBLE" -> LONG_TO_DOUBLE;
             case "DOUBLE_TO_LONG" -> DOUBLE_TO_LONG;

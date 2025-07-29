@@ -35,9 +35,12 @@ public final class BCRegister extends BCOperand {
             return "v" + virtualRegister;
         } else {
             return "%" + switch (register) {
+                case ByteCode.RETURN_VALUE_REGISTER -> "RETURN_VALUE";
                 case ByteCode.BP_REGISTER -> "BP";
                 case ByteCode.SP_REGISTER -> "SP";
                 case ByteCode.PC_REGISTER -> "PC";
+                case ByteCode.FLAGS_REGISTER -> "FLAGS";
+                case ByteCode.IDTR_REGISTER -> "IDTR";
                 default -> register;
             };
         }
