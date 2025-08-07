@@ -33,9 +33,11 @@ public final class IRTypeCast extends IRInstruction {
     public enum Kind {
         ZeroExtend("zext"),
         SignExtend("sext"),
+        Truncate("trunc"),
         IntToFloat("itof"),
         FloatToInt("ftoi"),
-        FloatExtend("fext");
+        FloatExtend("fext"),
+        FloatTruncate("ftrunc");
         public final String name;
 
         Kind(String name) {
