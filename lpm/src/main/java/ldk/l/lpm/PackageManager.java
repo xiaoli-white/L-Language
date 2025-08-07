@@ -21,7 +21,7 @@ public final class PackageManager {
             Yaml yaml = new Yaml();
             Map<String, Object> map;
             try {
-                map = yaml.load(Files.readString(file.toPath().resolve("package-info.yaml")));
+                map = yaml.load(Files.readString(file.toPath().resolve("manifest.yaml")));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -38,7 +38,7 @@ public final class PackageManager {
             ZipUtil.unzip(zipFile, tempDir.toFile());
             Yaml yaml = new Yaml();
             try {
-                map = yaml.load(Files.readString(tempDir.resolve("package-info.yaml")));
+                map = yaml.load(Files.readString(tempDir.resolve("manifest.yaml")));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
