@@ -18,14 +18,4 @@ public final class LCEmptyExpression extends LCExpression {
     public String toString() {
         return "LCEmptyExpression{}";
     }
-
-    @Override
-    public LCEmptyExpression clone() throws CloneNotSupportedException {
-        LCEmptyExpression lcEmptyExpression = new LCEmptyExpression(position.clone());
-        lcEmptyExpression.theType = theType;
-        lcEmptyExpression.isLeftValue = isLeftValue;
-        lcEmptyExpression.shouldBeLeftValue = shouldBeLeftValue;
-        lcEmptyExpression.constValue = constValue;
-        return lcEmptyExpression;
-    }
 }

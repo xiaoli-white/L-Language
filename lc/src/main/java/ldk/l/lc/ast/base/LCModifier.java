@@ -40,9 +40,4 @@ public final class LCModifier extends LCAstNode {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCModifier clone() throws CloneNotSupportedException {
-        return new LCModifier(this.flags, new ArrayList<>(this.attributes), this.bitRange, this.position.clone(), this.isErrorNode);
-    }
 }

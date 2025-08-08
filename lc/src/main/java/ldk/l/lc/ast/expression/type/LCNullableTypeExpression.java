@@ -34,9 +34,4 @@ public final class LCNullableTypeExpression extends LCTypeExpression {
     public String toTypeString() {
         return base.toTypeString() + "?";
     }
-
-    @Override
-    public LCNullableTypeExpression clone() throws CloneNotSupportedException {
-        return new LCNullableTypeExpression(this.base.clone(), this.position.clone(), this.isErrorNode);
-    }
 }

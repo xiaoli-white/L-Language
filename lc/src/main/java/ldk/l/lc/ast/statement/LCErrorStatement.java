@@ -30,9 +30,4 @@ public final class LCErrorStatement extends LCStatement {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCErrorStatement clone() throws CloneNotSupportedException {
-        return new LCErrorStatement(statement != null ? statement.clone() : null, position.clone());
-    }
 }

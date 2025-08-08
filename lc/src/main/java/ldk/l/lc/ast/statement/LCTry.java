@@ -50,11 +50,6 @@ public final class LCTry extends LCStatementWithScope {
                 '}';
     }
 
-    @Override
-    public LCTry clone() throws CloneNotSupportedException {
-        return new LCTry(new ArrayList<>(resources), base.clone(), new ArrayList<>(catchers), _finally != null ? _finally.clone() : null, position.clone(), isErrorNode);
-    }
-
     public static final class LCCatch extends LCAstNode {
         public Scope scope = null;
         public LCVariableDeclaration exceptionVariableDeclaration;
@@ -84,11 +79,6 @@ public final class LCTry extends LCStatementWithScope {
                     ", position=" + position +
                     ", isErrorNode=" + isErrorNode +
                     '}';
-        }
-
-        @Override
-        public LCCatch clone() throws CloneNotSupportedException {
-            return new LCCatch(exceptionVariableDeclaration.clone(), then.clone(), position.clone(), isErrorNode);
         }
     }
 }

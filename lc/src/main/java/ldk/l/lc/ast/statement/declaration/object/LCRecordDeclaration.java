@@ -55,9 +55,4 @@ public final class LCRecordDeclaration extends LCObjectDeclaration {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCRecordDeclaration clone() throws CloneNotSupportedException {
-        return new LCRecordDeclaration(name, new ArrayList<>(typeParameters), new ArrayList<>(fields), new ArrayList<>(implementedInterfaces), delegated != null ? delegated.clone() : null, body.clone(), position.clone(), isErrorNode);
-    }
 }

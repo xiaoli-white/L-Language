@@ -28,9 +28,4 @@ public final class LCYield extends LCStatement {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCYield clone() throws CloneNotSupportedException {
-        return new LCYield(value.clone(), position.clone(), isErrorNode);
-    }
 }

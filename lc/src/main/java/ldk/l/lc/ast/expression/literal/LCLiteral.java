@@ -17,7 +17,4 @@ public abstract sealed class LCLiteral<T> extends LCExpression permits LCStringL
     public String toString() {
         return this.value + ": " + (this.theType != null ? this.theType : "<unknown>");
     }
-
-    @Override
-    public abstract LCLiteral<T> clone() throws CloneNotSupportedException;
 }

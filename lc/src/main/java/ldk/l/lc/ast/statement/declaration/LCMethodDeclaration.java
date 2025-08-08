@@ -127,11 +127,4 @@ public final class LCMethodDeclaration extends LCDeclaration {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCMethodDeclaration clone() throws CloneNotSupportedException {
-        LCMethodDeclaration lcMethodDeclaration = new LCMethodDeclaration(this.methodKind, this.name, new ArrayList<>(this.typeParameters), this.parameterList.clone(), this.returnTypeExpression != null ? this.returnTypeExpression.clone() : null, LCFlags.hasThisReadonly(this.modifier.flags), new ArrayList<>(this.threwExceptions), this.extended.clone());
-        lcMethodDeclaration.init(this.body.clone(), this.position, this.isErrorNode);
-        return lcMethodDeclaration;
-    }
 }

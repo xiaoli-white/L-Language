@@ -44,9 +44,4 @@ public final class LCInterfaceDeclaration extends LCObjectDeclaration {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCInterfaceDeclaration clone() throws CloneNotSupportedException {
-        return new LCInterfaceDeclaration(name, new ArrayList<>(typeParameters), new ArrayList<>(extendedInterfaces), body.clone(), position.clone(), isErrorNode);
-    }
 }

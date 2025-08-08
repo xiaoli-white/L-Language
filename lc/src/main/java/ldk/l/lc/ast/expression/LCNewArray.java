@@ -49,13 +49,6 @@ public final class LCNewArray extends LCExpression {
                 '}';
     }
 
-    @Override
-    public LCNewArray clone() throws CloneNotSupportedException {
-        LCNewArray node = new LCNewArray(this.place != null ? this.place.clone() : null, this.typeExpression.clone(), new ArrayList<>(this.dimensions), this.elements != null ? new ArrayList<>(this.elements) : null, this.position.clone(), this.isErrorNode);
-        node.parentNode = this.parentNode;
-        return node;
-    }
-
     public Type getRealType() {
         Type type = typeExpression.theType;
         for (int i = 1; i < dimensions.size(); i++) {

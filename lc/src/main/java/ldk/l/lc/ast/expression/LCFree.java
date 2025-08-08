@@ -30,9 +30,4 @@ public final class LCFree extends LCExpression {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCFree clone() throws CloneNotSupportedException {
-        return new LCFree(expression.clone(), position.clone(), isErrorNode);
-    }
 }

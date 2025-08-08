@@ -41,11 +41,6 @@ public final class LCTypeCast extends LCExpression {
                 '}';
     }
 
-    @Override
-    public LCTypeCast clone() throws CloneNotSupportedException {
-        return new LCTypeCast(kind, typeExpression.clone(), expression.clone(), position.clone(), isErrorNode);
-    }
-
     public enum Kind {
         STATIC,
         DYNAMIC,

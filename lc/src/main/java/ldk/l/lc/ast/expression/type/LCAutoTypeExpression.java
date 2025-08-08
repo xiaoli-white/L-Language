@@ -29,9 +29,4 @@ public final class LCAutoTypeExpression extends LCTypeExpression {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCAutoTypeExpression clone() throws CloneNotSupportedException {
-        return new LCAutoTypeExpression(this.position.clone(), this.isErrorNode);
-    }
 }

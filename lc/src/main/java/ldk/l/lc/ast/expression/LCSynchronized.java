@@ -38,9 +38,4 @@ public final class LCSynchronized extends LCExpressionWithScope {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCSynchronized clone() throws CloneNotSupportedException {
-        return new LCSynchronized(lock.clone(), body.clone(), position.clone(), isErrorNode);
-    }
 }

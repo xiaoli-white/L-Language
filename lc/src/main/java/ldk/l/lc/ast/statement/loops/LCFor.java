@@ -42,9 +42,4 @@ public final class LCFor extends LCAbstractLoop {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCFor clone() throws CloneNotSupportedException {
-        return new LCFor(init != null ? init.clone() : null, condition != null ? condition.clone() : null, increment != null ? increment.clone() : null, body.clone(), position.clone(), isErrorNode);
-    }
 }

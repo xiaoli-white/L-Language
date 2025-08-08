@@ -37,9 +37,4 @@ public final class LCInit extends LCStatement {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCInit clone() throws CloneNotSupportedException {
-        return new LCInit(isStatic, body.clone(), position.clone(), isErrorNode);
-    }
 }

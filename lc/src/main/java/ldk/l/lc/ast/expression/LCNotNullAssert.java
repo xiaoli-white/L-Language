@@ -30,9 +30,4 @@ public final class LCNotNullAssert extends LCExpression {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCNotNullAssert clone() throws CloneNotSupportedException {
-        return new LCNotNullAssert(base.clone(), position.clone(), isErrorNode);
-    }
 }

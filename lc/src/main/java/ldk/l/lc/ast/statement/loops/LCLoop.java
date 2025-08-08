@@ -27,9 +27,4 @@ public final class LCLoop extends LCAbstractLoop {
                 ", position=" + position +
                 '}';
     }
-
-    @Override
-    public LCLoop clone() throws CloneNotSupportedException {
-        return new LCLoop(body.clone(), position.clone(), isErrorNode);
-    }
 }

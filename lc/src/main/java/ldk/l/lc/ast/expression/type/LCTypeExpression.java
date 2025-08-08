@@ -9,7 +9,4 @@ public abstract sealed class LCTypeExpression extends LCExpression permits LCArr
     }
 
     public abstract String toTypeString();
-
-    @Override
-    public abstract LCTypeExpression clone() throws CloneNotSupportedException;
 }

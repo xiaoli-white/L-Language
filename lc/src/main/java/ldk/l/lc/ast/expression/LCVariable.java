@@ -36,9 +36,4 @@ public final class LCVariable extends LCExpression {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCExpression clone() throws CloneNotSupportedException {
-        return new LCVariable(this.name, this.position.clone(), this.isErrorNode);
-    }
 }

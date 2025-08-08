@@ -38,9 +38,4 @@ public final class LCInstanceof extends LCExpression {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCInstanceof clone() throws CloneNotSupportedException {
-        return new LCInstanceof(expression.clone(), typeExpression.clone(), position.clone(), isErrorNode);
-    }
 }

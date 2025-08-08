@@ -44,9 +44,4 @@ public final class LCBinary extends LCExpression {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCBinary clone() throws CloneNotSupportedException {
-        return new LCBinary(this._operator, this.expression1.clone(), this.expression2.clone(), this.isErrorNode);
-    }
 }

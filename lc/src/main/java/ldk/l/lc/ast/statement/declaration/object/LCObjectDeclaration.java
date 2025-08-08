@@ -28,9 +28,6 @@ public abstract sealed class LCObjectDeclaration extends LCDeclaration permits L
         if (this.body != null) this.body.parentNode = this;
     }
 
-    @Override
-    public abstract LCObjectDeclaration clone() throws CloneNotSupportedException;
-
     public final void setModifier(LCModifier modifier) {
         this.modifier = modifier;
         if (this.modifier != null) this.modifier.parentNode = this;

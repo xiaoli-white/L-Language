@@ -25,10 +25,4 @@ public final class LCField extends LCExpression {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCField clone() throws CloneNotSupportedException {
-        return new LCField(position.clone(), isErrorNode);
-    }
-
 }

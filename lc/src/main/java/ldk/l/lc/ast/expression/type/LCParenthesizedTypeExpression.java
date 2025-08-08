@@ -34,9 +34,4 @@ public final class LCParenthesizedTypeExpression extends LCTypeExpression {
     public String toTypeString() {
         return "(" + base.toTypeString() + ")";
     }
-
-    @Override
-    public LCParenthesizedTypeExpression clone() throws CloneNotSupportedException {
-        return new LCParenthesizedTypeExpression(this.base.clone(), this.position.clone(), this.isErrorNode);
-    }
 }

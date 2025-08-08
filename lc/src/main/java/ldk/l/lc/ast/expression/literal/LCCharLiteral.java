@@ -18,9 +18,4 @@ public final class LCCharLiteral extends LCLiteral<Character> {
     public Object accept(LCAstVisitor visitor, Object additional) {
         return visitor.visitCharLiteral(this, additional);
     }
-
-    @Override
-    public LCCharLiteral clone() throws CloneNotSupportedException {
-        return new LCCharLiteral(this.value, this.position.clone(), isErrorNode);
-    }
 }

@@ -29,9 +29,4 @@ public final class LCSourceFileProxy extends LCExpression {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCSourceFileProxy clone() throws CloneNotSupportedException {
-        return new LCSourceFileProxy(sourceFile, isErrorNode);
-    }
 }

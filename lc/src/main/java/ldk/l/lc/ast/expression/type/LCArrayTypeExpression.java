@@ -33,12 +33,6 @@ public final class LCArrayTypeExpression extends LCTypeExpression {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCArrayTypeExpression clone() throws CloneNotSupportedException {
-        return new LCArrayTypeExpression(this.base.clone(), this.position.clone(), this.isErrorNode);
-    }
-
     @Override
     public String toTypeString() {
         return base.toTypeString() + "[]";

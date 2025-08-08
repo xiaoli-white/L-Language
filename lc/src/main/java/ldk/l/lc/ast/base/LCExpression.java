@@ -13,7 +13,4 @@ public abstract class LCExpression extends LCAstNode {
     protected LCExpression(Position pos, boolean isErrorNode) {
         super(pos, isErrorNode);
     }
-
-    @Override
-    public abstract LCExpression clone() throws CloneNotSupportedException;
 }

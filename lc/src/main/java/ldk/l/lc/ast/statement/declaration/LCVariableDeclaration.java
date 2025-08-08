@@ -99,9 +99,4 @@ public final class LCVariableDeclaration extends LCDeclaration {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCVariableDeclaration clone() throws CloneNotSupportedException {
-        return new LCVariableDeclaration(this.modifier.clone(), this.isVal, this.name, typeExpression != null ? typeExpression.clone() : null, extended != null ? extended.clone() : null, this.delegated != null ? this.delegated.clone() : null, init != null ? init.clone() : null, this.getter != null ? getter.clone() : null, this.setter != null ? setter.clone() : null, this.position.clone(), isErrorNode);
-    }
 }

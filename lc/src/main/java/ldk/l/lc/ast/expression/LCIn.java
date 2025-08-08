@@ -37,9 +37,4 @@ public final class LCIn extends LCExpression {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCIn clone() throws CloneNotSupportedException {
-        return new LCIn(expression1.clone(), expression2.clone(), position.clone(), isErrorNode);
-    }
 }

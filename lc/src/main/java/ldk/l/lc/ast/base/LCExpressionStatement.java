@@ -30,9 +30,4 @@ public final class LCExpressionStatement extends LCStatement {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCExpressionStatement clone() throws CloneNotSupportedException {
-        return new LCExpressionStatement(this.expression.clone(), this.position.clone(), this.isErrorNode);
-    }
 }

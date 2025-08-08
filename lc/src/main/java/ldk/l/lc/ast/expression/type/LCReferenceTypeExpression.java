@@ -38,9 +38,4 @@ public final class LCReferenceTypeExpression extends LCTypeExpression {
     public String toTypeString() {
         return base.toTypeString() + "&";
     }
-
-    @Override
-    public LCReferenceTypeExpression clone() throws CloneNotSupportedException {
-        return new LCReferenceTypeExpression(this.base.clone(), this.position.clone(), this.isErrorNode);
-    }
 }

@@ -51,11 +51,6 @@ public final class LCNative extends LCStatementWithScope {
                 '}';
     }
 
-    @Override
-    public LCNative clone() throws CloneNotSupportedException {
-        return new LCNative(new ArrayList<>(resources), new ArrayList<>(sections), position.clone(), isErrorNode);
-    }
-
     public static final class LCResourceForNative extends LCAstNode {
         public LCExpression resource;
         public String name;
@@ -80,11 +75,6 @@ public final class LCNative extends LCStatementWithScope {
                     ", position=" + position +
                     ", isErrorNode=" + isErrorNode +
                     '}';
-        }
-
-        @Override
-        public LCResourceForNative clone() throws CloneNotSupportedException {
-            return new LCResourceForNative(resource.clone(), name, position.clone(), isErrorNode);
         }
     }
 }

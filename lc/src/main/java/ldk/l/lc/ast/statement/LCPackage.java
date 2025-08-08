@@ -26,9 +26,4 @@ public final class LCPackage extends LCStatement {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCPackage clone() throws CloneNotSupportedException {
-        return new LCPackage(name, position.clone(), isErrorNode);
-    }
 }

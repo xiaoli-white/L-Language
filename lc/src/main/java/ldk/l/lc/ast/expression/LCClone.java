@@ -34,14 +34,4 @@ public final class LCClone extends LCExpression {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCClone clone() throws CloneNotSupportedException {
-        LCClone lcClone = new LCClone(expression.clone(), position.clone(), isErrorNode);
-        lcClone.theType = theType;
-        lcClone.isLeftValue = isLeftValue;
-        lcClone.shouldBeLeftValue = shouldBeLeftValue;
-        lcClone.constValue = constValue;
-        return lcClone;
-    }
 }

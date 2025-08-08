@@ -31,9 +31,4 @@ public final class LCTypedef extends LCStatement {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCTypedef clone() throws CloneNotSupportedException {
-        return new LCTypedef(typeExpression.clone(), name, position.clone(), isErrorNode);
-    }
 }

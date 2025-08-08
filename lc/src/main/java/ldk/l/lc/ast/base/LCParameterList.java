@@ -33,9 +33,4 @@ public final class LCParameterList extends LCAstNode {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCParameterList clone() throws CloneNotSupportedException {
-        return new LCParameterList(new ArrayList<>(this.parameters), this.position.clone(), this.isErrorNode);
-    }
 }

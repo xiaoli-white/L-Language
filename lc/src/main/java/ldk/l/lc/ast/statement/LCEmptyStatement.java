@@ -20,11 +20,4 @@ public final class LCEmptyStatement extends LCStatement {
     public String toString() {
         return "LCEmptyStatement";
     }
-
-    @Override
-    public LCEmptyStatement clone() throws CloneNotSupportedException {
-        LCEmptyStatement lcEmptyStatement = new LCEmptyStatement(position.clone());
-        lcEmptyStatement.annotations = new ArrayList<>(annotations);
-        return lcEmptyStatement;
-    }
 }

@@ -37,9 +37,4 @@ public final class LCInclude extends LCStatement {
                 ", position=" + position +
                 '}';
     }
-
-    @Override
-    public LCInclude clone() throws CloneNotSupportedException {
-        return new LCInclude(filepath, beginLine != null ? beginLine.clone() : null, endLine != null ? endLine.clone() : null, position.clone(), isErrorNode);
-    }
 }

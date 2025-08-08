@@ -9,7 +9,4 @@ public abstract class LCExpressionWithScope extends LCExpression {
     public LCExpressionWithScope(Position pos, boolean isErrorNode) {
         super(pos, isErrorNode);
     }
-
-    @Override
-    public abstract LCExpressionWithScope clone() throws CloneNotSupportedException;
 }

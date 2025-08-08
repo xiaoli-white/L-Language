@@ -30,9 +30,4 @@ public final class LCDereference extends LCExpression {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCDereference clone() throws CloneNotSupportedException {
-        return new LCDereference(expression.clone(), position.clone(), isErrorNode);
-    }
 }

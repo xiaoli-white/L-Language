@@ -21,9 +21,4 @@ public final class LCIntegerLiteral extends LCLiteral<Long> {
     public Object accept(LCAstVisitor visitor, Object additional) {
         return visitor.visitIntegerLiteral(this, additional);
     }
-
-    @Override
-    public LCIntegerLiteral clone() throws CloneNotSupportedException {
-        return new LCIntegerLiteral(this.value, this.theType.equals(SystemTypes.LONG), this.position.clone(), isErrorNode);
-    }
 }

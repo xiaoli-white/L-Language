@@ -40,9 +40,4 @@ public final class LCArrayAccess extends LCExpression {
                 ", position=" + position +
                 '}';
     }
-
-    @Override
-    public LCArrayAccess clone() throws CloneNotSupportedException {
-        return new LCArrayAccess(base.clone(), index.clone(), position.clone(), isErrorNode);
-    }
 }

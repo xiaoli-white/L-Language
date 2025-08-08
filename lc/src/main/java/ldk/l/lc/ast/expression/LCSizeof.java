@@ -33,9 +33,4 @@ public final class LCSizeof extends LCExpression {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCSizeof clone() throws CloneNotSupportedException {
-        return new LCSizeof(expression.clone(), position.clone(), isErrorNode);
-    }
 }

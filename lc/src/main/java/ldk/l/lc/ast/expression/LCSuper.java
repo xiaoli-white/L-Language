@@ -32,11 +32,4 @@ public final class LCSuper extends LCExpression {
                 ", position=" + position +
                 '}';
     }
-
-    @Override
-    public LCSuper clone() throws CloneNotSupportedException {
-        LCSuper lcSuper = new LCSuper(position.clone(), isErrorNode);
-        lcSuper.symbol = symbol;
-        return lcSuper;
-    }
 }

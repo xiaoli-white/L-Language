@@ -33,9 +33,4 @@ public final class LCDoWhile extends LCAbstractLoop {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCDoWhile clone() throws CloneNotSupportedException {
-        return new LCDoWhile(body.clone(), condition.clone(), position.clone(), isErrorNode);
-    }
 }

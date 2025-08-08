@@ -39,9 +39,4 @@ public final class LCPointerTypeExpression extends LCTypeExpression {
     public String toTypeString() {
         return base.toTypeString() + "*";
     }
-
-    @Override
-    public LCPointerTypeExpression clone() throws CloneNotSupportedException {
-        return new LCPointerTypeExpression(this.base.clone(), this.position.clone(), this.isErrorNode);
-    }
 }

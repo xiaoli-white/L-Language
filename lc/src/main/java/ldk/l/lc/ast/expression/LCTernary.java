@@ -40,9 +40,4 @@ public final class LCTernary extends LCExpression {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCTernary clone() throws CloneNotSupportedException {
-        return new LCTernary(condition.clone(), then.clone(), _else.clone(), position.clone(), isErrorNode);
-    }
 }

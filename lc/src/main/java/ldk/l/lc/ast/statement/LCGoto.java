@@ -28,11 +28,4 @@ public final class LCGoto extends LCStatement {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCGoto clone() throws CloneNotSupportedException {
-        LCGoto lcGoto = new LCGoto(label, position.clone(), isErrorNode);
-        lcGoto.annotations = annotations != null ? new ArrayList<>(annotations) : null;
-        return lcGoto;
-    }
 }

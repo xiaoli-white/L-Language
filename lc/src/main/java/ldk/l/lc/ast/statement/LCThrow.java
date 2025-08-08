@@ -28,9 +28,4 @@ public final class LCThrow extends LCStatement {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCThrow clone() throws CloneNotSupportedException {
-        return new LCThrow(expression.clone(), position.clone(), isErrorNode);
-    }
 }

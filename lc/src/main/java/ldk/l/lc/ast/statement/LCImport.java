@@ -38,11 +38,6 @@ public final class LCImport extends LCStatement {
                 '}';
     }
 
-    @Override
-    public LCImport clone() throws CloneNotSupportedException {
-        return new LCImport(kind, name, alias, position.clone(), isErrorNode);
-    }
-
     public String getPackageName() {
         if (this.kind != LCImportKind.Normal)
             throw new RuntimeException();

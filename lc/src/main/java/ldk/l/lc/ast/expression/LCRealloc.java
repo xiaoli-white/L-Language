@@ -34,9 +34,4 @@ public final class LCRealloc extends LCExpression {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCRealloc clone() throws CloneNotSupportedException {
-        return new LCRealloc(expression.clone(), size.clone(), position.clone(), isErrorNode);
-    }
 }

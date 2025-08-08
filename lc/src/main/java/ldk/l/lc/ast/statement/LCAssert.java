@@ -33,9 +33,4 @@ public final class LCAssert extends LCStatement {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCAssert clone() throws CloneNotSupportedException {
-        return new LCAssert(condition.clone(), message != null ? message.clone() : null, position.clone(), isErrorNode);
-    }
 }

@@ -40,9 +40,4 @@ public final class LCForeach extends LCAbstractLoop {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCForeach clone() throws CloneNotSupportedException {
-        return new LCForeach(init.clone(), source.clone(), body.clone(), position.clone(), isErrorNode);
-    }
 }

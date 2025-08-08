@@ -33,9 +33,4 @@ public final class LCWhile extends LCAbstractLoop {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCWhile clone() throws CloneNotSupportedException {
-        return new LCWhile(condition.clone(), body.clone(), position.clone(), isErrorNode);
-    }
 }

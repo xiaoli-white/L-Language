@@ -43,9 +43,4 @@ public final class LCMethodPointerTypeExpression extends LCTypeExpression {
         return "(" + parameterList.parameters.stream().map(parameter -> parameter.typeExpression.toTypeString()).collect(Collectors.joining(", ")) +
                 "):" + returnTypeExpression.toTypeString();
     }
-
-    @Override
-    public LCMethodPointerTypeExpression clone() throws CloneNotSupportedException {
-        return new LCMethodPointerTypeExpression(this.parameterList.clone(), this.returnTypeExpression.clone(), this.position.clone(), this.isErrorNode);
-    }
 }

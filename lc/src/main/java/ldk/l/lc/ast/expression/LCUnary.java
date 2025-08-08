@@ -43,9 +43,4 @@ public final class LCUnary extends LCExpression {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCUnary clone() throws CloneNotSupportedException {
-        return new LCUnary(_operator, isPrefix, expression.clone(), position.clone(), isErrorNode);
-    }
 }

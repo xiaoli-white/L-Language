@@ -39,9 +39,4 @@ public final class LCWith extends LCStatementWithScope {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCWith clone() throws CloneNotSupportedException {
-        return new LCWith(new ArrayList<>(resources), body.clone(), position.clone(), isErrorNode);
-    }
 }

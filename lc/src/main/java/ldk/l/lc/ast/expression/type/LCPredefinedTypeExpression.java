@@ -38,9 +38,4 @@ public final class LCPredefinedTypeExpression extends LCTypeExpression {
     public String toTypeString() {
         return keyword.getCode();
     }
-
-    @Override
-    public LCPredefinedTypeExpression clone() throws CloneNotSupportedException {
-        return new LCPredefinedTypeExpression(this.keyword, this.position.clone(), this.isErrorNode);
-    }
 }

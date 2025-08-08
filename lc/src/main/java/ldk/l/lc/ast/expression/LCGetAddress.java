@@ -50,9 +50,4 @@ public final class LCGetAddress extends LCExpression {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCGetAddress clone() throws CloneNotSupportedException {
-        return new LCGetAddress(expression.clone(), name, parameterTypeExpressions != null ? new ArrayList<>(parameterTypeExpressions) : null, position.clone(), isErrorNode);
-    }
 }

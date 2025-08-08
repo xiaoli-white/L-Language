@@ -35,11 +35,6 @@ public final class LCAnnotation extends LCAstNode {
                 '}';
     }
 
-    @Override
-    public LCAnnotation clone() throws CloneNotSupportedException {
-        return new LCAnnotation(name, new ArrayList<>(arguments.size()), position.clone(), isErrorNode);
-    }
-
     public static class LCAnnotationField extends LCAstNode {
         public String name;
         public LCExpression value;
@@ -65,11 +60,6 @@ public final class LCAnnotation extends LCAstNode {
                     ", position=" + position +
                     ", isErrorNode=" + isErrorNode +
                     '}';
-        }
-
-        @Override
-        public LCAnnotationField clone() throws CloneNotSupportedException {
-            return new LCAnnotationField(name, value.clone(), position.clone(), isErrorNode);
         }
     }
 }

@@ -18,9 +18,4 @@ public final class LCDecimalLiteral extends LCLiteral<Double> {
     public Object accept(LCAstVisitor visitor, Object additional) {
         return visitor.visitDecimalLiteral(this, additional);
     }
-
-    @Override
-    public LCDecimalLiteral clone() throws CloneNotSupportedException {
-        return new LCDecimalLiteral(this.value, this.theType.equals(SystemTypes.FLOAT), this.position.clone(), isErrorNode);
-    }
 }

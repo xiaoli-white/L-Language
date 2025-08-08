@@ -58,11 +58,6 @@ public final class LCEnumDeclaration extends LCObjectDeclaration {
                 '}';
     }
 
-    @Override
-    public LCEnumDeclaration clone() throws CloneNotSupportedException {
-        return new LCEnumDeclaration(name, new ArrayList<>(typeParameters), new ArrayList<>(implementedInterfaces), delegated != null ? delegated.clone() : null, new ArrayList<>(fields), body.clone(), position.clone(), isErrorNode);
-    }
-
     public static final class LCEnumFieldDeclaration extends LCAstNode {
         public String name;
         public List<LCExpression> arguments;
@@ -89,11 +84,6 @@ public final class LCEnumDeclaration extends LCObjectDeclaration {
                     ", position=" + position +
                     ", isErrorNode=" + isErrorNode +
                     '}';
-        }
-
-        @Override
-        public LCEnumFieldDeclaration clone() throws CloneNotSupportedException {
-            return new LCEnumFieldDeclaration(name, new ArrayList<>(arguments), position.clone(), isErrorNode);
         }
     }
 }

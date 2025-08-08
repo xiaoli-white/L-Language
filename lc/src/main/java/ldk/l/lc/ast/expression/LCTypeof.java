@@ -34,14 +34,4 @@ public final class LCTypeof extends LCExpression {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCTypeof clone() throws CloneNotSupportedException {
-        LCTypeof lcTypeof = new LCTypeof(expression.clone(), position.clone(), isErrorNode);
-        lcTypeof.theType = theType;
-        lcTypeof.isLeftValue = isLeftValue;
-        lcTypeof.shouldBeLeftValue = shouldBeLeftValue;
-        lcTypeof.constValue = constValue;
-        return lcTypeof;
-    }
 }

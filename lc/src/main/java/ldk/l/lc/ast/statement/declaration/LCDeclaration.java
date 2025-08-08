@@ -7,6 +7,4 @@ public abstract class LCDeclaration extends LCStatement {
     public LCDeclaration(Position position, boolean isErrorNode) {
         super(position, isErrorNode);
     }
-    @Override
-    public abstract LCDeclaration clone() throws CloneNotSupportedException;
 }

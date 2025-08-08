@@ -52,11 +52,4 @@ public final class LCTypeReferenceExpression extends LCTypeExpression {
         }
         return result.toString();
     }
-
-    @Override
-    public LCTypeReferenceExpression clone() throws CloneNotSupportedException {
-        LCTypeReferenceExpression lcTypeReferenceExpression = new LCTypeReferenceExpression(this.name, this.position.clone(), this.isErrorNode);
-        lcTypeReferenceExpression.typeArgs = this.typeArgs != null ? new ArrayList<>(this.typeArgs) : null;
-        return lcTypeReferenceExpression;
-    }
 }

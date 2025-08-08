@@ -51,9 +51,4 @@ public final class LCTypeParameter extends LCAstNode {
                 ", position=" + position +
                 '}';
     }
-
-    @Override
-    public LCTypeParameter clone() throws CloneNotSupportedException {
-        return new LCTypeParameter(name, extended != null ? extended.clone() : null, new ArrayList<>(implemented), supered != null ? supered.clone() : null, _default != null ? _default.clone() : null, position.clone(), isErrorNode);
-    }
 }

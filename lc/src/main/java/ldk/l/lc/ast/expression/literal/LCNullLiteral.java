@@ -16,9 +16,4 @@ public final class LCNullLiteral extends LCLiteral<Object> {
     public Object accept(LCAstVisitor visitor, Object additional) {
         return visitor.visitNullLiteral(this, additional);
     }
-
-    @Override
-    public LCNullLiteral clone() throws CloneNotSupportedException {
-        return new LCNullLiteral(this.position.clone(), isErrorNode);
-    }
 }

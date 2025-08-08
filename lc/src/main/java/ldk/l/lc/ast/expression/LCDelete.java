@@ -30,14 +30,4 @@ public final class LCDelete extends LCExpression {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCDelete clone() throws CloneNotSupportedException {
-        LCDelete lcDelete = new LCDelete(expression.clone(), position.clone(), isErrorNode);
-        lcDelete.theType = theType;
-        lcDelete.isLeftValue = isLeftValue;
-        lcDelete.shouldBeLeftValue = shouldBeLeftValue;
-        lcDelete.constValue = constValue;
-        return lcDelete;
-    }
 }

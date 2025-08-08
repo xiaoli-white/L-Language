@@ -11,10 +11,6 @@ public abstract class LCSourceFile extends LCAstNode {
         super(pos, isErrorNode);
         this.filepath = filepath;
     }
-
-    @Override
-    public abstract LCSourceFile clone() throws CloneNotSupportedException;
-
     public abstract LCObjectDeclaration[] getObjectDeclarations();
 
     public abstract LCObjectDeclaration getObjectDeclaration(String fullName);

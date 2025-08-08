@@ -55,11 +55,6 @@ public final class LCCase extends LCExpressionWithScope {
                 '}';
     }
 
-    @Override
-    public LCCase clone() throws CloneNotSupportedException {
-        return new LCCase(kind, new ArrayList<>(labels), guard != null ? guard.clone() : null, new ArrayList<>(statements), completesNormally, position.clone(), isErrorNode);
-    }
-
     public enum LCCaseKind {
         STATEMENT,
         RULE

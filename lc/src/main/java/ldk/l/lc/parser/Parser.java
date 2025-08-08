@@ -1401,9 +1401,7 @@ public final class Parser {
 
         LCBlock methodBody;
         if (LCFlags.hasAbstract(flags) || LCFlags.hasExtern(flags)) {
-            Position t_beginPos = this.getPos();
-            Position thePos = new Position(t_beginPos.beginPos(), t_beginPos.beginPos(), t_beginPos.beginLine(), t_beginPos.beginLine(), t_beginPos.beginCol(), t_beginPos.beginCol());
-            methodBody = new LCBlock(List.of(), thePos, isErrorNode);
+            methodBody = null;
         } else {
             t1 = peek();
             if (t1.code() == Tokens.Separator.OpenBrace) {
@@ -2537,7 +2535,7 @@ public final class Parser {
                                 try {
                                     List<LCClassDeclaration> anonymousClassDeclarations = this.anonymousClassDeclarationsStack.peek();
                                     String anonymousClassName = "<class_" + anonymousClassDeclarations.size() + ">";
-                                    LCClassDeclaration classDeclaration = new LCClassDeclaration(anonymousClassName, new ArrayList<>(), typeReferenceExpression.clone(), new ArrayList<>(), new ArrayList<>(), null, body, body.position.clone(), false);
+                                    LCClassDeclaration classDeclaration = new LCClassDeclaration(anonymousClassName, new ArrayList<>(), (LCTypeReferenceExpression) typeReferenceExpression.clone(), new ArrayList<>(), new ArrayList<>(), null, body, body.position.clone(), false);
                                     classDeclaration.setModifier(new LCModifier(Position.origin));
                                     classDeclaration.setAnnotations(new ArrayList<>());
                                     anonymousClassDeclarations.add(classDeclaration);

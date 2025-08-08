@@ -40,9 +40,4 @@ public final class LCSwitchExpression extends LCExpressionWithScope {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCSwitchExpression clone() throws CloneNotSupportedException {
-        return new LCSwitchExpression(selector.clone(), new ArrayList<>(cases), position.clone(), isErrorNode);
-    }
 }

@@ -38,9 +38,4 @@ public final class LCIs extends LCExpression {
                 ", position=" + position +
                 '}';
     }
-
-    @Override
-    public LCIs clone() throws CloneNotSupportedException {
-        return new LCIs(expression1.clone(), expression2.clone(), position.clone(), isErrorNode);
-    }
 }

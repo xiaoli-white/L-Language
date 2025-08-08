@@ -18,9 +18,4 @@ public final class LCBooleanLiteral extends LCLiteral<Boolean> {
     public Object accept(LCAstVisitor visitor, Object additional) {
         return visitor.visitBooleanLiteral(this, additional);
     }
-
-    @Override
-    public LCBooleanLiteral clone() throws CloneNotSupportedException {
-        return new LCBooleanLiteral(this.value, this.position.clone(), isErrorNode);
-    }
 }

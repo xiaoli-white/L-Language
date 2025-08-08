@@ -42,11 +42,6 @@ public final class LCAnnotationDeclaration extends LCObjectDeclaration {
                 '}';
     }
 
-    @Override
-    public LCAnnotationDeclaration clone() throws CloneNotSupportedException {
-        return new LCAnnotationDeclaration(name, annotationBody.clone(), position.clone(), isErrorNode);
-    }
-
     public static class LCAnnotationFieldDeclaration extends LCAstNode {
         public AnnotationSymbol.AnnotationFieldSymbol symbol = null;
         public String name;
@@ -80,11 +75,6 @@ public final class LCAnnotationDeclaration extends LCObjectDeclaration {
                     ", isErrorNode=" + isErrorNode +
                     '}';
         }
-
-        @Override
-        public LCAnnotationFieldDeclaration clone() throws CloneNotSupportedException {
-            return new LCAnnotationFieldDeclaration(name, typeExpression != null ? typeExpression.clone() : null, defaultValue != null ? defaultValue.clone() : null, position.clone(), isErrorNode);
-        }
     }
 
     public static final class LCAnnotationBody extends LCAstNode {
@@ -110,11 +100,5 @@ public final class LCAnnotationDeclaration extends LCObjectDeclaration {
                     ", isErrorNode=" + isErrorNode +
                     '}';
         }
-
-        @Override
-        public LCAnnotationBody clone() throws CloneNotSupportedException {
-            return new LCAnnotationBody(new ArrayList<>(fields), position.clone(), isErrorNode);
-        }
     }
-
 }

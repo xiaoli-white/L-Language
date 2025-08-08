@@ -46,14 +46,4 @@ public final class LCNewObject extends LCExpression {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCNewObject clone() throws CloneNotSupportedException {
-        LCNewObject lcNewObject = new LCNewObject(place != null ? place.clone() : null, typeExpression.clone(), new ArrayList<>(arguments), position.clone(), isErrorNode);
-        lcNewObject.theType = theType;
-        lcNewObject.isLeftValue = isLeftValue;
-        lcNewObject.shouldBeLeftValue = shouldBeLeftValue;
-        lcNewObject.constValue = constValue;
-        return lcNewObject;
-    }
 }

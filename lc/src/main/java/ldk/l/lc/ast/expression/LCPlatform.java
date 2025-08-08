@@ -27,9 +27,4 @@ public final class LCPlatform extends LCExpression {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCPlatform clone() throws CloneNotSupportedException {
-        return new LCPlatform(constValue.toString(), position.clone(), isErrorNode);
-    }
 }

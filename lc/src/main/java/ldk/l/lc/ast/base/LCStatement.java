@@ -18,7 +18,4 @@ public abstract class LCStatement extends LCAstNode {
             lcAnnotation.parentNode = this;
         }
     }
-
-    @Override
-    public abstract LCStatement clone() throws CloneNotSupportedException;
 }

@@ -11,17 +11,9 @@ public abstract class LCCaseLabel extends LCAstNode {
         super(pos, isErrorNode);
     }
 
-    @Override
-    public abstract LCCaseLabel clone() throws CloneNotSupportedException;
-
     public static final class LCDefaultCaseLabel extends LCCaseLabel {
         public LCDefaultCaseLabel(Position pos, boolean isErrorNode) {
             super(pos, isErrorNode);
-        }
-
-        @Override
-        public LCDefaultCaseLabel clone() throws CloneNotSupportedException {
-            return new LCDefaultCaseLabel(position.clone(), isErrorNode);
         }
 
         @Override
@@ -60,11 +52,6 @@ public abstract class LCCaseLabel extends LCAstNode {
                     ", isErrorNode=" + isErrorNode +
                     '}';
         }
-
-        @Override
-        public LCConstantCaseLabel clone() throws CloneNotSupportedException {
-            return new LCConstantCaseLabel(expression.clone(), position.clone(), isErrorNode);
-        }
     }
 
     public static final class LCTypeCaseLabel extends LCCaseLabel {
@@ -88,11 +75,6 @@ public abstract class LCCaseLabel extends LCAstNode {
                     ", position=" + position +
                     ", isErrorNode=" + isErrorNode +
                     '}';
-        }
-
-        @Override
-        public LCTypeCaseLabel clone() throws CloneNotSupportedException {
-            return new LCTypeCaseLabel(typeExpression.clone(), position.clone(), isErrorNode);
         }
     }
 }

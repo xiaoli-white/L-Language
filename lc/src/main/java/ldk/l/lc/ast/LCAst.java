@@ -41,11 +41,6 @@ public final class LCAst extends LCAstNode {
                 '}';
     }
 
-    @Override
-    public LCAst clone() throws CloneNotSupportedException {
-        throw new CloneNotSupportedException("'" + this.getClass().getName() + "' not supported clone.");
-    }
-
     public void addSourceFile(LCSourceFile lcSourceFile) {
         lcSourceFile.parentNode = this;
         this.sourceFiles.add(lcSourceFile);

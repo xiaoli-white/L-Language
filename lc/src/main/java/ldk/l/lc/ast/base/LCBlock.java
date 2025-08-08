@@ -37,9 +37,4 @@ public final class LCBlock extends LCExpressionWithScope {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCBlock clone() throws CloneNotSupportedException {
-        return new LCBlock(new ArrayList<>(this.statements), this.position.clone(), this.isErrorNode);
-    }
 }

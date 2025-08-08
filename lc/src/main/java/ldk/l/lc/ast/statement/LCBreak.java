@@ -26,9 +26,4 @@ public final class LCBreak extends LCStatement {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCBreak clone() throws CloneNotSupportedException {
-        return new LCBreak(label, position.clone(), isErrorNode);
-    }
 }

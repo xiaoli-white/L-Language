@@ -32,12 +32,4 @@ public final class LCThis extends LCExpression {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCThis clone() throws CloneNotSupportedException {
-        LCThis lcThis = new LCThis(position.clone(), isErrorNode);
-        lcThis.symbol = symbol;
-        return lcThis;
-    }
-
 }

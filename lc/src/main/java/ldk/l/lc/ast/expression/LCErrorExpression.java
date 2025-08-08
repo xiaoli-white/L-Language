@@ -34,9 +34,4 @@ public final class LCErrorExpression extends LCExpression {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCErrorExpression clone() throws CloneNotSupportedException {
-        return new LCErrorExpression(expression != null ? expression.clone() : null, position.clone());
-    }
 }

@@ -33,9 +33,4 @@ public final class LCMalloc extends LCExpression {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCMalloc clone() throws CloneNotSupportedException {
-        return new LCMalloc(size.clone(), position.clone(), isErrorNode);
-    }
 }

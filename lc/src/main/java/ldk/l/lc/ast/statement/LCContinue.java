@@ -26,9 +26,4 @@ public final class LCContinue extends LCStatement {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCContinue clone() throws CloneNotSupportedException {
-        return new LCContinue(label, position.clone(), isErrorNode);
-    }
 }

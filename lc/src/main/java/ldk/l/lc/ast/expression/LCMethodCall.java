@@ -80,9 +80,4 @@ public final class LCMethodCall extends LCExpression {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCMethodCall clone() throws CloneNotSupportedException {
-        return new LCMethodCall(this.name, this.positionOfName != null ? this.positionOfName.clone() : null, this.expression != null ? this.expression.clone() : null, this.typeArguments != null ? new ArrayList<>(this.typeArguments) : null, this.arguments != null ? new ArrayList<>(this.arguments) : null, this.position.clone(), this.isErrorNode);
-    }
 }

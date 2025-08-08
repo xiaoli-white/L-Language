@@ -43,11 +43,6 @@ public final class LCSourceCodeFile extends LCSourceFile {
     }
 
     @Override
-    public LCSourceCodeFile clone() throws CloneNotSupportedException {
-        return new LCSourceCodeFile(this.filepath, this.body.clone(), this.position.clone(), this.isErrorNode);
-    }
-
-    @Override
     public LCObjectDeclaration[] getObjectDeclarations() {
         ArrayList<LCObjectDeclaration> objectDeclarations = new ArrayList<>();
         for (LCStatement LCStatement : this.body.statements) {

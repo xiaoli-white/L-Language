@@ -32,9 +32,4 @@ public final class LCReturn extends LCStatement {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCReturn clone() throws CloneNotSupportedException {
-        return new LCReturn(this.returnedValue != null ? this.returnedValue.clone() : null, this.position.clone(), this.isErrorNode);
-    }
 }

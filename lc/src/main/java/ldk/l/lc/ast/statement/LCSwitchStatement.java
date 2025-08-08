@@ -37,9 +37,4 @@ public final class LCSwitchStatement extends LCStatementWithScope {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCSwitchStatement clone() throws CloneNotSupportedException {
-        return new LCSwitchStatement(selector.clone(), new ArrayList<>(cases), position.clone(), isErrorNode);
-    }
 }

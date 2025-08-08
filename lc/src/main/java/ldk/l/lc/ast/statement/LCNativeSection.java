@@ -12,9 +12,6 @@ public abstract class LCNativeSection extends LCAstNode {
         super(pos, isErrorNode);
     }
 
-    @Override
-    public abstract LCNativeSection clone() throws CloneNotSupportedException;
-
     public static final class LCNativeCode extends LCNativeSection {
         public LCNativeCode(String code, Position pos) {
             this(code, pos, false);
@@ -37,11 +34,6 @@ public abstract class LCNativeSection extends LCAstNode {
                     ", position=" + position +
                     ", isErrorNode=" + isErrorNode +
                     '}';
-        }
-
-        @Override
-        public LCNativeCode clone() throws CloneNotSupportedException {
-            return new LCNativeCode(code, position.clone(), isErrorNode);
         }
     }
 
@@ -77,11 +69,6 @@ public abstract class LCNativeSection extends LCAstNode {
                     ", position=" + position +
                     ", isErrorNode=" + isErrorNode +
                     '}';
-        }
-
-        @Override
-        public LCReferenceNativeFile clone() throws CloneNotSupportedException {
-            return new LCReferenceNativeFile(name, beginLine.clone(), endLine.clone(), position.clone(), isErrorNode);
         }
     }
 }

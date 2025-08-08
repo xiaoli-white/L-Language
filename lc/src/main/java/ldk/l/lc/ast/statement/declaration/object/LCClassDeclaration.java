@@ -56,9 +56,4 @@ public final class LCClassDeclaration extends LCObjectDeclaration {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCClassDeclaration clone() throws CloneNotSupportedException {
-        return new LCClassDeclaration(this.name, new ArrayList<>(this.typeParameters), this.extended != null ? this.extended.clone() : null, new ArrayList<>(this.implementedInterfaces), new ArrayList<>(this.permittedClasses), this.delegated != null ? this.delegated.clone() : null, this.body != null ? this.body.clone() : null, this.position.clone(), this.isErrorNode);
-    }
 }

@@ -9,7 +9,4 @@ public abstract class LCStatementWithScope extends LCStatement {
     public LCStatementWithScope(Position pos, boolean isErrorNode) {
         super(pos, isErrorNode);
     }
-
-    @Override
-    public abstract LCStatementWithScope clone() throws CloneNotSupportedException;
 }

@@ -42,9 +42,4 @@ public final class LCIf extends LCExpressionWithScope {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCIf clone() throws CloneNotSupportedException {
-        return new LCIf(condition.clone(), then.clone(), _else != null ? _else.clone() : null, position.clone(), isErrorNode);
-    }
 }

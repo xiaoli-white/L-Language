@@ -67,9 +67,4 @@ public final class LCLambda extends LCExpressionWithScope {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCLambda clone() throws CloneNotSupportedException {
-        return new LCLambda(new ArrayList<>(typeParameters), parameterList.clone(), returnTypeExpression != null ? returnTypeExpression.clone() : null, LCFlags.hasThisReadonly(modifier.flags), new ArrayList<>(threwExceptions), body.clone(), position.clone(), isErrorNode);
-    }
 }

@@ -16,9 +16,4 @@ public final class LCStringLiteral extends LCLiteral<String> {
     public Object accept(LCAstVisitor visitor, Object additional) {
         return visitor.visitStringLiteral(this, additional);
     }
-
-    @Override
-    public LCStringLiteral clone() throws CloneNotSupportedException {
-        return new LCStringLiteral(this.value, this.position.clone(), isErrorNode);
-    }
 }

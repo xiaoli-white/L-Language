@@ -8,7 +8,4 @@ public abstract sealed class LCAbstractLoop extends LCStatementWithScope permits
     public LCAbstractLoop(Position pos, boolean isErrorNode) {
         super(pos, isErrorNode);
     }
-
-    @Override
-    public abstract LCAbstractLoop clone() throws CloneNotSupportedException;
 }
