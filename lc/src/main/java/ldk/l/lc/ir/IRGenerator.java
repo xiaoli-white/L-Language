@@ -143,7 +143,12 @@ public final class IRGenerator extends LCAstVisitor {
                     }
                 }
             }));
-            function.controlFlowGraph.buildEdges();
+            List<IRControlFlowGraph.BasicBlock> toRemoveBasicBlocks;
+            do {
+                function.controlFlowGraph.buildEdges();
+                toRemoveBasicBlocks = new LinkedList<>(function.controlFlowGraph.basicBlocks.values().stream().filter(basicBlock -> !"entry".equals(basicBlock.name) && function.controlFlowGraph.inEdges.get(basicBlock).isEmpty()).toList());
+                toRemoveBasicBlocks.forEach(function.controlFlowGraph::removeBasicBlock);
+            } while (!toRemoveBasicBlocks.isEmpty());
         });
         module.entryPoint = ast.mainMethod.getFullName();
         return null;
@@ -170,7 +175,7 @@ public final class IRGenerator extends LCAstVisitor {
         this.module.putStructure(irStructure);
 
         this.currentCFG = this.initCFG;
-        createBasicBlock();
+        createBasicBlock("entry");
         if (lcClassDeclaration.symbol.extended != null) {
             this.getThisInstance();
             IROperand thisInstance = operandStack.pop();
@@ -179,16 +184,26 @@ public final class IRGenerator extends LCAstVisitor {
         initObjectHead(lcClassDeclaration.getFullName());
 
         this.currentCFG = this.staticInitCFG;
-        createBasicBlock();
+        createBasicBlock("entry");
 
         super.visitClassDeclaration(lcClassDeclaration, additional);
 
+        this.currentCFG = initCFG;
+        createBasicBlock();
+        addInstruction(new IRReturn());
+        this.currentCFG = staticInitCFG;
+        createBasicBlock();
+        addInstruction(new IRReturn());
         this.module.putFunction(new IRFunction(IRType.getVoidType(), lcClassDeclaration.getFullName() + ".<__init__>()V", 1, this.initFields.toArray(new IRField[0]), this.initCFG));
         String staticInitFunctionName = lcClassDeclaration.getFullName() + ".<__static_init__>()V";
         this.module.putFunction(new IRFunction(IRType.getVoidType(), staticInitFunctionName, 0, this.staticInitFields.toArray(new IRField[0]), this.staticInitCFG));
 
         if (lcClassDeclaration.symbol.destructor == null) {
-            this.module.putFunction(new IRFunction(IRType.getVoidType(), lcClassDeclaration.getFullName() + ".<deinit>()V", 1, new IRField[]{new IRField("<this_instance>", new IRPointerType(IRType.getVoidType()))}, createControlFlowGraph()));
+            IRControlFlowGraph.BasicBlock deinitBasicBlock = new IRControlFlowGraph.BasicBlock("entry");
+            deinitBasicBlock.instructions.add(new IRReturn());
+            IRControlFlowGraph deinitCFG = createControlFlowGraph();
+            deinitCFG.addBasicBlock(deinitBasicBlock);
+            this.module.putFunction(new IRFunction(IRType.getVoidType(), lcClassDeclaration.getFullName() + ".<deinit>()V", 1, new IRField[]{new IRField("<this_instance>", new IRPointerType(IRType.getVoidType()))}, deinitCFG));
         }
 
         this.objectStaticInitInvocations.add(new IRInvoke(IRType.getVoidType(), new IRMacro("function_address", new String[]{staticInitFunctionName}), new IRType[0], new IROperand[0], null));
@@ -237,14 +252,14 @@ public final class IRGenerator extends LCAstVisitor {
         this.module.putStructure(irStructure);
 
         this.currentCFG = this.initCFG;
-        createBasicBlock();
+        createBasicBlock("entry");
         this.getThisInstance();
         IROperand thisInstance = operandStack.pop();
         addInstruction(new IRInvoke(IRType.getVoidType(), new IRMacro("function_address", new String[]{"l.lang.Enum.<__init__>()V"}), new IRType[]{new IRPointerType(IRType.getVoidType())}, new IROperand[]{thisInstance}, null));
         initObjectHead(lcEnumDeclaration.getFullName());
 
         this.currentCFG = this.staticInitCFG;
-        createBasicBlock();
+        createBasicBlock("entry");
 
         for (LCAnnotation lcAnnotation : lcEnumDeclaration.annotations) {
             this.visitAnnotation(lcAnnotation, additional);
@@ -264,12 +279,22 @@ public final class IRGenerator extends LCAstVisitor {
         this.inStaticInit = false;
         this.visitBlock(lcEnumDeclaration.body, additional);
 
+        this.currentCFG = initCFG;
+        createBasicBlock();
+        addInstruction(new IRReturn());
+        this.currentCFG = staticInitCFG;
+        createBasicBlock();
+        addInstruction(new IRReturn());
         this.module.putFunction(new IRFunction(IRType.getVoidType(), lcEnumDeclaration.getFullName() + ".<__init__>()V", 1, this.initFields.toArray(new IRField[0]), this.initCFG));
         String staticInitFunctionName = lcEnumDeclaration.getFullName() + ".<__static_init__>()V";
         this.module.putFunction(new IRFunction(IRType.getVoidType(), staticInitFunctionName, 0, this.staticInitFields.toArray(new IRField[0]), this.staticInitCFG));
 
         if (lcEnumDeclaration.symbol.destructor == null) {
-            this.module.putFunction(new IRFunction(IRType.getVoidType(), lcEnumDeclaration.getFullName() + ".<deinit>()V", 1, new IRField[]{new IRField("<this_instance>", new IRPointerType(IRType.getVoidType()))}, createControlFlowGraph()));
+            IRControlFlowGraph.BasicBlock deinitBasicBlock = new IRControlFlowGraph.BasicBlock("entry");
+            deinitBasicBlock.instructions.add(new IRReturn());
+            IRControlFlowGraph deinitCFG = createControlFlowGraph();
+            deinitCFG.addBasicBlock(deinitBasicBlock);
+            this.module.putFunction(new IRFunction(IRType.getVoidType(), lcEnumDeclaration.getFullName() + ".<deinit>()V", 1, new IRField[]{new IRField("<this_instance>", new IRPointerType(IRType.getVoidType()))}, deinitCFG));
         }
 
         this.objectStaticInitInvocations.add(new IRInvoke(IRType.getVoidType(), new IRMacro("function_address", new String[]{staticInitFunctionName}), new IRType[0], new IROperand[0], null));
@@ -329,23 +354,33 @@ public final class IRGenerator extends LCAstVisitor {
         this.module.putStructure(irStructure);
 
         this.currentCFG = this.initCFG;
-        createBasicBlock();
+        createBasicBlock("entry");
         this.getThisInstance();
         IROperand thisInstance = operandStack.pop();
         addInstruction(new IRInvoke(IRType.getVoidType(), new IRMacro("function_address", new String[]{"l.lang.Record.<__init__>()V"}), new IRType[]{new IRPointerType(IRType.getVoidType())}, new IROperand[]{thisInstance}, null));
         initObjectHead(lcRecordDeclaration.getFullName());
 
         this.currentCFG = this.staticInitCFG;
-        createBasicBlock();
+        createBasicBlock("entry");
 
         super.visitRecordDeclaration(lcRecordDeclaration, additional);
 
+        this.currentCFG = initCFG;
+        createBasicBlock();
+        addInstruction(new IRReturn());
+        this.currentCFG = staticInitCFG;
+        createBasicBlock();
+        addInstruction(new IRReturn());
         this.module.putFunction(new IRFunction(IRType.getVoidType(), lcRecordDeclaration.getFullName() + ".<__init__>()V", 1, this.initFields.toArray(new IRField[0]), this.initCFG));
         String staticInitFunctionName = lcRecordDeclaration.getFullName() + ".<__static_init__>()V";
         this.module.putFunction(new IRFunction(IRType.getVoidType(), staticInitFunctionName, 0, this.staticInitFields.toArray(new IRField[0]), this.staticInitCFG));
 
         if (lcRecordDeclaration.symbol.destructor == null) {
-            this.module.putFunction(new IRFunction(IRType.getVoidType(), lcRecordDeclaration.getFullName() + ".<deinit>()V", 1, new IRField[]{new IRField("<this_instance>", new IRPointerType(IRType.getVoidType()))}, createControlFlowGraph()));
+            IRControlFlowGraph.BasicBlock deinitBasicBlock = new IRControlFlowGraph.BasicBlock("entry");
+            deinitBasicBlock.instructions.add(new IRReturn());
+            IRControlFlowGraph deinitCFG = createControlFlowGraph();
+            deinitCFG.addBasicBlock(deinitBasicBlock);
+            this.module.putFunction(new IRFunction(IRType.getVoidType(), lcRecordDeclaration.getFullName() + ".<deinit>()V", 1, new IRField[]{new IRField("<this_instance>", new IRPointerType(IRType.getVoidType()))}, deinitCFG));
         }
 
         this.objectStaticInitInvocations.add(new IRInvoke(IRType.getVoidType(), new IRMacro("function_address", new String[]{staticInitFunctionName}), new IRType[0], new IROperand[0], null));
@@ -385,6 +420,7 @@ public final class IRGenerator extends LCAstVisitor {
             this.variableName2FieldName.put(variableSymbol.name, stack);
         }
 
+        createBasicBlock("entry");
         createBasicBlock();
         if (lcMethodDeclaration.body != null) {
             this.visitBlock(lcMethodDeclaration.body, additional);
@@ -431,7 +467,7 @@ public final class IRGenerator extends LCAstVisitor {
                 IROperand result = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
                 IROperand address;
                 if (this.currentCFG == null) {
-                    this.currentCFG = initCFG;
+                    this.currentCFG = this.initCFG;
 
                     this.getThisInstance();
                     IROperand op = operandStack.pop();
@@ -674,6 +710,8 @@ public final class IRGenerator extends LCAstVisitor {
         }
 
         addInstruction(new IRReturn(value));
+
+        createBasicBlock();
         return null;
     }
 
@@ -759,14 +797,17 @@ public final class IRGenerator extends LCAstVisitor {
 //                operandStack.push(operand);
 //            }
         }
-        if (this.getEnclosingMethodDeclaration(lcBlock) != null || this.getEnclosingInit(lcBlock) != null) {
-            releaseScope(lcBlock.scope);
-            List<Symbol> symbols = lcBlock.scope.name2symbol.values().stream().toList();
-            for (int i = symbols.size() - 1; i >= 0; i--) {
-                if (symbols.get(i) instanceof VariableSymbol variableSymbol)
-                    variableName2FieldName.get(variableSymbol.name).pop();
+        if (!lcBlock.statements.isEmpty() && !(lcBlock.statements.getLast() instanceof LCReturn)) {
+            if (this.getEnclosingMethodDeclaration(lcBlock) != null || this.getEnclosingInit(lcBlock) != null) {
+                releaseScope(lcBlock.scope);
+                List<Symbol> symbols = lcBlock.scope.name2symbol.values().stream().toList();
+                for (int i = symbols.size() - 1; i >= 0; i--) {
+                    if (symbols.get(i) instanceof VariableSymbol variableSymbol)
+                        variableName2FieldName.get(variableSymbol.name).pop();
+                }
             }
         }
+
         return null;
     }
 
@@ -833,11 +874,11 @@ public final class IRGenerator extends LCAstVisitor {
                 createBasicBlock();
                 this.visit(lcBinary.expression2, additional);
                 IROperand operand2 = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
-                IRConditionalJump irConditionalJump2 = new IRConditionalJump(operand2Type, IRCondition.NotEqual, operand2, new IRConstant(constantTrueIndex), null);
-                addInstruction(irConditionalJump2);
                 int constant1Index = module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 1));
                 String tempRegister = allocateVirtualRegister();
                 addInstruction(new IRStackAllocate(new IRConstant(constant1Index), new IRVirtualRegister(tempRegister)));
+                IRConditionalJump irConditionalJump2 = new IRConditionalJump(operand2Type, IRCondition.NotEqual, operand2, new IRConstant(constantTrueIndex), null);
+                addInstruction(irConditionalJump2);
 
                 IRControlFlowGraph.BasicBlock bb = createBasicBlock();
                 irConditionalJump.target = bb.name;
@@ -1245,7 +1286,7 @@ public final class IRGenerator extends LCAstVisitor {
         }
 
         if (conditionalJump1 != null) {
-            IRGoto irGoto = new IRGoto("");
+            IRGoto irGoto = new IRGoto(null);
             addInstruction(irGoto);
             IRControlFlowGraph.BasicBlock basicBlock = createBasicBlock();
             conditionalJump1.target = basicBlock.name;
@@ -1501,7 +1542,7 @@ public final class IRGenerator extends LCAstVisitor {
 
         createBasicBlock();
         addInstruction(new IRSet(IRType.getBooleanType(), new IRVirtualRegister(tempRegister), new IRConstant(constantTrueIndex)));
-        IRGoto irGoto = new IRGoto("");
+        IRGoto irGoto = new IRGoto(null);
         addInstruction(irGoto);
 
         IRControlFlowGraph.BasicBlock falseBlock = createBasicBlock();
@@ -1595,7 +1636,7 @@ public final class IRGenerator extends LCAstVisitor {
         if (lcNewArray.elements != null) {
             int constant16Index = module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 16));
             String temp = allocateVirtualRegister();
-            addInstruction(new IRCalculate(IRCalculate.Operator.ADD, IRType.getUnsignedLongType(), place, new IRConstant(constant16Index), new IRVirtualRegister(temp)));
+            addInstruction(new IRCalculate(IRCalculate.Operator.ADD, new IRPointerType(elementType), place, new IRConstant(constant16Index), new IRVirtualRegister(temp)));
             String address = allocateVirtualRegister();
             int constant8Index = module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 8));
             addInstruction(new IRStackAllocate(new IRConstant(constant8Index), new IRVirtualRegister(address)));
@@ -1609,7 +1650,7 @@ public final class IRGenerator extends LCAstVisitor {
                 addInstruction(new IRGet(new IRPointerType(elementType), new IRVirtualRegister(address), new IRVirtualRegister(elementAddress)));
                 addInstruction(new IRSet(elementType, new IRVirtualRegister(elementAddress), elem));
                 String temp2 = allocateVirtualRegister();
-                addInstruction(new IRCalculate(IRCalculate.Operator.ADD, IRType.getUnsignedLongType(), new IRVirtualRegister(elementAddress), typeSize, new IRVirtualRegister(temp2)));
+                addInstruction(new IRCalculate(IRCalculate.Operator.ADD, new IRPointerType(elementType), new IRVirtualRegister(elementAddress), typeSize, new IRVirtualRegister(temp2)));
                 addInstruction(new IRSet(new IRPointerType(elementType), new IRVirtualRegister(address), new IRVirtualRegister(temp2)));
             }
         } else {
@@ -1640,7 +1681,7 @@ public final class IRGenerator extends LCAstVisitor {
 
 
         addInstruction(new IRSet(type, new IRVirtualRegister(tempRegister), thenResult));
-        IRGoto irGoto = new IRGoto("");
+        IRGoto irGoto = new IRGoto(null);
         addInstruction(irGoto);
 
         IRControlFlowGraph.BasicBlock elseBlock = createBasicBlock();
@@ -1974,7 +2015,7 @@ public final class IRGenerator extends LCAstVisitor {
     private void getThisInstance() {
         IRMacro address = new IRMacro("field_address", new String[]{"<this_instance>"});
         String result = allocateVirtualRegister();
-        addInstruction(new IRGet(IRType.getUnsignedLongType(), address, new IRVirtualRegister(result)));
+        addInstruction(new IRGet(new IRPointerType(IRType.getVoidType()), address, new IRVirtualRegister(result)));
         operandStack.push(new IRVirtualRegister(result));
     }
 
@@ -2115,10 +2156,10 @@ public final class IRGenerator extends LCAstVisitor {
 
         String address = allocateVirtualRegister();
         int constant8Index = module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 8));
-        addInstruction(new IRStackAllocate(new IRConstant(8), new IRVirtualRegister(address)));
+        addInstruction(new IRStackAllocate(new IRConstant(constant8Index), new IRVirtualRegister(address)));
         int constant16Index = module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 16));
         String temp = allocateVirtualRegister();
-        addInstruction(new IRCalculate(IRCalculate.Operator.ADD, IRType.getUnsignedLongType(), place, new IRConstant(constant16Index), new IRVirtualRegister(temp)));
+        addInstruction(new IRCalculate(IRCalculate.Operator.ADD, new IRPointerType(IRType.getVoidType()), place, new IRConstant(constant16Index), new IRVirtualRegister(temp)));
         addInstruction(new IRSet(new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(address), new IRVirtualRegister(temp)));
         String countRegister = allocateVirtualRegister();
         addInstruction(new IRStackAllocate(new IRConstant(constant8Index), new IRVirtualRegister(countRegister)));
@@ -2140,7 +2181,7 @@ public final class IRGenerator extends LCAstVisitor {
         addInstruction(new IRGet(new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(address), new IRVirtualRegister(temp3)));
         addInstruction(new IRSet(IRType.getUnsignedLongType(), new IRVirtualRegister(temp3), newPlace));
         String temp4 = allocateVirtualRegister();
-        addInstruction(new IRCalculate(IRCalculate.Operator.ADD, IRType.getUnsignedLongType(), new IRVirtualRegister(temp3), typeSize, new IRVirtualRegister(temp4)));
+        addInstruction(new IRCalculate(IRCalculate.Operator.ADD, new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(temp3), typeSize, new IRVirtualRegister(temp4)));
         addInstruction(new IRSet(new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(address), new IRVirtualRegister(temp4)));
 
         String temp5 = allocateVirtualRegister();
@@ -2171,8 +2212,7 @@ public final class IRGenerator extends LCAstVisitor {
     }
 
     private void deleteSomething(IROperand operand, Type type) {
-        if (type instanceof ArrayType arrayType)
-            deleteArray(operand, arrayType);
+        if (type instanceof ArrayType arrayType) deleteArray(operand, arrayType);
         else if (type instanceof NamedType namedType && !SystemTypes.isPrimitiveType(namedType))
             deleteObject(operand, namedType);
     }
@@ -2218,10 +2258,10 @@ public final class IRGenerator extends LCAstVisitor {
             int constant8Index = module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 8));
             addInstruction(new IRStackAllocate(new IRConstant(constant8Index), new IRVirtualRegister(addressRegister)));
             String temp = allocateVirtualRegister();
-            addInstruction(new IRCalculate(IRCalculate.Operator.SUB, IRType.getUnsignedLongType(), array, new IRConstant(constant8Index), new IRVirtualRegister(temp)));
+            addInstruction(new IRCalculate(IRCalculate.Operator.SUB, parseType(arrayType), array, new IRConstant(constant8Index), new IRVirtualRegister(temp)));
             addInstruction(new IRSet(new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(addressRegister), new IRVirtualRegister(temp)));
             String sizeRegister0 = allocateVirtualRegister();
-            addInstruction(new IRGet(IRType.getUnsignedLongType(), new IRVirtualRegister(addressRegister), new IRVirtualRegister(sizeRegister0)));
+            addInstruction(new IRGet(new IRPointerType(IRType.getUnsignedLongType()), new IRVirtualRegister(addressRegister), new IRVirtualRegister(sizeRegister0)));
             String sizeRegister1 = allocateVirtualRegister();
             addInstruction(new IRGet(IRType.getUnsignedLongType(), new IRVirtualRegister(sizeRegister0), new IRVirtualRegister(sizeRegister1)));
             String sizeRegister = allocateVirtualRegister();
@@ -2230,7 +2270,7 @@ public final class IRGenerator extends LCAstVisitor {
             String lengthRegister = allocateVirtualRegister();
             addInstruction(new IRCalculate(IRCalculate.Operator.DIV, IRType.getUnsignedLongType(), new IRVirtualRegister(sizeRegister), new IRConstant(constantTypeSizeIndex), new IRVirtualRegister(lengthRegister)));
             String temp2 = allocateVirtualRegister();
-            addInstruction(new IRCalculate(IRCalculate.Operator.ADD, IRType.getUnsignedLongType(), array, new IRConstant(constant16Index), new IRVirtualRegister(temp2)));
+            addInstruction(new IRCalculate(IRCalculate.Operator.ADD, parseType(arrayType), array, new IRConstant(constant16Index), new IRVirtualRegister(temp2)));
             addInstruction(new IRSet(new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(addressRegister), new IRVirtualRegister(temp2)));
 
             String countRegister = allocateVirtualRegister();
@@ -2284,7 +2324,7 @@ public final class IRGenerator extends LCAstVisitor {
 
         int constant8Index = this.module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 8));
         String tempRegister = allocateVirtualRegister();
-        addInstruction(new IRCalculate(false, IRCalculate.Operator.ADD, IRType.getUnsignedLongType(), operand, new IRConstant(constant8Index), new IRVirtualRegister(tempRegister)));
+        addInstruction(new IRCalculate(false, IRCalculate.Operator.ADD, new IRPointerType(IRType.getUnsignedLongType()), operand, new IRConstant(constant8Index), new IRVirtualRegister(tempRegister)));
         addInstruction(new IRIncrease(IRType.getUnsignedLongType(), new IRVirtualRegister(tempRegister)));
 
         if (irConditionalJump != null) {
@@ -2308,7 +2348,7 @@ public final class IRGenerator extends LCAstVisitor {
 
         int constant8Index = this.module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 8));
         String temp = allocateVirtualRegister();
-        addInstruction(new IRCalculate(IRCalculate.Operator.ADD, IRType.getUnsignedLongType(), operand, new IRConstant(constant8Index), new IRVirtualRegister(temp)));
+        addInstruction(new IRCalculate(IRCalculate.Operator.ADD, new IRPointerType(IRType.getUnsignedLongType()), operand, new IRConstant(constant8Index), new IRVirtualRegister(temp)));
         addInstruction(new IRDecrease(IRType.getUnsignedLongType(), new IRVirtualRegister(temp)));
 
         String temp2 = allocateVirtualRegister();
@@ -2329,6 +2369,7 @@ public final class IRGenerator extends LCAstVisitor {
     private void releaseScope(Scope scope) {
         for (Symbol symbol : scope.name2symbol.values()) {
             if (symbol instanceof VariableSymbol variableSymbol) {
+                if (!SystemTypes.isReference(variableSymbol.theType)) continue;
                 boolean ret = getVariable(variableSymbol, false);
                 if (!ret) continue;
                 IROperand operand = operandStack.pop();
@@ -2380,27 +2421,21 @@ public final class IRGenerator extends LCAstVisitor {
     private IRTypeCast.Kind parseTypeCast(Type originalType, Type targetType) {
         if (targetType instanceof PointerType) {
             return IRTypeCast.Kind.ZeroExtend;
-        } else if (SystemTypes.isSignedIntegerType(originalType)) {
-            if (SystemTypes.isSignedIntegerType(targetType)) {
-                return IRTypeCast.Kind.SignExtend;
-            } else if (SystemTypes.isDecimalType(targetType)) {
-                return IRTypeCast.Kind.IntToFloat;
-            } else {
-                return IRTypeCast.Kind.ZeroExtend;
-            }
-        } else if (SystemTypes.isDecimalType(originalType)) {
-            if (SystemTypes.isIntegerType(targetType)) {
-                return IRTypeCast.Kind.FloatToInt;
-            } else if (SystemTypes.isDecimalType(targetType)) {
-                return IRTypeCast.Kind.FloatExtend;
-            } else {
-                return IRTypeCast.Kind.ZeroExtend;
-            }
+        } else if (SystemTypes.isUnsignedIntegerType(targetType)) {
+            if (isNeedsTruncate(originalType, targetType)) return IRTypeCast.Kind.Truncate;
+            else if (SystemTypes.isUnsignedIntegerType(originalType)) return IRTypeCast.Kind.ZeroExtend;
+            else if (SystemTypes.isDecimalType(originalType)) return IRTypeCast.Kind.FloatToInt;
+            else return IRTypeCast.Kind.SignExtend;
+        } else if (SystemTypes.isSignedIntegerType(targetType)) {
+            if (isNeedsTruncate(originalType, targetType)) return IRTypeCast.Kind.Truncate;
+            else if (SystemTypes.isDecimalType(originalType)) return IRTypeCast.Kind.FloatToInt;
+            else return IRTypeCast.Kind.ZeroExtend;
+        } else if (SystemTypes.isDecimalType(targetType)) {
+            if (isNeedsTruncate(originalType, targetType)) return IRTypeCast.Kind.FloatTruncate;
+            else if (SystemTypes.isDecimalType(originalType)) return IRTypeCast.Kind.FloatExtend;
+            else return IRTypeCast.Kind.IntToFloat;
         } else {
-            if (SystemTypes.isDecimalType(targetType)) {
-                return IRTypeCast.Kind.FloatToInt;
-            }
-            return IRTypeCast.Kind.ZeroExtend;
+            return IRTypeCast.Kind.Truncate;
         }
     }
 
@@ -2444,4 +2479,23 @@ public final class IRGenerator extends LCAstVisitor {
         };
     }
 
+    private static boolean isNeedsTruncate(Type originalType, Type targetType) {
+        if ((SystemTypes.isIntegerType(originalType) && SystemTypes.isIntegerType(targetType)) || (SystemTypes.isDecimalType(originalType) && SystemTypes.isDecimalType(targetType))) {
+            return getTypeNumber(originalType) > getTypeNumber(targetType);
+        } else {
+            return false;
+        }
+    }
+
+    private static int getTypeNumber(Type type) {
+        if (SystemTypes.BOOLEAN.equals(type)) return 1;
+        else if (SystemTypes.BYTE.equals(type) || SystemTypes.UNSIGNED_BYTE.equals(type)) return 2;
+        else if (SystemTypes.SHORT.equals(type) || SystemTypes.UNSIGNED_SHORT.equals(type)) return 3;
+        else if (SystemTypes.INT.equals(type) || SystemTypes.UNSIGNED_INT.equals(type) || SystemTypes.CHAR.equals(type))
+            return 4;
+        else if (SystemTypes.LONG.equals(type) || SystemTypes.UNSIGNED_LONG.equals(type)) return 5;
+        else if (SystemTypes.FLOAT.equals(type)) return 6;
+        else if (SystemTypes.DOUBLE.equals(type)) return 7;
+        else return 0;
+    }
 }

@@ -3,6 +3,7 @@ package ldk.l.lg.ir.base;
 import ldk.l.lg.ir.instruction.IRConditionalJump;
 import ldk.l.lg.ir.instruction.IRGoto;
 import ldk.l.lg.ir.instruction.IRInstruction;
+import ldk.l.lg.ir.instruction.IRReturn;
 
 import java.util.*;
 
@@ -17,6 +18,14 @@ public final class IRControlFlowGraph {
         inEdges.put(basicBlock, new ArrayList<>());
     }
 
+    public void removeBasicBlock(BasicBlock basicBlock) {
+        basicBlocks.remove(basicBlock.name);
+        List<BasicBlock> outs = outEdges.remove(basicBlock);
+        for (BasicBlock out : outs) inEdges.get(out).remove(basicBlock);
+        List<BasicBlock> ins = inEdges.remove(basicBlock);
+        for (BasicBlock inBasicBlock : ins) outEdges.get(inBasicBlock).remove(basicBlock);
+    }
+
     public void buildEdges() {
         BasicBlock[] basicBlocks = this.basicBlocks.values().toArray(new BasicBlock[0]);
         for (int i = 0; i < basicBlocks.length - 1; i++) {
@@ -24,17 +33,19 @@ public final class IRControlFlowGraph {
             IRInstruction last = basicBlock.instructions.isEmpty() ? null : basicBlock.instructions.getLast();
             if (last instanceof IRGoto irGoto) {
                 BasicBlock target = this.basicBlocks.get(irGoto.target);
+                if (target == null) continue;
                 outEdges.get(basicBlock).add(target);
                 inEdges.get(target).add(basicBlock);
             } else if (last instanceof IRConditionalJump irConditionalJump) {
                 BasicBlock target = this.basicBlocks.get(irConditionalJump.target);
+                if (target == null) continue;
                 BasicBlock next = basicBlocks[i + 1];
                 List<BasicBlock> outs = outEdges.get(basicBlock);
                 outs.add(target);
                 outs.add(next);
                 inEdges.get(target).add(basicBlock);
                 inEdges.get(next).add(basicBlock);
-            } else {
+            } else if (!(last instanceof IRReturn)) {
                 BasicBlock next = basicBlocks[i + 1];
                 outEdges.get(basicBlock).add(next);
                 inEdges.get(next).add(basicBlock);

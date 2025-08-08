@@ -784,13 +784,13 @@ public final class ByteCodeGenerator extends Generator {
             this.visit(irTypeCast.target, additional);
             BCRegister target = registerStack.pop();
             switch (irTypeCast.kind) {
-                case IRTypeCast.Kind.ZeroExtend -> addInstruction(new BCInstruction(ByteCode.MOV, source, target));
-                case IRTypeCast.Kind.SignExtend -> {
+                case ZeroExtend, Truncate -> addInstruction(new BCInstruction(ByteCode.MOV, source, target));
+                case SignExtend -> {
                     byte code1 = getBCType(irTypeCast.originalType);
                     byte code2 = getBCType(irTypeCast.targetType);
                     addInstruction(new BCInstruction(ByteCode.TYPE_CAST, new BCImmediate1((byte) (((code1 << 4) | code2) & 0xff)), source, target));
                 }
-                case IRTypeCast.Kind.IntToFloat -> {
+                case IntToFloat -> {
                     byte code1 = getBCType(irTypeCast.originalType);
                     var tempRegister = allocateVirtualRegister();
                     addInstruction(new BCInstruction(ByteCode.TYPE_CAST, new BCImmediate1((byte) (((code1 << 4) | ByteCode.LONG_TYPE) & 0xff)), source, tempRegister));
@@ -802,7 +802,7 @@ public final class ByteCodeGenerator extends Generator {
                     else throw new RuntimeException("Unknown type");
                     addInstruction(new BCInstruction(code2, new BCRegister(tempRegister2.virtualRegister), target));
                 }
-                case IRTypeCast.Kind.FloatToInt -> {
+                case FloatToInt -> {
                     byte code1;
                     if (irTypeCast.targetType.equals(IRType.getFloatType())) code1 = ByteCode.DOUBLE_TO_FLOAT;
                     else if (irTypeCast.targetType.equals(IRType.getDoubleType())) code1 = ByteCode.MOV;
@@ -814,7 +814,7 @@ public final class ByteCodeGenerator extends Generator {
                     byte code2 = getBCType(irTypeCast.targetType);
                     addInstruction(new BCInstruction(ByteCode.TYPE_CAST, new BCImmediate1((byte) (((ByteCode.LONG_TYPE << 4) | code2) & 0xff)), new BCRegister(tempRegister2.virtualRegister), target));
                 }
-                case IRTypeCast.Kind.FloatExtend -> {
+                case FloatExtend, FloatTruncate -> {
                     byte code;
                     if (irTypeCast.originalType.equals(IRType.getFloatType())) {
                         if (irTypeCast.targetType.equals(IRType.getDoubleType())) code = ByteCode.FLOAT_TO_DOUBLE;

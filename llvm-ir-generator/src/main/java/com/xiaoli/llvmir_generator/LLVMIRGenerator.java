@@ -21,7 +21,10 @@ public final class LLVMIRGenerator extends Generator {
         long llvmBuilder = createLLVMBuilder(llvmContext);
         LLVMModuleGenerator generator = new LLVMModuleGenerator(module, llvmContext, llvmModule, llvmBuilder, options);
         generator.generate();
-        dumpLLVMModule(llvmModule);
+        if (options.get("verbose", Boolean.class)) {
+            dumpLLVMModule(llvmModule);
+        }
+        compile(llvmModule, options);
         destroyLLVMBuilder(llvmBuilder);
         destroyLLVMModule(llvmModule);
         destroyLLVMContext(llvmContext);
@@ -77,11 +80,14 @@ public final class LLVMIRGenerator extends Generator {
             initializeITableInitializer();
             for (IRFunction irFunction : module.functions.values()) this.visitFunction(irFunction, null);
         }
+
         private native void initializeQueue();
+
         private native void initializeITableInitializer();
+
         private native void createFunction(IRFunction irFunction);
 
-        //        @Override
+//        @Override
 //        public Object visit(IRNode irNode, Object additional) {
 //            System.out.println("visiting node " + irNode);
 //            return super.visit(irNode, additional);
@@ -139,9 +145,7 @@ public final class LLVMIRGenerator extends Generator {
         public native Object visitTypeCast(IRTypeCast irTypeCast, Object additional);
 
         @Override
-        public Object visitNoOperate(IRNoOperate irNoOperate, Object additional) {
-            return super.visitNoOperate(irNoOperate, additional);
-        }
+        public native Object visitNoOperate(IRNoOperate irNoOperate, Object additional);
 
         @Override
         public native Object visitMalloc(IRMalloc irMalloc, Object additional);

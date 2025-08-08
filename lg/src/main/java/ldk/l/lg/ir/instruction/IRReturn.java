@@ -6,6 +6,10 @@ import ldk.l.lg.ir.operand.IROperand;
 public final class IRReturn extends IRInstruction {
     public final IROperand value;
 
+    public IRReturn() {
+        this(null);
+    }
+
     public IRReturn(IROperand value) {
         this.value = value;
     }
