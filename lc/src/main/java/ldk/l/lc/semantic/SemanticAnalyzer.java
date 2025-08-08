@@ -58,7 +58,7 @@ public final class SemanticAnalyzer {
         this.modifierChecker.visitAst(this.ast, null);
 //        this.closureAnalyzer.visitAst(this.ast, null);
 //        this.assignAnalyzer.visitAst(this.ast, null);
-//        this.liveAnalyzer.visitAst(this.ast, null);
+        this.liveAnalyzer.visitAst(this.ast, null);
         this.leftValueAttributor.visitAst(this.ast, null);
         this.annotationCollector.visitAst(this.ast, null);
         this.annotationProcessor.process(this.ast, annotationCollector.getAnnotations());

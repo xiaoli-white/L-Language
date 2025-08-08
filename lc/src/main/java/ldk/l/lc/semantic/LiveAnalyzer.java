@@ -13,33 +13,25 @@ import ldk.l.lc.semantic.types.SystemTypes;
 import ldk.l.lc.util.Position;
 import ldk.l.lc.util.error.ErrorStream;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class LiveAnalyzer extends LCAstVisitor {
     private final ErrorStream errorStream;
-    private final boolean isDeadCodeRemover;
 
     public LiveAnalyzer(ErrorStream errorStream) {
-        this(errorStream, false);
-    }
-
-    public LiveAnalyzer(ErrorStream errorStream, boolean isDeadCodeRemover) {
         this.errorStream = errorStream;
-        this.isDeadCodeRemover = isDeadCodeRemover;
     }
 
     public Object visitMethodDeclaration(LCMethodDeclaration lcMethodDeclaration, Object additional) {
+        if (lcMethodDeclaration.body == null) return true;
         boolean alive = (boolean) this.visitBlock(lcMethodDeclaration.body, additional);
 
         if (alive) {
-            if (lcMethodDeclaration.returnType == SystemTypes.VOID) {
+            if (SystemTypes.VOID.equals(lcMethodDeclaration.returnType)) {
                 Position pos = new Position(lcMethodDeclaration.body.position.endPos(), lcMethodDeclaration.body.position.endPos(), lcMethodDeclaration.body.position.endLine(), lcMethodDeclaration.body.position.endLine(), lcMethodDeclaration.body.position.endCol(), lcMethodDeclaration.body.position.endCol());
-                lcMethodDeclaration.body.statements.add(new LCReturn(null, pos));
+                LCReturn returnStatement = new LCReturn(null, pos);
+                lcMethodDeclaration.body.statements.add(returnStatement);
+                returnStatement.parentNode = lcMethodDeclaration.body;
             } else {
-                if (!this.isDeadCodeRemover) {
-//                this.addError("Function lacks ending return LCStatement and return type does not include 'undefined'.", functionDecl);
-                }
+                System.err.println("Method '" + lcMethodDeclaration.symbol.getFullName() + "'locks ending return statement and return type isn't 'void'.");
             }
         }
         return true;
@@ -48,9 +40,9 @@ public class LiveAnalyzer extends LCAstVisitor {
     public Object visitBlock(LCBlock lcBlock, Object additional) {
         boolean alive = true;
         for (LCStatement stmt : lcBlock.statements) {
+            Object ret = this.visit(stmt, additional);
             if (alive) {
-                Object ret = this.visit(stmt, additional);
-                alive = ret instanceof Boolean && (boolean) ret;
+                alive = !(ret instanceof Boolean booleanValue) || booleanValue;
             } else {
 //                this.addWarning("Unreachable code detected.",stmt);
             }
@@ -59,23 +51,25 @@ public class LiveAnalyzer extends LCAstVisitor {
     }
 
     public Object visitReturn(LCReturn lcReturn, Object additional) {
+        if (lcReturn.returnedValue != null) this.visit(lcReturn.returnedValue, additional);
         return false;
     }
 
     @Override
     public Object visitVariableDeclaration(LCVariableDeclaration lcVariableDeclaration, Object additional) {
+        if (lcVariableDeclaration.init != null) this.visit(lcVariableDeclaration.init, additional);
         return true;
     }
 
     public Object visitExpressionStatement(LCExpressionStatement lcExpressionStatement, Object additional) {
-        return true;
+        return this.visit(lcExpressionStatement.expression, additional);
     }
 
     public Object visitIf(LCIf lcIf, Object additional) {
         boolean alive;
 
-        if (lcIf.condition.constValue.value instanceof Boolean boolean_value) {
-            if (boolean_value) {
+        if (lcIf.condition.constValue != null && lcIf.condition.constValue.value instanceof Boolean booleanValue) {
+            if (booleanValue) {
                 alive = (boolean) this.visit(lcIf.then, additional);
             } else {
                 if (lcIf._else == null) {
@@ -85,8 +79,8 @@ public class LiveAnalyzer extends LCAstVisitor {
                 }
             }
         } else {
-            boolean alive1 = (boolean) this.visit(lcIf.then, additional);
-            boolean alive2 = lcIf._else == null || (boolean) this.visit(lcIf._else, additional);
+            boolean alive1 = !(this.visit(lcIf.then, additional) instanceof Boolean booleanValue) || booleanValue;
+            boolean alive2 = lcIf._else == null || (!(this.visit(lcIf._else, additional) instanceof Boolean booleanValue) || booleanValue);
             alive = alive1 || alive2;
         }
         return alive;

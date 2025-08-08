@@ -49,7 +49,7 @@ public final class AnnotationProcessor {
             semanticAnalyzer.modifierChecker.visit(sourceFile, null);
 //            semanticAnalyzer.closureAnalyzer.visit(sourceFile, null);
 //            semanticAnalyzer.assignAnalyzer.visit(sourceFile, null);
-//            semanticAnalyzer.liveAnalyzer.visit(sourceFile, null);
+            semanticAnalyzer.liveAnalyzer.visit(sourceFile, null);
             semanticAnalyzer.leftValueAttributor.visit(sourceFile, null);
             semanticAnalyzer.annotationCollector.visit(sourceFile, null);
             semanticAnalyzer.annotationProcessor.process(ast, semanticAnalyzer.annotationCollector.getAnnotations());
