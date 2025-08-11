@@ -42,7 +42,7 @@ public final class PackageManager {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            Path packageDir = Paths.get(FileUtils.getUserDirectoryPath(), ".lpm", "packages", (String) map.get("name"));
+            Path packageDir = Paths.get(getPackagePath((String) map.get("name")));
             try {
                 FileUtils.deleteDirectory(packageDir.toFile());
                 Files.createDirectories(packageDir);
@@ -60,9 +60,9 @@ public final class PackageManager {
     }
 
     public void uninstall(Options options) {
-        Path packageDir = Paths.get(FileUtils.getUserDirectoryPath(), ".lpm", "packages", options.args().get(1));
+        String packageDir = getPackagePath(options.args().get(1));
         try {
-            FileUtils.deleteDirectory(packageDir.toFile());
+            FileUtils.deleteDirectory(new File(packageDir));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
