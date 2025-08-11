@@ -21,7 +21,7 @@ public final class IRControlFlowGraph {
     public void removeBasicBlock(BasicBlock basicBlock) {
         basicBlocks.remove(basicBlock.name);
         List<BasicBlock> outs = outEdges.remove(basicBlock);
-        for (BasicBlock out : outs) inEdges.get(out).remove(basicBlock);
+        for (BasicBlock outBasicBlock : outs) inEdges.get(outBasicBlock).remove(basicBlock);
         List<BasicBlock> ins = inEdges.remove(basicBlock);
         for (BasicBlock inBasicBlock : ins) outEdges.get(inBasicBlock).remove(basicBlock);
     }
