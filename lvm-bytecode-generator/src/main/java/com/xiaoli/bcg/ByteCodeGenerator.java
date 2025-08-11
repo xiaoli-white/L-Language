@@ -1176,10 +1176,14 @@ public final class ByteCodeGenerator extends Generator {
         }
 
         private byte getBCType(IRType type) {
-            if (type.equals(IRType.getByteType())) return ByteCode.BYTE_TYPE;
-            else if (type.equals(IRType.getShortType())) return ByteCode.SHORT_TYPE;
-            else if (type.equals(IRType.getIntType())) return ByteCode.INT_TYPE;
-            else if (type.equals(IRType.getLongType())) return ByteCode.LONG_TYPE;
+            if (type.equals(IRType.getByteType()) || type.equals(IRType.getUnsignedByteType()) || type.equals(IRType.getBooleanType()))
+                return ByteCode.BYTE_TYPE;
+            else if (type.equals(IRType.getShortType()) || type.equals(IRType.getUnsignedShortType()))
+                return ByteCode.SHORT_TYPE;
+            else if (type.equals(IRType.getIntType()) || type.equals(IRType.getUnsignedIntType()) || type.equals(IRType.getCharType()))
+                return ByteCode.INT_TYPE;
+            else if (type.equals(IRType.getLongType()) || type.equals(IRType.getUnsignedLongType()))
+                return ByteCode.LONG_TYPE;
             else throw new RuntimeException("Unsupported type: " + type);
         }
     }
