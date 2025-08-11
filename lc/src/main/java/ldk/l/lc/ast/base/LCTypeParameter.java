@@ -6,7 +6,6 @@ import ldk.l.lc.ast.expression.type.LCTypeReferenceExpression;
 import ldk.l.lc.util.Position;
 import ldk.l.lc.util.symbol.TypeParameterSymbol;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public final class LCTypeParameter extends LCAstNode {
