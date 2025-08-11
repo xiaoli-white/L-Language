@@ -5,15 +5,27 @@ import ldk.l.lc.util.symbol.Symbol;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class Scope {
-    public LinkedHashMap<String, Symbol> name2symbol = new LinkedHashMap<>();
+    public Map<String, Symbol> name2symbol = new LinkedHashMap<>();
     public Scope enclosingScope;
     public LCAstNode node;
 
     public Scope(LCAstNode node, Scope enclosingScope) {
         this.node = node;
         this.enclosingScope = enclosingScope;
+    }
+
+    @Override
+    public Scope clone() {
+        try {
+            Scope scope = (Scope) super.clone();
+            scope.name2symbol = new LinkedHashMap<>(this.name2symbol);
+            return scope;
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void enter(String name, Symbol symbol) {
