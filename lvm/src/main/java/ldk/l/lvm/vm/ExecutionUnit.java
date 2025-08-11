@@ -12,7 +12,6 @@ public final class ExecutionUnit implements Runnable {
     public long threadID;
     public Arena arena;
     public MemorySegment registers;
-    public long flags = 0;
 
     public ExecutionUnit(VirtualMachine virtualMachine) {
         this.virtualMachine = virtualMachine;
