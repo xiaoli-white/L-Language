@@ -29,9 +29,10 @@ public final class AnnotationProcessor {
     }
 
     public void process(LCAst ast, List<LCAnnotation> annotations) {
+        Map<String, List<AbstractAnnotationProcessor>> annotationProcessors = getAnnotationProcessors();
         for (LCAnnotation annotation : annotations) {
             String annotationName = annotation.symbol.getFullName();
-            for (AbstractAnnotationProcessor annotationProcessor : getAnnotationProcessors().getOrDefault(annotationName, new ArrayList<>())) {
+            for (AbstractAnnotationProcessor annotationProcessor : annotationProcessors.getOrDefault(annotationName, new ArrayList<>())) {
                 if (!annotationProcessor.process(annotation)) {
                     System.err.println("Annotation processor failed: " + annotationName);
                 }
@@ -69,12 +70,15 @@ public final class AnnotationProcessor {
                 throw new RuntimeException(e);
             }
             try (URLClassLoader classLoader = new URLClassLoader(new URL[]{jarUrl}, AnnotationProcessor.class.getClassLoader())) {
-                for (Object processorInfo : ((Map<?, ?>) packageInfo.get("processor")).values()) {
-                    Map<?, ?> info = (Map<?, ?>) processorInfo;
-                    String annotationName = (String) info.get("annotation-name");
-                    annotationProcessorsMap.putIfAbsent(annotationName, new ArrayList<>());
-                    Class<?> clazz = classLoader.loadClass((String) info.get("class-name"));
-                    annotationProcessorsMap.get(annotationName).add((AbstractAnnotationProcessor) clazz.getDeclaredConstructor(SemanticAnalyzer.class, Options.class).newInstance(semanticAnalyzer, options));
+                Map<?, ?> processors = (Map<?, ?>) packageInfo.get("processors");
+                if (processors != null) {
+                    for (Object processorInfo : processors.values()) {
+                        Map<?, ?> info = (Map<?, ?>) processorInfo;
+                        String annotationName = (String) info.get("annotation-name");
+                        annotationProcessorsMap.putIfAbsent(annotationName, new ArrayList<>());
+                        Class<?> clazz = classLoader.loadClass((String) info.get("class-name"));
+                        annotationProcessorsMap.get(annotationName).add((AbstractAnnotationProcessor) clazz.getDeclaredConstructor(SemanticAnalyzer.class, Options.class).newInstance(semanticAnalyzer, options));
+                    }
                 }
             } catch (Exception e) {
                 throw new RuntimeException(e);

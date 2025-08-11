@@ -4,7 +4,6 @@ import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.util.Position;
 import ldk.l.lc.util.symbol.object.AnnotationSymbol;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public final class LCAnnotation extends LCAstNode {
