@@ -4,7 +4,6 @@ import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.util.Position;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 public final class LCTypeReferenceExpression extends LCTypeExpression {
     public String name;
@@ -47,7 +46,12 @@ public final class LCTypeReferenceExpression extends LCTypeExpression {
     public String toTypeString() {
         StringBuilder result = new StringBuilder(name);
         if (!typeArgs.isEmpty()) {
-            result.append("<").append(typeArgs.stream().map(LCTypeExpression::toTypeString).collect(Collectors.joining(", "))).append(">");
+            result.append("<");
+            for (int i = 0; i < typeArgs.size(); i++) {
+                result.append(typeArgs.get(i).toTypeString());
+                if (i < typeArgs.size() - 1) result.append(", ");
+            }
+            result.append(">");
         }
         return result.toString();
     }

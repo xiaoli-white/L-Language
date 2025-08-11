@@ -830,7 +830,7 @@ public final class Parser {
                 t2 = this.peek();
             }
 
-            if (this.peek().code() == Tokens.Separator.CloseBrace) {
+            if (t2.code() == Tokens.Separator.CloseBrace || t2.code() == Tokens.Separator.SemiColon) {
                 this.tokenIndex++;
             } else {
                 this.skip();
@@ -3461,6 +3461,34 @@ public final class Parser {
         }
 
         if (type != null) {
+            if (type instanceof LCTypeReferenceExpression typeReferenceExpression) {
+                if (this.peek().code() == Tokens.Operator.Less) {
+                    this.tokenIndex++;
+                    List<LCTypeExpression> typeArgs = new ArrayList<>();
+                    Token t1 = this.peek();
+                    while (t1.kind() != TokenKind.EOF && t1.code() != Tokens.Operator.Greater) {
+                        typeArgs.add(this.parseTypeExpression());
+                        t1 = this.peek();
+                        if (t1.code() == Tokens.Separator.Comma) {
+                            this.tokenIndex++;
+                        } else if (t1.code() != Tokens.Operator.Greater) {
+                            type.isErrorNode = true;
+                            // TODO dump error
+                            this.skip();
+                        }
+                    }
+                    if (this.peek().code() == Tokens.Operator.Greater) {
+                        this.tokenIndex++;
+                    } else {
+                        type.isErrorNode = true;
+                        // TODO dump error
+                        this.skip();
+                    }
+                    typeReferenceExpression.setTypeArgs(typeArgs);
+                } else {
+                    typeReferenceExpression.setTypeArgs(new ArrayList<>());
+                }
+            }
             t = this.peek();
             loop:
             while (t.code() == Tokens.Operator.Multiply || t.code() == Tokens.Operator.BitAnd || t.code() == Tokens.Operator.QuestionMark || t.code() == Tokens.Separator.OpenBracket) {
@@ -3505,30 +3533,7 @@ public final class Parser {
                 }
                 t = this.peek();
             }
-            if (type instanceof LCTypeReferenceExpression typeReferenceExpression && this.peek().code() == Tokens.Operator.Less) {
-                this.tokenIndex++;
-                ArrayList<LCTypeExpression> typeArgs = new ArrayList<>();
-                Token t1 = this.peek();
-                while (t1.kind() != TokenKind.EOF && t1.code() != Tokens.Operator.Greater) {
-                    typeArgs.add(this.parseTypeExpression());
-                    t1 = this.peek();
-                    if (t1.code() == Tokens.Separator.Comma) {
-                        this.tokenIndex++;
-                    } else if (t1.code() != Tokens.Operator.Greater) {
-                        type.isErrorNode = true;
-                        // TODO dump error
-                        this.skip();
-                    }
-                }
-                if (this.peek().code() == Tokens.Operator.Greater) {
-                    this.tokenIndex++;
-                } else {
-                    type.isErrorNode = true;
-                    // TODO dump error
-                    this.skip();
-                }
-                if (!typeArgs.isEmpty()) typeReferenceExpression.setTypeArgs(typeArgs);
-            }
+
         }
 
         return type;
