@@ -51,7 +51,7 @@ public class ScopeDumper extends LCAstVisitor {
 
     @Override
     public Object visitClassDeclaration(LCClassDeclaration lcClassDeclaration, Object prefix) {
-        System.out.println(prefix + "Scope of LCClassDecl: " + lcClassDeclaration.getFullName());
+        System.out.println(prefix + "Scope of LCClassDeclaration: " + lcClassDeclaration.getFullName());
 
         if (lcClassDeclaration.scope != null && lcClassDeclaration.body.scope != null) {
             this.dumpScope(lcClassDeclaration.scope, prefix + "\t");
@@ -67,7 +67,7 @@ public class ScopeDumper extends LCAstVisitor {
 
     @Override
     public Object visitInterfaceDeclaration(LCInterfaceDeclaration lcInterfaceDeclaration, Object prefix) {
-        System.out.println(prefix + "Scope of LCInterfaceDecl: " + lcInterfaceDeclaration.getFullName());
+        System.out.println(prefix + "Scope of LCInterfaceDeclaration: " + lcInterfaceDeclaration.getFullName());
 
         if (lcInterfaceDeclaration.body.scope != null) {
             this.dumpScope(lcInterfaceDeclaration.body.scope, prefix + "\t");
@@ -82,7 +82,7 @@ public class ScopeDumper extends LCAstVisitor {
 
     @Override
     public Object visitAnnotationDeclaration(LCAnnotationDeclaration lcAnnotationDeclaration, Object prefix) {
-        System.out.println(prefix + "Scope of LCAnnotationDecl: " + lcAnnotationDeclaration.getFullName());
+        System.out.println(prefix + "Scope of LCAnnotationDeclaration: " + lcAnnotationDeclaration.getFullName());
 
         if (lcAnnotationDeclaration.annotationBody.scope != null) {
             this.dumpScope(lcAnnotationDeclaration.annotationBody.scope, prefix + "\t");
@@ -95,7 +95,7 @@ public class ScopeDumper extends LCAstVisitor {
 
     @Override
     public Object visitEnumDeclaration(LCEnumDeclaration lcEnumDeclaration, Object prefix) {
-        System.out.println(prefix + "Scope of LCEnumDecl: " + lcEnumDeclaration.getFullName());
+        System.out.println(prefix + "Scope of LCEnumDeclaration: " + lcEnumDeclaration.getFullName());
 
         if (lcEnumDeclaration.scope != null && lcEnumDeclaration.body.scope != null) {
             this.dumpScope(lcEnumDeclaration.scope, prefix + "\t");
@@ -111,7 +111,7 @@ public class ScopeDumper extends LCAstVisitor {
 
     @Override
     public Object visitRecordDeclaration(LCRecordDeclaration lcRecordDeclaration, Object prefix) {
-        System.out.println(prefix + "Scope of LCRecordDecl: " + lcRecordDeclaration.getFullName());
+        System.out.println(prefix + "Scope of LCRecordDeclaration: " + lcRecordDeclaration.getFullName());
 
         if (lcRecordDeclaration.scope != null && lcRecordDeclaration.body.scope != null) {
             this.dumpScope(lcRecordDeclaration.scope, prefix + "\t");
