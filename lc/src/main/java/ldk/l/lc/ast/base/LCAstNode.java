@@ -2,9 +2,13 @@ package ldk.l.lc.ast.base;
 
 import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.util.Position;
+import ldk.l.util.Util;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.List;
 
 public abstract class LCAstNode implements Cloneable {
     public Position position;
@@ -22,23 +26,42 @@ public abstract class LCAstNode implements Cloneable {
     public abstract String toString();
 
     @Override
-    public final LCAstNode clone() throws CloneNotSupportedException {
+    public LCAstNode clone() throws CloneNotSupportedException {
         LCAstNode cloned = (LCAstNode) super.clone();
-        Field[] fields = this.getClass().getDeclaredFields();
+        Class<?> clazz = cloned.getClass();
+        List<Field> fields = Util.getAllFields(clazz);
         for (Field field : fields) {
             field.setAccessible(true);
+            if ("parentNode".equals(field.getName()) || Modifier.isStatic(field.getModifiers())) continue;
             try {
-                Object value = field.get(this);
+                Object value = field.get(cloned);
                 if (value instanceof Cloneable) {
-                    Method cloneMethod = value.getClass().getMethod("clone");
-                    cloneMethod.setAccessible(true);
-                    Object clonedValue = cloneMethod.invoke(value);
-                    field.set(cloned, clonedValue);
-                } else {
-                    field.set(cloned, value);
+                    field.set(cloned, cloneObject(value));
                 }
-            } catch (Exception e) {
-                throw new CloneNotSupportedException("Cloning failed for field: " + field.getName());
+            } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return cloned;
+    }
+
+    public static Object cloneObject(Object o) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        Method cloneMethod = o.getClass().getMethod("clone");
+        cloneMethod.setAccessible(true);
+        Object cloned = cloneMethod.invoke(o);
+        if (o instanceof LCAstNode lcAstNode) {
+            ((LCAstNode) cloned).parentNode = lcAstNode.parentNode;
+        } else if (cloned instanceof List list) {
+            for (int i = 0; i < list.size(); i++) {
+                Object element = list.get(i);
+                if (element instanceof Cloneable) {
+                    Object clonedElement = cloneObject(element);
+                    try {
+                        list.set(i, clonedElement);
+                    } catch (UnsupportedOperationException e) {
+                        break;
+                    }
+                }
             }
         }
         return cloned;
