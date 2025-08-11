@@ -63,6 +63,13 @@ public abstract class LCAstNode implements Cloneable {
                     }
                 }
             }
+        } else if (cloned instanceof Object[] array) {
+            for (int i = 0; i < array.length; i++) {
+                Object element = array[i];
+                if (element instanceof Cloneable) {
+                    array[i] = cloneObject(element);
+                }
+            }
         }
         return cloned;
     }

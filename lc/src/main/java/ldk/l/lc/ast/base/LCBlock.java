@@ -40,12 +40,4 @@ public final class LCBlock extends LCExpressionWithScope {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
-
-    @Override
-    public LCBlock clone() throws CloneNotSupportedException {
-        LCBlock cloned = (LCBlock) super.clone();
-        cloned.statements = new ArrayList<>(statements.size());
-        for (LCStatement statement : statements) cloned.statements.add((LCStatement) statement.clone());
-        return cloned;
-    }
 }
