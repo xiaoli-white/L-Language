@@ -6,7 +6,6 @@ import ldk.l.lc.ast.expression.type.LCTypeExpression;
 import ldk.l.lc.util.Position;
 import ldk.l.lc.util.symbol.MethodSymbol;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public final class LCNewObject extends LCExpression {

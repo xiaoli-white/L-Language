@@ -4,10 +4,13 @@ import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.util.Position;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 public final class LCBlock extends LCExpressionWithScope {
     public List<LCStatement> statements;
+    public Queue<LCStatement> statementQueue = new LinkedList<>();
 
     public LCBlock(List<LCStatement> statements, Position pos) {
         this(statements, pos, false);
@@ -36,5 +39,13 @@ public final class LCBlock extends LCExpressionWithScope {
                 ", position=" + position +
                 ", isErrorNode=" + isErrorNode +
                 '}';
+    }
+
+    @Override
+    public LCBlock clone() throws CloneNotSupportedException {
+        LCBlock cloned = (LCBlock) super.clone();
+        cloned.statements = new ArrayList<>(statements.size());
+        for (LCStatement statement : statements) cloned.statements.add((LCStatement) statement.clone());
+        return cloned;
     }
 }

@@ -628,6 +628,7 @@ public final class ReferenceResolver extends LCAstVisitor {
             this.visit(lcBinary.expression1, additional);
             if (lcBinary.expression1 instanceof LCVariable lcVariable && lcVariable.symbol == null) {
                 LCTypeReferenceExpression lcTypeReferenceExpression = new LCTypeReferenceExpression(lcVariable.name, lcVariable.position, lcVariable.isErrorNode);
+                lcTypeReferenceExpression.setTypeArgs(new ArrayList<>());
                 lcTypeReferenceExpression.parentNode = lcBinary;
                 lcBinary.expression1 = lcTypeReferenceExpression;
                 this.semanticAnalyzer.typeResolver.visitTypeReferenceExpression(lcTypeReferenceExpression, additional);
@@ -635,6 +636,7 @@ public final class ReferenceResolver extends LCAstVisitor {
                     while (lcBinary.expression2 instanceof LCBinary binary && binary.expression1 instanceof LCVariable variable) {
                         Position position = new Position(lcTypeReferenceExpression.position.beginPos(), variable.position.endPos(), lcTypeReferenceExpression.position.beginLine(), variable.position.endLine(), lcTypeReferenceExpression.position.beginCol(), variable.position.endCol());
                         lcTypeReferenceExpression = new LCTypeReferenceExpression(lcTypeReferenceExpression.name + "." + variable.name, position, variable.isErrorNode || lcTypeReferenceExpression.isErrorNode);
+                        lcTypeReferenceExpression.setTypeArgs(new ArrayList<>());
                         lcTypeReferenceExpression.parentNode = lcBinary;
                         lcBinary.expression1 = lcTypeReferenceExpression;
                         lcBinary.expression2 = binary.expression2;

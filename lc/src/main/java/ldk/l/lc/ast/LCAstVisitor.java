@@ -283,6 +283,11 @@ public abstract class LCAstVisitor {
         for (LCStatement x : lcBlock.statements) {
             this.visit(x, additional);
         }
+        while (!lcBlock.statementQueue.isEmpty()) {
+            LCStatement statement = lcBlock.statementQueue.poll();
+            lcBlock.statements.add(statement);
+            this.visit(statement, additional);
+        }
         return null;
     }
 

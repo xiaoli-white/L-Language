@@ -3,7 +3,6 @@ package ldk.l.lc.ast.expression.type;
 import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.util.Position;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -47,7 +46,7 @@ public final class LCTypeReferenceExpression extends LCTypeExpression {
     @Override
     public String toTypeString() {
         StringBuilder result = new StringBuilder(name);
-        if (typeArgs != null) {
+        if (!typeArgs.isEmpty()) {
             result.append("<").append(typeArgs.stream().map(LCTypeExpression::toTypeString).collect(Collectors.joining(", "))).append(">");
         }
         return result.toString();

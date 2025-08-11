@@ -3,9 +3,19 @@ package ldk.l.util;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.lang.reflect.Array;
+import java.lang.reflect.Field;
+import java.util.List;
 
 public class Util {
+    public static List<Field> getAllFields(Class<?> clazz) {
+        List<Field> fields = new java.util.ArrayList<>();
+        while (clazz != null) {
+            fields.addAll(List.of(clazz.getDeclaredFields()));
+            clazz = clazz.getSuperclass();
+        }
+        return fields;
+    }
+
     public static String readTextFile(String filename) throws IOException {
         StringBuilder sb = new StringBuilder();
         try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
