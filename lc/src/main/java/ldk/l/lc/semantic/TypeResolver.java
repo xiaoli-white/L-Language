@@ -3,6 +3,8 @@ package ldk.l.lc.semantic;
 import ldk.l.lc.ast.LCAst;
 import ldk.l.lc.ast.LCAstUtil;
 import ldk.l.lc.ast.LCAstVisitor;
+import ldk.l.lc.ast.base.LCAstNode;
+import ldk.l.lc.ast.base.LCBlock;
 import ldk.l.lc.ast.expression.*;
 import ldk.l.lc.ast.expression.literal.LCNullLiteral;
 import ldk.l.lc.ast.expression.literal.LCNullptrLiteral;
@@ -16,7 +18,9 @@ import ldk.l.lc.ast.statement.declaration.LCVariableDeclaration;
 import ldk.l.lc.semantic.types.*;
 import ldk.l.lc.util.error.ErrorStream;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 public final class TypeResolver extends LCAstVisitor {
     private final ErrorStream errorStream;
@@ -210,7 +214,7 @@ public final class TypeResolver extends LCAstVisitor {
 
         LCAst ast = this.getAST(lcTypeReferenceExpression);
 
-        NamedType t = ast.name2Type.get(lcTypeReferenceExpression.name);
+        NamedType t = ast.name2Type.get(lcTypeReferenceExpression.toTypeString());
         if (t != null) {
             lcTypeReferenceExpression.theType = t;
             return t;
@@ -219,8 +223,29 @@ public final class TypeResolver extends LCAstVisitor {
         LCObjectDeclaration objectDeclaration = LCAstUtil.getObjectDeclarationByName(lcTypeReferenceExpression, lcTypeReferenceExpression.name);
         if (objectDeclaration == null) return null;
 
-
         t = ast.name2Type.get(objectDeclaration.getFullName());
+        if (t == null) {
+            return null;
+        }
+        if (!lcTypeReferenceExpression.typeArgs.isEmpty()) {
+            String typeArgsString = lcTypeReferenceExpression.typeArgs.stream().map(LCTypeExpression::toTypeString).collect(Collectors.joining(", "));
+            String name = objectDeclaration.getFullName() + "<" + typeArgsString + ">";
+            NamedType t2 = ast.name2Type.get(name);
+            if (t2 == null) {
+                LCObjectDeclaration cloned;
+                try {
+                    cloned = (LCObjectDeclaration) LCAstNode.cloneObject(objectDeclaration);
+                } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                }
+                cloned.name = cloned.name + "<" + typeArgsString + ">";
+                ((LCBlock) cloned.parentNode).statementQueue.add(cloned);
+                t2 = new NamedType(name, new ArrayList<>(t.upperTypes), t.isComplement);
+                ast.name2Type.put(name, t2);
+            }
+            t = t2;
+        }
+
         lcTypeReferenceExpression.theType = t;
         return t;
     }
