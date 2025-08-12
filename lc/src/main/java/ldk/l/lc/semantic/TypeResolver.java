@@ -34,6 +34,14 @@ public final class TypeResolver extends LCAstVisitor {
     }
 
     @Override
+    public Object visit(LCAstNode node, Object additional) {
+        if (node instanceof LCObjectDeclaration objectDeclaration && !objectDeclaration.typeParameters.isEmpty() && !objectDeclaration.name.contains("<")) {
+            toRemovedObjectDeclarations.add(objectDeclaration);
+        }
+        return super.visit(node, additional);
+    }
+
+    @Override
     public Object visitAst(LCAst ast, Object additional) {
         super.visitAst(ast, additional);
 
@@ -277,7 +285,6 @@ public final class TypeResolver extends LCAstVisitor {
                 ast.name2Type.put(name, t2);
                 TypeParametersProcessor typeParametersProcessor = new TypeParametersProcessor(semanticAnalyzer, argName2Type, this.errorStream);
                 typeParametersProcessor.visit(cloned, null);
-                toRemovedObjectDeclarations.add(objectDeclaration);
             }
             t = t2;
         } else if (!objectDeclaration.typeParameters.isEmpty()) {

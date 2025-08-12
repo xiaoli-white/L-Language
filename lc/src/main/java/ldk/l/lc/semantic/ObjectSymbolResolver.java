@@ -28,7 +28,7 @@ public final class ObjectSymbolResolver extends LCAstVisitor {
     @Override
     public Object visitClassDeclaration(LCClassDeclaration lcClassDeclaration, Object additional) {
         if (lcClassDeclaration.extended != null) {
-            ObjectSymbol objectSymbol = LCAstUtil.getObjectSymbol(Objects.requireNonNull(LCAstUtil.getObjectDeclarationByName(lcClassDeclaration, lcClassDeclaration.extended.name)));
+            ObjectSymbol objectSymbol = LCAstUtil.getObjectSymbol(Objects.requireNonNull(LCAstUtil.getObjectDeclarationByName(lcClassDeclaration, lcClassDeclaration.extended.toTypeString())));
             if (objectSymbol instanceof ClassSymbol classSymbol)
                 lcClassDeclaration.symbol.extended = classSymbol;
         } else if (!lcClassDeclaration.modifier.attributes.contains("no_extend")) {
@@ -38,7 +38,7 @@ public final class ObjectSymbolResolver extends LCAstVisitor {
 
         List<InterfaceSymbol> implementedInterfaces = new ArrayList<>();
         for (LCTypeReferenceExpression implementedInterface : lcClassDeclaration.implementedInterfaces) {
-            ObjectSymbol objectSymbol = LCAstUtil.getObjectSymbol(Objects.requireNonNull(LCAstUtil.getObjectDeclarationByName(lcClassDeclaration, implementedInterface.name)));
+            ObjectSymbol objectSymbol = LCAstUtil.getObjectSymbol(Objects.requireNonNull(LCAstUtil.getObjectDeclarationByName(lcClassDeclaration, implementedInterface.theType.toTypeString())));
             if (objectSymbol instanceof InterfaceSymbol interfaceSymbol)
                 implementedInterfaces.add(interfaceSymbol);
         }
@@ -46,7 +46,7 @@ public final class ObjectSymbolResolver extends LCAstVisitor {
 
         List<ClassSymbol> permittedClasses = new ArrayList<>();
         for (LCTypeReferenceExpression permittedClass : lcClassDeclaration.permittedClasses) {
-            ObjectSymbol objectSymbol = LCAstUtil.getObjectSymbol(Objects.requireNonNull(LCAstUtil.getObjectDeclarationByName(lcClassDeclaration, permittedClass.name)));
+            ObjectSymbol objectSymbol = LCAstUtil.getObjectSymbol(Objects.requireNonNull(LCAstUtil.getObjectDeclarationByName(lcClassDeclaration, permittedClass.theType.toTypeString())));
             if (objectSymbol instanceof ClassSymbol classSymbol)
                 permittedClasses.add(classSymbol);
         }
@@ -59,7 +59,7 @@ public final class ObjectSymbolResolver extends LCAstVisitor {
     public Object visitInterfaceDeclaration(LCInterfaceDeclaration lcInterfaceDeclaration, Object additional) {
         List<InterfaceSymbol> extendedInterfaces = new ArrayList<>();
         for (LCTypeReferenceExpression extendedInterface : lcInterfaceDeclaration.extendedInterfaces) {
-            ObjectSymbol objectSymbol = LCAstUtil.getObjectSymbol(Objects.requireNonNull(LCAstUtil.getObjectDeclarationByName(lcInterfaceDeclaration, extendedInterface.name)));
+            ObjectSymbol objectSymbol = LCAstUtil.getObjectSymbol(Objects.requireNonNull(LCAstUtil.getObjectDeclarationByName(lcInterfaceDeclaration, extendedInterface.toTypeString())));
             if (objectSymbol instanceof InterfaceSymbol interfaceSymbol)
                 extendedInterfaces.add(interfaceSymbol);
         }
@@ -72,7 +72,7 @@ public final class ObjectSymbolResolver extends LCAstVisitor {
     public Object visitEnumDeclaration(LCEnumDeclaration lcEnumDeclaration, Object additional) {
         List<InterfaceSymbol> implementedInterfaces = new ArrayList<>();
         for (LCTypeReferenceExpression implementedInterface : lcEnumDeclaration.implementedInterfaces) {
-            ObjectSymbol objectSymbol = LCAstUtil.getObjectSymbol(Objects.requireNonNull(LCAstUtil.getObjectDeclarationByName(lcEnumDeclaration, implementedInterface.name)));
+            ObjectSymbol objectSymbol = LCAstUtil.getObjectSymbol(Objects.requireNonNull(LCAstUtil.getObjectDeclarationByName(lcEnumDeclaration, implementedInterface.toTypeString())));
             if (objectSymbol instanceof InterfaceSymbol interfaceSymbol)
                 implementedInterfaces.add(interfaceSymbol);
         }
@@ -84,7 +84,7 @@ public final class ObjectSymbolResolver extends LCAstVisitor {
     public Object visitRecordDeclaration(LCRecordDeclaration lcRecordDeclaration, Object additional) {
         List<InterfaceSymbol> implementedInterfaces = new ArrayList<>();
         for (LCTypeReferenceExpression implementedInterface : lcRecordDeclaration.implementedInterfaces) {
-            ObjectSymbol objectSymbol = LCAstUtil.getObjectSymbol(Objects.requireNonNull(LCAstUtil.getObjectDeclarationByName(lcRecordDeclaration, implementedInterface.name)));
+            ObjectSymbol objectSymbol = LCAstUtil.getObjectSymbol(Objects.requireNonNull(LCAstUtil.getObjectDeclarationByName(lcRecordDeclaration, implementedInterface.toTypeString())));
             if (objectSymbol instanceof InterfaceSymbol interfaceSymbol)
                 implementedInterfaces.add(interfaceSymbol);
         }
