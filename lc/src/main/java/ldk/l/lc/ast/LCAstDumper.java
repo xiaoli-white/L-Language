@@ -563,27 +563,9 @@ public final class LCAstDumper extends LCAstVisitor {
         System.out.println(prefix + "LCGetReference" + (lcGetAddress.isErrorNode ? " **E**" : ""));
         System.out.println(prefix + "\texpression:");
         this.visit(lcGetAddress.expression, prefix + "\t\t");
-
-        if (lcGetAddress.name != null) {
-            System.out.println(prefix + "\tname: '" + lcGetAddress.name + "'");
-        }
-
-        if (lcGetAddress.parameterTypeExpressions != null) {
-            System.out.println(prefix + "\tparamTypeExpressions:");
-            if (lcGetAddress.parameterTypeExpressions.isEmpty()) {
-                System.out.println(prefix + "\t\t<empty>");
-            } else {
-                for (LCTypeExpression paramTypeExpression : lcGetAddress.parameterTypeExpressions) {
-                    this.visit(paramTypeExpression, prefix + "\t\t");
-                }
-            }
-        }
         System.out.println(prefix + "\ttheType: " + (lcGetAddress.theType != null ? lcGetAddress.theType : "<unknown>"));
         System.out.println(prefix + "\tshouldBeLeftValue: " + lcGetAddress.shouldBeLeftValue);
         System.out.println(prefix + "\tisLeftValue: " + lcGetAddress.isLeftValue);
-        if (lcGetAddress.parameterTypeExpressions != null) {
-            System.out.println(prefix + "\t<resolved>: " + (lcGetAddress.methodSymbol != null));
-        }
         return null;
     }
 

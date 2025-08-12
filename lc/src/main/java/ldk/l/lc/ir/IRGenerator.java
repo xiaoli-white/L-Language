@@ -1322,11 +1322,7 @@ public final class IRGenerator extends LCAstVisitor {
 
     @Override
     public Object visitGetAddress(LCGetAddress lcGetAddress, Object additional) {
-        if (lcGetAddress.parameterTypeExpressions == null) {
-            this.visit(lcGetAddress.expression, additional);
-        } else {
-            operandStack.push(new IRMacro("function_address", new String[]{lcGetAddress.methodSymbol.getFullName()}));
-        }
+        this.visit(lcGetAddress.expression, additional);
         return null;
     }
 

@@ -736,25 +736,7 @@ public final class ReferenceResolver extends LCAstVisitor {
     @Override
     public Object visitGetAddress(LCGetAddress lcGetAddress, Object additional) {
         super.visitGetAddress(lcGetAddress, additional);
-
-        if (lcGetAddress.parameterTypeExpressions == null) {
-            lcGetAddress.theType = new PointerType(lcGetAddress.expression.theType);
-        } else {
-            if (!(lcGetAddress.expression instanceof LCTypeReferenceExpression) || !(lcGetAddress.expression.theType instanceof NamedType namedType))
-                return null;
-            ArrayList<Type> paramTypes = new ArrayList<>();
-            for (LCTypeExpression paramTypeExpression : lcGetAddress.parameterTypeExpressions) {
-                paramTypes.add(paramTypeExpression.theType);
-            }
-            MethodSymbol methodSymbol = findMethodSymbolOfObjectSymbol(Objects.requireNonNull(LCAstUtil.getObjectSymbol(Objects.requireNonNull(LCAstUtil.getObjectDeclarationByFullName(lcGetAddress, namedType.name)))), lcGetAddress.name, paramTypes.toArray(new Type[0]));
-            if (methodSymbol != null) {
-                lcGetAddress.methodSymbol = methodSymbol;
-                lcGetAddress.theType = methodSymbol.theType;
-            } else {
-                System.err.println("Cannot find a method of name: '" + lcGetAddress.name + "'.");
-            }
-        }
-
+        lcGetAddress.theType = new PointerType(lcGetAddress.expression.theType);
         return null;
     }
 

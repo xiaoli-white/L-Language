@@ -12,7 +12,6 @@ public final class SemanticAnalyzer {
     public final TypeBuilder typeBuilder;
     public final TypeResolver typeResolver;
     public final Enter enter;
-    public final TypeParameterEnter typeParameterEnter;
     public final ObjectSymbolResolver objectSymbolResolver;
     public final ReferenceResolver referenceResolver;
     public final TypeChecker typeChecker;
@@ -33,7 +32,6 @@ public final class SemanticAnalyzer {
         this.typeBuilder = new TypeBuilder();
         this.typeResolver = new TypeResolver(errorStream);
         this.enter = new Enter(errorStream);
-        this.typeParameterEnter = new TypeParameterEnter(errorStream);
         this.objectSymbolResolver = new ObjectSymbolResolver(errorStream);
         this.referenceResolver = new ReferenceResolver(this, errorStream);
         this.typeChecker = new TypeChecker(charStream, this, errorStream, options);
@@ -51,7 +49,6 @@ public final class SemanticAnalyzer {
         SystemTypes.setObjectTypes(this.ast, this.errorStream);
         this.typeResolver.visitAst(this.ast, null);
         this.enter.visitAst(this.ast, null);
-        this.typeParameterEnter.visitAst(this.ast, null);
         this.objectSymbolResolver.visitAst(this.ast, null);
         this.referenceResolver.visitAst(this.ast, null);
         this.typeChecker.visitAst(this.ast, null);

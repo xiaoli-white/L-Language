@@ -43,7 +43,6 @@ public final class AnnotationProcessor {
             semanticAnalyzer.typeBuilder.visit(sourceFile, null);
             semanticAnalyzer.typeResolver.visit(sourceFile, null);
             semanticAnalyzer.enter.visit(sourceFile, null);
-            semanticAnalyzer.typeParameterEnter.visit(sourceFile, null);
             semanticAnalyzer.objectSymbolResolver.visit(sourceFile, null);
             semanticAnalyzer.referenceResolver.visit(sourceFile, null);
             semanticAnalyzer.typeChecker.visit(sourceFile, null);

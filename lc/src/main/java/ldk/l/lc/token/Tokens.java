@@ -84,7 +84,6 @@ public class Tokens {
         __Dynamic__("__dynamic__"),
         Is("is"),
         Classof("classof"),
-        Method_address_of("method_address_of"),
         __Platform__("__platform__"),
         __Static_init__("__static_init__"),
         __Init__("__init__"),

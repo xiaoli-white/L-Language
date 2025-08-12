@@ -1515,7 +1515,7 @@ public final class Parser {
                         || t2.code() == Tokens.Keyword.This || t2.code() == Tokens.Keyword.Super || t2.code() == Tokens.Keyword.Lambda
                         || t2.code() == Tokens.Keyword.Clone || t2.code() == Tokens.Keyword.New || t2.code() == Tokens.Keyword.Delete || t2.code() == Tokens.Keyword.Malloc || t2.code() == Tokens.Keyword.Free || t2.code() == Tokens.Keyword.Realloc
                         || t2.code() == Tokens.Operator.BitAnd || t2.code() == Tokens.Operator.Multiply || t2.code() == Tokens.Keyword.Static_cast || t2.code() == Tokens.Keyword.Dynamic_cast || t2.code() == Tokens.Keyword.Reinterpret_cast
-                        || t2.code() == Tokens.Keyword.Destructor || t2.code() == Tokens.Keyword.Classof || t2.code() == Tokens.Keyword.Method_address_of || t2.code() == Tokens.Keyword.__Platform__ || t2.code() == Tokens.Keyword.__Field__ || t2.code() == Tokens.Keyword.__Type__) {
+                        || t2.code() == Tokens.Keyword.Destructor || t2.code() == Tokens.Keyword.Classof || t2.code() == Tokens.Keyword.__Platform__ || t2.code() == Tokens.Keyword.__Field__ || t2.code() == Tokens.Keyword.__Type__) {
                     yield this.parseExpressionStatement();
                 } else if (t2.code() == Tokens.Separator.SemiColon) {
                     this.tokenIndex++;
@@ -2827,90 +2827,6 @@ public final class Parser {
             Position endPos = getPos();
             Position pos = new Position(beginPosition.beginPos(), endPos.endPos(), beginPosition.beginLine(), endPos.endLine(), beginPosition.beginCol(), endPos.endCol());
             expression = new LCClassof(typeReferenceExpression, pos, isErrorNode);
-        } else if (t.code() == Tokens.Keyword.Method_address_of) {
-            this.tokenIndex++;
-            boolean isErrorNode = false;
-
-            if (this.peek().code() == Tokens.Operator.Less) {
-                this.tokenIndex++;
-            } else {
-                isErrorNode = true;
-                System.err.println("Expecting '<' after 'method_address_of'.");
-                this.skip();
-            }
-            LCTypeExpression lcTypeExpression = this.parseTypeExpression(false);
-            if (this.peek().code() == Tokens.Operator.Greater) {
-                this.tokenIndex++;
-            } else {
-                isErrorNode = true;
-                System.err.println("Expecting '>' after the type expression in the method_address_of expression.");
-                this.skip();
-            }
-
-            if (this.peek().code() == Tokens.Separator.OpenParen) {
-                this.tokenIndex++;
-            } else {
-                isErrorNode = true;
-                System.err.println("Expecting '(' after '>' in the method_address_of expression.");
-                this.skip();
-            }
-
-            Token name = this.next();
-            if (name.kind() != TokenKind.Identifier) {
-                isErrorNode = true;
-                // TODO dump error
-            }
-            ArrayList<LCTypeExpression> paramTypeExpressions = new ArrayList<>();
-            Token t2 = this.peek();
-            if (t2.code() == Tokens.Separator.OpenParen) {
-                this.tokenIndex++;
-                t2 = this.peek();
-                while (t2.code() != Tokens.Separator.CloseParen && t2.kind() != TokenKind.EOF) {
-                    LCTypeExpression typeExpression = this.parseTypeExpression(false);
-                    if (typeExpression != null) {
-                        paramTypeExpressions.add(typeExpression);
-                    } else {
-                        isErrorNode = true;
-                        // TODO dump error
-                        this.skip();
-                    }
-
-                    t2 = this.peek();
-                    if (t2.code() == Tokens.Separator.Comma) {
-                        this.tokenIndex++;
-                    } else if (t2.code() != Tokens.Separator.CloseParen && t2.kind() != TokenKind.EOF) {
-                        isErrorNode = true;
-                        // TODO dump error
-                        this.skip();
-                    }
-
-                    t2 = this.peek();
-                }
-
-                if (t2.code() == Tokens.Separator.CloseParen) {
-                    this.tokenIndex++;
-                } else {
-                    isErrorNode = true;
-                    // TODO dump error
-                    this.skip();
-                }
-            } else {
-                isErrorNode = true;
-                // TODO dump error
-                this.skip();
-            }
-
-            if (this.peek().code() == Tokens.Separator.CloseParen) {
-                this.tokenIndex++;
-            } else {
-                isErrorNode = true;
-                System.err.println("Expecting ')' after the expression in the method_address_of expression.");
-                this.skip();
-            }
-
-            Position endPosition = this.getPos();
-            Position position = new Position(beginPosition.beginPos(), endPosition.endPos(), beginPosition.beginLine(), endPosition.endLine(), beginPosition.beginCol(), endPosition.endCol());
-            expression = new LCGetAddress(lcTypeExpression, name.text(), paramTypeExpressions, position, isErrorNode);
         } else if (t.code() == Tokens.Keyword.__Platform__) {
             this.tokenIndex++;
             expression = new LCPlatform(this.options.get("platform", String.class), t.position(), false);

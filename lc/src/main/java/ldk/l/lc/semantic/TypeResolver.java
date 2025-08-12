@@ -244,6 +244,8 @@ public final class TypeResolver extends LCAstVisitor {
                 ast.name2Type.put(name, t2);
             }
             t = t2;
+        } else if (!objectDeclaration.typeParameters.isEmpty()) {
+            return null;
         }
 
         lcTypeReferenceExpression.theType = t;
