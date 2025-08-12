@@ -1210,6 +1210,7 @@ public final class LCAstDumper extends LCAstVisitor {
         System.out.println(prefix + "LCNullableTypeExpression" + (lcNullableTypeExpression.isErrorNode ? " **E**" : ""));
         System.out.println(prefix + "\tbase:");
         this.visit(lcNullableTypeExpression.base, prefix + "\t\t");
+        System.out.println(prefix + "\ttheType: " + (lcNullableTypeExpression.theType != null ? lcNullableTypeExpression.theType : "<unknown>"));
         return null;
     }
 
@@ -1282,6 +1283,7 @@ public final class LCAstDumper extends LCAstVisitor {
     @Override
     public Object visitAutoTypeExpression(LCAutoTypeExpression lcAutoTypeExpression, Object prefix) {
         System.out.println(prefix + "LCAutoTypeExpression" + (lcAutoTypeExpression.isErrorNode ? " **E**" : ""));
+        System.out.println(prefix + "\ttheType: " + (lcAutoTypeExpression.theType != null ? lcAutoTypeExpression.theType : "<unknown>"));
         return null;
     }
 
