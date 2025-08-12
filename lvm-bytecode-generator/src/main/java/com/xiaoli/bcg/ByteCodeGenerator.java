@@ -737,7 +737,7 @@ public final class ByteCodeGenerator extends Generator {
             if (irInvoke.target != null) {
                 this.visitVirtualRegister(irInvoke.target, additional);
                 BCRegister result = registerStack.pop();
-                addInstruction(new BCInstruction(ByteCode.MOV, result, new BCRegister(ByteCode.RETURN_VALUE_REGISTER)));
+                addInstruction(new BCInstruction(ByteCode.MOV, new BCRegister(ByteCode.RETURN_VALUE_REGISTER), result));
             }
             BCRegister register = allocateVirtualRegister();
             addInstruction(new BCInstruction(ByteCode.MOV_IMMEDIATE8, new BCImmediate8(argumentsSize), register));
