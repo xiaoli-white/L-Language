@@ -30,7 +30,7 @@ public final class SemanticAnalyzer {
         this.errorStream = errorStream;
 
         this.typeBuilder = new TypeBuilder();
-        this.typeResolver = new TypeResolver(errorStream);
+        this.typeResolver = new TypeResolver(this, errorStream);
         this.enter = new Enter(errorStream);
         this.objectSymbolResolver = new ObjectSymbolResolver(errorStream);
         this.referenceResolver = new ReferenceResolver(this, errorStream);

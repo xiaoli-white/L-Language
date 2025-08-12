@@ -962,7 +962,7 @@ public final class Parser {
     public List<LCTypeParameter> parseGenericParameters() {
         this.tokenIndex++;
 
-        ArrayList<LCTypeParameter> typeParameters = new ArrayList<>();
+        List<LCTypeParameter> typeParameters = new ArrayList<>();
         Token t = this.peek();
         while (t.kind() != TokenKind.EOF && t.code() != Tokens.Operator.Greater) {
             Position beginPosition = this.getPos();
@@ -974,7 +974,7 @@ public final class Parser {
             }
 
             LCTypeReferenceExpression extended = null;
-            ArrayList<LCTypeReferenceExpression> implemented = new ArrayList<>();
+            List<LCTypeReferenceExpression> implemented = new ArrayList<>();
             LCTypeReferenceExpression supered = null;
             LCTypeReferenceExpression _default = null;
             Token t2 = this.peek();
@@ -1041,6 +1041,13 @@ public final class Parser {
             Position position = new Position(beginPosition.beginPos(), endPosition.endPos(), beginPosition.beginLine(), endPosition.endLine(), beginPosition.beginCol(), endPosition.endCol());
             typeParameters.add(new LCTypeParameter(name.text(), extended, implemented, supered, _default, position, isErrorNode));
 
+            t = this.peek();
+            if (t.code() == Tokens.Separator.Comma) {
+                this.tokenIndex++;
+            } else if (t.code() != Tokens.Operator.Greater) {
+                // TODO dump error
+                this.skip();
+            }
             t = this.peek();
         }
 

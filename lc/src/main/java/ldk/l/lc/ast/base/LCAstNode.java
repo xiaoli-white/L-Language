@@ -36,9 +36,19 @@ public abstract class LCAstNode implements Cloneable {
             try {
                 Object value = field.get(cloned);
                 if (value instanceof Cloneable) {
-                    field.set(cloned, cloneObject(value));
+                    Object cloneObject = cloneObject(value);
+                    field.set(cloned, cloneObject);
                 }
             } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        for (Field field : fields) {
+            field.setAccessible(true);
+            if ("parentNode".equals(field.getName()) || Modifier.isStatic(field.getModifiers())) continue;
+            try {
+                updateParentNode(field.get(cloned), cloned);
+            } catch (IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
         }
@@ -49,9 +59,7 @@ public abstract class LCAstNode implements Cloneable {
         Method cloneMethod = o.getClass().getMethod("clone");
         cloneMethod.setAccessible(true);
         Object cloned = cloneMethod.invoke(o);
-        if (o instanceof LCAstNode lcAstNode) {
-            ((LCAstNode) cloned).parentNode = lcAstNode.parentNode;
-        } else if (cloned instanceof List list) {
+        if (cloned instanceof List list) {
             for (int i = 0; i < list.size(); i++) {
                 Object element = list.get(i);
                 if (element instanceof Cloneable) {
@@ -72,5 +80,19 @@ public abstract class LCAstNode implements Cloneable {
             }
         }
         return cloned;
+    }
+
+    private static void updateParentNode(Object o, LCAstNode parent) {
+        if (o instanceof LCAstNode lcAstNode) {
+            lcAstNode.parentNode = parent;
+        } else if (o instanceof List list) {
+            for (Object element : list) {
+                updateParentNode(element, parent);
+            }
+        } else if (o instanceof Object[] array) {
+            for (Object element : array) {
+                updateParentNode(element, parent);
+            }
+        }
     }
 }

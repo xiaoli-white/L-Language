@@ -704,7 +704,7 @@ public final class IRGenerator extends LCAstVisitor {
             value = null;
         }
         Scope scope = getEnclosingScope(lcReturn);
-        while (!(scope.node instanceof LCMethodDeclaration) && !(scope.node instanceof LCObjectDeclaration)) {
+        while (scope != null && !(scope.node instanceof LCMethodDeclaration) && !(scope.node instanceof LCObjectDeclaration)) {
             releaseScope(scope);
             scope = scope.enclosingScope;
         }

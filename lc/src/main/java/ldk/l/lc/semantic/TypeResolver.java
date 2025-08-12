@@ -5,6 +5,7 @@ import ldk.l.lc.ast.LCAstUtil;
 import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.ast.base.LCAstNode;
 import ldk.l.lc.ast.base.LCBlock;
+import ldk.l.lc.ast.base.LCTypeParameter;
 import ldk.l.lc.ast.expression.*;
 import ldk.l.lc.ast.expression.literal.LCNullLiteral;
 import ldk.l.lc.ast.expression.literal.LCNullptrLiteral;
@@ -19,14 +20,31 @@ import ldk.l.lc.semantic.types.*;
 import ldk.l.lc.util.error.ErrorStream;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public final class TypeResolver extends LCAstVisitor {
+    private final SemanticAnalyzer semanticAnalyzer;
     private final ErrorStream errorStream;
+    private final Set<LCObjectDeclaration> toRemovedObjectDeclarations = new HashSet<>();
 
-    public TypeResolver(ErrorStream errorStream) {
+    public TypeResolver(SemanticAnalyzer semanticAnalyzer, ErrorStream errorStream) {
+        this.semanticAnalyzer = semanticAnalyzer;
         this.errorStream = errorStream;
+    }
+
+    @Override
+    public Object visitAst(LCAst ast, Object additional) {
+        super.visitAst(ast, additional);
+
+        Queue<LCObjectDeclaration> queue = new LinkedList<>(toRemovedObjectDeclarations);
+        while (!queue.isEmpty()) {
+            LCObjectDeclaration declaration = queue.poll();
+            ast.name2Type.remove(declaration.getFullName());
+            ((LCBlock) declaration.parentNode).statements.remove(declaration);
+        }
+
+        return null;
     }
 
     @Override
@@ -46,7 +64,7 @@ public final class TypeResolver extends LCAstVisitor {
             type.upperTypes.add((NamedType) lcClassDeclaration.extended.theType);
         }
         for (LCTypeReferenceExpression implementedInterface : lcClassDeclaration.implementedInterfaces) {
-            type.upperTypes.add(this.visitTypeReferenceExpression(implementedInterface, null));
+            type.upperTypes.add((NamedType) this.visitTypeReferenceExpression(implementedInterface, null));
         }
         return null;
     }
@@ -56,7 +74,7 @@ public final class TypeResolver extends LCAstVisitor {
         NamedType type = this.getAST(lcInterfaceDeclaration).name2Type.get(lcInterfaceDeclaration.getFullName());
 
         for (LCTypeReferenceExpression extendedInterface : lcInterfaceDeclaration.extendedInterfaces) {
-            type.upperTypes.add(this.visitTypeReferenceExpression(extendedInterface, null));
+            type.upperTypes.add((NamedType) this.visitTypeReferenceExpression(extendedInterface, null));
         }
 
         return super.visitInterfaceDeclaration(lcInterfaceDeclaration, additional);
@@ -67,7 +85,7 @@ public final class TypeResolver extends LCAstVisitor {
         NamedType type = this.getAST(lcEnumDeclaration).name2Type.get(lcEnumDeclaration.getFullName());
 
         for (LCTypeReferenceExpression implementedInterface : lcEnumDeclaration.implementedInterfaces) {
-            type.upperTypes.add(this.visitTypeReferenceExpression(implementedInterface, null));
+            type.upperTypes.add((NamedType) this.visitTypeReferenceExpression(implementedInterface, null));
         }
 
         return super.visitEnumDeclaration(lcEnumDeclaration, additional);
@@ -78,7 +96,7 @@ public final class TypeResolver extends LCAstVisitor {
         NamedType type = this.getAST(lcRecordDeclaration).name2Type.get(lcRecordDeclaration.getFullName());
 
         for (LCTypeReferenceExpression implementedInterface : lcRecordDeclaration.implementedInterfaces) {
-            type.upperTypes.add(this.visitTypeReferenceExpression(implementedInterface, null));
+            type.upperTypes.add((NamedType) this.visitTypeReferenceExpression(implementedInterface, null));
         }
 
         return super.visitRecordDeclaration(lcRecordDeclaration, additional);
@@ -209,7 +227,8 @@ public final class TypeResolver extends LCAstVisitor {
     }
 
     @Override
-    public NamedType visitTypeReferenceExpression(LCTypeReferenceExpression lcTypeReferenceExpression, Object additional) {
+    public Type visitTypeReferenceExpression(LCTypeReferenceExpression lcTypeReferenceExpression, Object additional) {
+        if (lcTypeReferenceExpression.theType != null) return lcTypeReferenceExpression.theType;
         super.visitTypeReferenceExpression(lcTypeReferenceExpression, additional);
 
         LCAst ast = this.getAST(lcTypeReferenceExpression);
@@ -228,7 +247,20 @@ public final class TypeResolver extends LCAstVisitor {
             return null;
         }
         if (!lcTypeReferenceExpression.typeArgs.isEmpty()) {
-            String typeArgsString = lcTypeReferenceExpression.typeArgs.stream().map(LCTypeExpression::toTypeString).collect(Collectors.joining(", "));
+            Map<String, Type> argName2Type = new HashMap<>();
+            int i = 0;
+            for (; i < lcTypeReferenceExpression.typeArgs.size(); i++) {
+                argName2Type.put(objectDeclaration.typeParameters.get(i).name, lcTypeReferenceExpression.typeArgs.get(i).theType);
+            }
+            for (; i < objectDeclaration.typeParameters.size(); i++) {
+                LCTypeParameter typeParameter = objectDeclaration.typeParameters.get(i);
+                if (typeParameter._default != null) {
+                    argName2Type.put(typeParameter.name, (Type) this.visit(typeParameter._default, additional));
+                } else {
+                    throw new RuntimeException();
+                }
+            }
+            String typeArgsString = argName2Type.values().stream().map(Type::toTypeString).collect(Collectors.joining(", "));
             String name = objectDeclaration.getFullName() + "<" + typeArgsString + ">";
             NamedType t2 = ast.name2Type.get(name);
             if (t2 == null) {
@@ -238,10 +270,14 @@ public final class TypeResolver extends LCAstVisitor {
                 } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
                     throw new RuntimeException(e);
                 }
+                cloned.parentNode = objectDeclaration.parentNode;
                 cloned.name = cloned.name + "<" + typeArgsString + ">";
                 ((LCBlock) cloned.parentNode).statementQueue.add(cloned);
                 t2 = new NamedType(name, new ArrayList<>(t.upperTypes), t.isComplement);
                 ast.name2Type.put(name, t2);
+                TypeParametersProcessor typeParametersProcessor = new TypeParametersProcessor(semanticAnalyzer, argName2Type, this.errorStream);
+                typeParametersProcessor.visit(cloned, null);
+                toRemovedObjectDeclarations.add(objectDeclaration);
             }
             t = t2;
         } else if (!objectDeclaration.typeParameters.isEmpty()) {
@@ -310,4 +346,5 @@ public final class TypeResolver extends LCAstVisitor {
         lcAutoTypeExpression.theType = SystemTypes.AUTO;
         return SystemTypes.AUTO;
     }
+
 }
