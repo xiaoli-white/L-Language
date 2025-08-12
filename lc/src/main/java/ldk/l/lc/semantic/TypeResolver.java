@@ -169,7 +169,7 @@ public final class TypeResolver extends LCAstVisitor {
 
     @Override
     public Object visitNullLiteral(LCNullLiteral lcNullLiteral, Object additional) {
-        lcNullLiteral.theType = SystemTypes.Object_Type;
+        lcNullLiteral.theType = new NullableType(SystemTypes.Object_Type);
         return null;
     }
 

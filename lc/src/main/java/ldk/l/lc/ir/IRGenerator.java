@@ -831,7 +831,12 @@ public final class IRGenerator extends LCAstVisitor {
                 IROperand array = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
                 arrayLength(array, arrayType.base);
             } else {
-                this.visit(lcBinary.expression2, additional);
+                if (lcBinary.expression2 instanceof LCMethodCall lcMethodCall && lcMethodCall.symbol.methodKind == MethodKind.Destructor && lcBinary.expression1 instanceof LCSuper lcSuper) {
+                    IROperand operand = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
+                    callMethod(lcMethodCall.symbol, List.of(operand), List.of(lcSuper.theType), true);
+                } else {
+                    this.visit(lcBinary.expression2, additional);
+                }
             }
         } else if (Token.isLogicalOperator(lcBinary._operator)) {
             IRType operand1Type = parseType(lcBinary.expression1.theType);
@@ -1175,29 +1180,24 @@ public final class IRGenerator extends LCAstVisitor {
                 types.add(argument.theType);
             }
         }
-        IROperand address;
         if (lcMethodCall.expression != null) {
             this.visit(lcMethodCall.expression, additional);
-            address = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
-        } else {
-            if (LCFlags.hasStatic(lcMethodCall.symbol.flags) || LCFlags.hasFinal(lcMethodCall.symbol.flags) || lcMethodCall.symbol.methodKind == MethodKind.Constructor || lcMethodCall.symbol.methodKind == MethodKind.Destructor) {
-                address = new IRMacro("function_address", new String[]{lcMethodCall.symbol.getFullName()});
-            } else {
-                address = null;
-                callMethod(lcMethodCall.symbol, arguments, types);
-            }
-        }
-        if (address != null) {
+            IROperand address = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
             IRVirtualRegister result;
             if (!lcMethodCall.symbol.returnType.equals(SystemTypes.VOID)) {
                 result = new IRVirtualRegister(allocateVirtualRegister());
             } else {
                 result = null;
             }
+            for (int i = 0; i < arguments.size(); i++) {
+                retain(arguments.get(i), types.get(i));
+            }
             addInstruction(new IRInvoke(parseType(lcMethodCall.theType), address, irTypes.toArray(new IRType[0]), arguments.toArray(new IROperand[0]), result));
             if (result != null) {
                 operandStack.push(result);
             }
+        } else {
+            callMethod(lcMethodCall.symbol, arguments, types);
         }
         return null;
     }
@@ -2060,47 +2060,55 @@ public final class IRGenerator extends LCAstVisitor {
     }
 
     private void callMethod(MethodSymbol methodSymbol, List<IROperand> arguments, List<Type> types) {
+        callMethod(methodSymbol, arguments, types, false);
+    }
+
+    private void callMethod(MethodSymbol methodSymbol, List<IROperand> arguments, List<Type> types, boolean forceDirectlyInvocation) {
         IROperand address;
-        switch (methodSymbol.objectSymbol) {
-            case ClassSymbol classSymbol -> {
-                String classInstanceAddressRegister = allocateVirtualRegister();
-                addInstruction(new IRGet(new IRPointerType(IRType.getVoidType()), arguments.getFirst(), new IRVirtualRegister(classInstanceAddressRegister)));
-                String temp1 = allocateVirtualRegister();
-                addInstruction(new IRGet(new IRPointerType(IRType.getVoidType()), new IRMacro("field_address", new String[]{SystemTypes.Class_Type.name, "vtable"}, new IROperand[]{new IRVirtualRegister(classInstanceAddressRegister)}), new IRVirtualRegister(temp1)));
-                String temp2 = allocateVirtualRegister();
-                addInstruction(new IRCalculate(IRCalculate.Operator.ADD, new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(temp1), new IRMacro("vtable_entry_offset", new String[]{classSymbol.getFullName(), methodSymbol.getSimpleName()}), new IRVirtualRegister(temp2)));
-                String result = allocateVirtualRegister();
-                addInstruction(new IRGet(new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(temp2), new IRVirtualRegister(result)));
-                address = new IRVirtualRegister(result);
-            }
-            case InterfaceSymbol interfaceSymbol -> {
-                String classInstanceAddressRegister = allocateVirtualRegister();
-                addInstruction(new IRGet(new IRPointerType(IRType.getVoidType()), arguments.getFirst(), new IRVirtualRegister(classInstanceAddressRegister)));
-                ClassSymbol symbol = ((LCClassDeclaration) Objects.requireNonNull(this.ast.getObjectDeclaration(SystemTypes.Class_Type.name))).symbol;
-                MethodSymbol methodSymbol2 = null;
-                for (MethodSymbol method : symbol.methods) {
-                    if (method.name.equals("getITableEntry")) {
-                        methodSymbol2 = method;
-                        break;
-                    }
+        if (forceDirectlyInvocation || LCFlags.hasStatic(methodSymbol.flags) || LCFlags.hasFinal(methodSymbol.flags) || methodSymbol.methodKind == MethodKind.Constructor) {
+            address = new IRMacro("function_address", new String[]{methodSymbol.getFullName()});
+        } else {
+            switch (methodSymbol.objectSymbol) {
+                case ClassSymbol classSymbol -> {
+                    String classInstanceAddressRegister = allocateVirtualRegister();
+                    addInstruction(new IRGet(new IRPointerType(IRType.getVoidType()), arguments.getFirst(), new IRVirtualRegister(classInstanceAddressRegister)));
+                    String temp1 = allocateVirtualRegister();
+                    addInstruction(new IRGet(new IRPointerType(IRType.getVoidType()), new IRMacro("field_address", new String[]{SystemTypes.Class_Type.name, "vtable"}, new IROperand[]{new IRVirtualRegister(classInstanceAddressRegister)}), new IRVirtualRegister(temp1)));
+                    String temp2 = allocateVirtualRegister();
+                    addInstruction(new IRCalculate(IRCalculate.Operator.ADD, new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(temp1), new IRMacro("vtable_entry_offset", new String[]{classSymbol.getFullName(), methodSymbol.getSimpleName()}), new IRVirtualRegister(temp2)));
+                    String result = allocateVirtualRegister();
+                    addInstruction(new IRGet(new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(temp2), new IRVirtualRegister(result)));
+                    address = new IRVirtualRegister(result);
                 }
-                IRMacro interfaceClassInstance = new IRMacro("global_data_address", new String[]{"<class_instance " + interfaceSymbol.getFullName() + ">"});
-                String itableAddressRegister = allocateVirtualRegister();
-                addInstruction(new IRInvoke(new IRPointerType(IRType.getVoidType()), new IRMacro("function_address", new String[]{Objects.requireNonNull(methodSymbol2).getFullName()}), new IRType[]{new IRPointerType(IRType.getVoidType()), new IRPointerType(IRType.getVoidType())}, new IROperand[]{new IRVirtualRegister(classInstanceAddressRegister), interfaceClassInstance}, new IRVirtualRegister(itableAddressRegister)));
-                String temp = allocateVirtualRegister();
-                addInstruction(new IRCalculate(IRCalculate.Operator.ADD, new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(itableAddressRegister), new IRMacro("itable_entry_offset", new String[]{interfaceSymbol.getFullName(), methodSymbol.getSimpleName()}), new IRVirtualRegister(temp)));
-                String addressRegister = allocateVirtualRegister();
-                addInstruction(new IRGet(new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(temp), new IRVirtualRegister(addressRegister)));
-                address = new IRVirtualRegister(addressRegister);
-            }
-            case EnumSymbol enumSymbol -> {
-                address = null;
-            }
-            case RecordSymbol recordSymbol -> {
-                address = null;
-            }
-            case AnnotationSymbol annotationSymbol -> {
-                address = null;
+                case InterfaceSymbol interfaceSymbol -> {
+                    String classInstanceAddressRegister = allocateVirtualRegister();
+                    addInstruction(new IRGet(new IRPointerType(IRType.getVoidType()), arguments.getFirst(), new IRVirtualRegister(classInstanceAddressRegister)));
+                    ClassSymbol symbol = ((LCClassDeclaration) Objects.requireNonNull(this.ast.getObjectDeclaration(SystemTypes.Class_Type.name))).symbol;
+                    MethodSymbol methodSymbol2 = null;
+                    for (MethodSymbol method : symbol.methods) {
+                        if (method.name.equals("getITableEntry")) {
+                            methodSymbol2 = method;
+                            break;
+                        }
+                    }
+                    IRMacro interfaceClassInstance = new IRMacro("global_data_address", new String[]{"<class_instance " + interfaceSymbol.getFullName() + ">"});
+                    String itableAddressRegister = allocateVirtualRegister();
+                    addInstruction(new IRInvoke(new IRPointerType(IRType.getVoidType()), new IRMacro("function_address", new String[]{Objects.requireNonNull(methodSymbol2).getFullName()}), new IRType[]{new IRPointerType(IRType.getVoidType()), new IRPointerType(IRType.getVoidType())}, new IROperand[]{new IRVirtualRegister(classInstanceAddressRegister), interfaceClassInstance}, new IRVirtualRegister(itableAddressRegister)));
+                    String temp = allocateVirtualRegister();
+                    addInstruction(new IRCalculate(IRCalculate.Operator.ADD, new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(itableAddressRegister), new IRMacro("itable_entry_offset", new String[]{interfaceSymbol.getFullName(), methodSymbol.getSimpleName()}), new IRVirtualRegister(temp)));
+                    String addressRegister = allocateVirtualRegister();
+                    addInstruction(new IRGet(new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(temp), new IRVirtualRegister(addressRegister)));
+                    address = new IRVirtualRegister(addressRegister);
+                }
+                case EnumSymbol enumSymbol -> {
+                    address = null;
+                }
+                case RecordSymbol recordSymbol -> {
+                    address = null;
+                }
+                case AnnotationSymbol annotationSymbol -> {
+                    address = null;
+                }
             }
         }
         List<IRType> irTypes = new ArrayList<>(arguments.size());
