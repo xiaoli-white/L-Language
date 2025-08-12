@@ -256,6 +256,7 @@ public final class ByteCodeGenerator extends Generator {
                     }
                 }
             }
+            this.virtualRegisterMap.clear();
 
 
             for (IRFunction irFunction : irModule.functions.values()) this.visitFunction(irFunction, additional);
