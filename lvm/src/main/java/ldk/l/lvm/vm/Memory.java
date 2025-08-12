@@ -154,7 +154,7 @@ public final class Memory {
 
     private MemoryPage getMemoryPageSafely(long address) {
         MemoryPage memoryPage = getMemoryPage(address);
-        if (memoryPage == null) throw new RuntimeException("Illegal address");
+        if (memoryPage == null) throw new RuntimeException("Illegal address: 0x" + Long.toHexString(address));
         return memoryPage;
     }
 
