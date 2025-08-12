@@ -1897,8 +1897,12 @@ public final class IRGenerator extends LCAstVisitor {
         IRControlFlowGraph lastCFG = this.currentCFG;
         this.currentCFG = this.module.globalInitSection;
         createBasicBlock();
+        retain(classInstanceAddress, SystemTypes.Class_Type);
+        if (!(superClassInstanceAddress instanceof IRConstant constant) || constant.index != constantNullptrIndex) {
+            retain(superClassInstanceAddress, SystemTypes.Class_Type);
+        }
         ClassSymbol classSymbol = ((LCClassDeclaration) Objects.requireNonNull(this.ast.getObjectDeclaration(SystemTypes.Class_Type.name))).symbol;
-        String constructorName = classSymbol.constructors.get(0).getFullName();
+        String constructorName = classSymbol.constructors.getFirst().getFullName();
         addInstruction(new IRInvoke(IRType.getVoidType(), new IRMacro("function_address", new String[]{classSymbol.getFullName() + ".<__init__>()V"}), new IRType[]{new IRPointerType(IRType.getVoidType())}, new IROperand[]{classInstanceAddress}, null));
         int constantITableLengthIndex = module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), itableLength));
         addInstruction(new IRInvoke(IRType.getVoidType(), new IRMacro("function_address", new String[]{constructorName}), new IRType[]{new IRPointerType(IRType.getVoidType()), new IRPointerType(new IRPointerType(IRPointerType.getVoidType())), IRType.getUnsignedLongType(), new IRPointerType(new IRPointerType(new IRPointerType(IRType.getVoidType()))), new IRPointerType(IRType.getVoidType())}, new IROperand[]{classInstanceAddress, hasVTable ? new IRMacro("global_data_address", new String[]{vtableName}) : new IRConstant(constantNullptrIndex), new IRConstant(constantITableLengthIndex), hasITable ? new IRMacro("global_data_address", new String[]{itableName}) : new IRConstant(constantNullptrIndex), superClassInstanceAddress}, null));
@@ -2361,7 +2365,7 @@ public final class IRGenerator extends LCAstVisitor {
         IRConditionalJump irConditionalJump2 = new IRConditionalJump(IRType.getUnsignedLongType(), IRCondition.NotEqual, new IRVirtualRegister(temp2), new IRConstant(constant0Index), "");
         addInstruction(irConditionalJump2);
         createBasicBlock();
-        deleteSomething(operand, type);
+        deleteSomething(operand, type instanceof NullableType nullableType ? nullableType.base : type);
 
         var end = createBasicBlock();
         irConditionalJump2.target = end.name;
