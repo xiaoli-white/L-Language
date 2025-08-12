@@ -6,7 +6,6 @@ import ldk.l.lc.ast.expression.type.LCTypeExpression;
 import ldk.l.lc.util.Position;
 import ldk.l.lc.util.symbol.MethodSymbol;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public final class LCMethodCall extends LCExpression {
@@ -40,22 +39,6 @@ public final class LCMethodCall extends LCExpression {
         for (LCExpression v : this.arguments) v.parentNode = this;
 
         this.positionOfName = positionOfName;
-    }
-
-    private LCMethodCall(String name, Position positionOfName, LCExpression expression, List<LCTypeExpression> typeArguments, List<LCExpression> arguments, Position pos, boolean isErrorNode) {
-        super(pos, isErrorNode);
-        this.name = name;
-        this.positionOfName = positionOfName;
-
-        this.expression = expression;
-        if (this.expression != null) this.expression.parentNode = this;
-
-        this.typeArguments = typeArguments;
-        if (this.typeArguments != null)
-            for (LCTypeExpression typeArgument : this.typeArguments) typeArgument.parentNode = this;
-
-        this.arguments = arguments;
-        for (LCExpression v : this.arguments) v.parentNode = this;
     }
 
     @Override

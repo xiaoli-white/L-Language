@@ -614,11 +614,7 @@ public final class ReferenceResolver extends LCAstVisitor {
             this.visit(argument, additional);
             paramTypes.add(argument.theType);
         }
-        if (lcNewObject.typeExpression.theType instanceof NamedType namedType) {
-            lcNewObject.constructorSymbol = findMethodSymbolOfObjectSymbol(Objects.requireNonNull(LCAstUtil.getObjectSymbol(Objects.requireNonNull(LCAstUtil.getObjectDeclarationByName(lcNewObject, namedType.name)))), "<init>", paramTypes.toArray(new Type[0]));
-        } else {
-            // TODO dump error
-        }
+        lcNewObject.constructorSymbol = findMethodSymbolOfObjectSymbol(Objects.requireNonNull(LCAstUtil.getObjectSymbol(Objects.requireNonNull(LCAstUtil.getObjectDeclarationByName(lcNewObject, lcNewObject.typeExpression.theType.toTypeString())))), "<init>", paramTypes.toArray(new Type[0]));
         return null;
     }
 

@@ -313,6 +313,7 @@ public final class LCAstDumper extends LCAstVisitor {
         System.out.println(prefix + "\ttheType: " + (lcNewObject.theType != null ? lcNewObject.theType : "<unknown>"));
         System.out.println(prefix + "\tshouldBeLeftValue: " + lcNewObject.shouldBeLeftValue);
         System.out.println(prefix + "\tisLeftValue: " + lcNewObject.isLeftValue);
+        System.out.println(prefix + "\t<resolved>: " + (lcNewObject.constructorSymbol != null));
         if (lcNewObject.place != null) {
             System.out.println(prefix + "\tplace:");
             this.visit(lcNewObject.place, prefix + "\t\t");
