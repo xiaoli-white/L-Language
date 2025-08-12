@@ -1015,7 +1015,7 @@ public final class ExecutionUnit implements Runnable {
                     byte countRegister = memory.getByte(pc++);
                     byte resultRegister = memory.getByte(pc++);
                     setRegister(ByteCode.PC_REGISTER, pc);
-                    long buFFerAddress = getRegister(buFFerRegister);
+                    long bufferAddress = getRegister(buFFerRegister);
                     long count = getRegister(countRegister);
                     byte[] buFFer = new byte[(int) count];
                     int readCount;
@@ -1025,7 +1025,7 @@ public final class ExecutionUnit implements Runnable {
                         throw new RuntimeException(e);
                     }
                     setRegister(resultRegister, readCount);
-                    for (int i = 0; i < readCount; i++) memory.setByte(buFFerAddress + i, buFFer[i]);
+                    for (int i = 0; i < readCount; i++) memory.setByte(bufferAddress + i, buFFer[i]);
                 }
                 case ByteCode.WRITE -> {
                     byte fdRegister = memory.getByte(pc++);
