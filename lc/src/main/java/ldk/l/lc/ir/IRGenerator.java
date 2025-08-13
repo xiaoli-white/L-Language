@@ -589,8 +589,7 @@ public final class IRGenerator extends LCAstVisitor {
         this.visit(lcIf.condition, additional);
         IROperand result = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
 
-        int constantTrueIndex = module.constantPool.put(new IRConstantPool.Entry(IRType.getBooleanType(), true));
-        IRConditionalJump irConditionalJump = new IRConditionalJump(IRType.getBooleanType(), IRCondition.NotEqual, result, new IRConstant(constantTrueIndex), null);
+        IRConditionalJump irConditionalJump = new IRConditionalJump(IRType.getBooleanType(), IRCondition.IfFalse, result, null);
         addInstruction(irConditionalJump);
 
         createBasicBlock();
@@ -673,8 +672,7 @@ public final class IRGenerator extends LCAstVisitor {
         this.visit(lcDoWhile.condition, additional);
         IROperand result = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
 
-        int constantTrueIndex = module.constantPool.put(new IRConstantPool.Entry(IRType.getBooleanType(), true));
-        addInstruction(new IRConditionalJump(IRType.getBooleanType(), IRCondition.Equal, result, new IRConstant(constantTrueIndex), begin.name));
+        addInstruction(new IRConditionalJump(IRType.getBooleanType(), IRCondition.IfTrue, result, begin.name));
 
         var end = createBasicBlock();
 
@@ -699,8 +697,7 @@ public final class IRGenerator extends LCAstVisitor {
         if (lcFor.condition != null) {
             this.visit(lcFor.condition, additional);
             IROperand result = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
-            int constantTrueIndex = module.constantPool.put(new IRConstantPool.Entry(IRType.getBooleanType(), true));
-            irConditionalJump = new IRConditionalJump(IRType.getBooleanType(), IRCondition.NotEqual, result, new IRConstant(constantTrueIndex), null);
+            irConditionalJump = new IRConditionalJump(IRType.getBooleanType(), IRCondition.IfFalse, result, null);
             addInstruction(irConditionalJump);
             createBasicBlock();
         } else {
