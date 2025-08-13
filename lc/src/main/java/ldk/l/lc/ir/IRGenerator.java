@@ -588,8 +588,7 @@ public final class IRGenerator extends LCAstVisitor {
         this.visit(lcIf.condition, additional);
         IROperand result = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
 
-        int constantTrueIndex = module.constantPool.put(new IRConstantPool.Entry(IRType.getBooleanType(), true));
-        IRConditionalJump irConditionalJump = new IRConditionalJump(IRType.getBooleanType(), IRCondition.NotEqual, result, new IRConstant(constantTrueIndex), null);
+        IRConditionalJump irConditionalJump = new IRConditionalJump(IRType.getBooleanType(), IRCondition.IfFalse, result, null);
         addInstruction(irConditionalJump);
 
         createBasicBlock();
@@ -640,8 +639,7 @@ public final class IRGenerator extends LCAstVisitor {
         this.visit(lcWhile.condition, additional);
         IROperand result = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
 
-        int constantTrueIndex = module.constantPool.put(new IRConstantPool.Entry(IRType.getBooleanType(), true));
-        IRConditionalJump irConditionalJump = new IRConditionalJump(IRType.getBooleanType(), IRCondition.NotEqual, result, new IRConstant(constantTrueIndex), null);
+        IRConditionalJump irConditionalJump = new IRConditionalJump(IRType.getBooleanType(), IRCondition.IfFalse, result, null);
         addInstruction(irConditionalJump);
 
         createBasicBlock();
@@ -699,8 +697,7 @@ public final class IRGenerator extends LCAstVisitor {
         if (lcFor.condition != null) {
             this.visit(lcFor.condition, additional);
             IROperand result = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
-            int constantTrueIndex = module.constantPool.put(new IRConstantPool.Entry(IRType.getBooleanType(), true));
-            irConditionalJump = new IRConditionalJump(IRType.getBooleanType(), IRCondition.NotEqual, result, new IRConstant(constantTrueIndex), null);
+            irConditionalJump = new IRConditionalJump(IRType.getBooleanType(), IRCondition.IfFalse, result, null);
             addInstruction(irConditionalJump);
             createBasicBlock();
         } else {
@@ -1399,7 +1396,7 @@ public final class IRGenerator extends LCAstVisitor {
         this.visit(lcNotNullAssert.base, additional);
         IROperand base = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
         int constantNullIndex = this.module.constantPool.put(new IRConstantPool.Entry(new IRPointerType(IRType.getVoidType()), null));
-        IRConditionalJump conditionalJump = new IRConditionalJump(IRType.getLongType(), IRCondition.NotEqual, base, new IRConstant(constantNullIndex), "");
+        IRConditionalJump conditionalJump = new IRConditionalJump(new IRPointerType(IRType.getVoidType()), IRCondition.NotEqual, base, new IRConstant(constantNullIndex), "");
         addInstruction(conditionalJump);
         createBasicBlock();
         // TODO throws NullPointerException
@@ -1414,8 +1411,7 @@ public final class IRGenerator extends LCAstVisitor {
     public Object visitAssert(LCAssert lcAssert, Object additional) {
         this.visit(lcAssert.condition, additional);
         IROperand condition = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
-        int constantFalseIndex = this.module.constantPool.put(new IRConstantPool.Entry(IRType.getBooleanType(), false));
-        IRConditionalJump conditionalJump = new IRConditionalJump(IRType.getBooleanType(), IRCondition.NotEqual, condition, new IRConstant(constantFalseIndex), "");
+        IRConditionalJump conditionalJump = new IRConditionalJump(IRType.getBooleanType(), IRCondition.IfTrue, condition, null);
         addInstruction(conditionalJump);
         createBasicBlock();
         // TODO throws AssertionError
@@ -1744,8 +1740,7 @@ public final class IRGenerator extends LCAstVisitor {
         String tempRegister = allocateVirtualRegister();
         addInstruction(new IRStackAllocate(new IRConstant(constant1Index), new IRVirtualRegister(tempRegister)));
 
-        int constantTrueIndex = module.constantPool.put(new IRConstantPool.Entry(IRType.getBooleanType(), true));
-        IRConditionalJump irConditionalJump = new IRConditionalJump(IRType.getBooleanType(), IRCondition.NotEqual, result, new IRConstant(constantTrueIndex), "");
+        IRConditionalJump irConditionalJump = new IRConditionalJump(IRType.getBooleanType(), IRCondition.IfFalse, result, null);
         addInstruction(irConditionalJump);
 
         createBasicBlock();

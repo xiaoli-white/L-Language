@@ -108,7 +108,9 @@ public abstract class IRVisitor {
     public Object visitConditionalJump(IRConditionalJump irConditionalJump, Object additional) {
         this.visit(irConditionalJump.type, additional);
         this.visit(irConditionalJump.operand1, additional);
-        this.visit(irConditionalJump.operand2, additional);
+        if (irConditionalJump.operand2 != null) {
+            this.visit(irConditionalJump.operand2, additional);
+        }
         return null;
     }
 
