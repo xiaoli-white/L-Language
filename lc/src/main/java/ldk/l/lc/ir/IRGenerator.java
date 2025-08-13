@@ -1668,10 +1668,14 @@ public final class IRGenerator extends LCAstVisitor {
         IROperand[] args = new IROperand[lcNewObject.arguments.size() + 1];
         argumentTypes[0] = new IRPointerType(IRType.getVoidType());
         args[0] = place;
+        retain(place, lcNewObject.theType);
         for (int i = 0; i < lcNewObject.arguments.size(); i++) {
-            argumentTypes[i + 1] = parseType(lcNewObject.arguments.get(i).theType);
+            Type type = lcNewObject.arguments.get(i).theType;
+            argumentTypes[i + 1] = parseType(type);
             this.visit(lcNewObject.arguments.get(i), additional);
-            args[i + 1] = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
+            IROperand arg = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
+            retain(arg, type);
+            args[i + 1] = arg;
         }
         addInstruction(new IRInvoke(IRType.getVoidType(), new IRMacro("function_address", new String[]{lcNewObject.constructorSymbol.getFullName()}), argumentTypes, args, null));
 

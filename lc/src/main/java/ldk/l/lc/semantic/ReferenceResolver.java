@@ -3,10 +3,7 @@ package ldk.l.lc.semantic;
 import ldk.l.lc.ast.LCAst;
 import ldk.l.lc.ast.LCAstUtil;
 import ldk.l.lc.ast.LCAstVisitor;
-import ldk.l.lc.ast.base.LCAstNode;
-import ldk.l.lc.ast.base.LCBlock;
-import ldk.l.lc.ast.base.LCExpression;
-import ldk.l.lc.ast.base.LCExpressionStatement;
+import ldk.l.lc.ast.base.*;
 import ldk.l.lc.ast.expression.type.LCTypeExpression;
 import ldk.l.lc.ast.expression.type.LCTypeReferenceExpression;
 import ldk.l.lc.ast.statement.LCTry;
@@ -772,6 +769,20 @@ public final class ReferenceResolver extends LCAstVisitor {
             lcIn.theType = methodSymbol.returnType;
         } else {
             System.err.println("Cannot find a method of name: 'contains'.");
+        }
+
+        return null;
+    }
+
+    @Override
+    public Object visitAnnotation(LCAnnotation lcAnnotation, Object additional) {
+        super.visitAnnotation(lcAnnotation, additional);
+
+        ObjectSymbol objectSymbol = LCAstUtil.getObjectSymbol(Objects.requireNonNull(LCAstUtil.getObjectDeclarationByName(lcAnnotation, lcAnnotation.name)));
+        if (objectSymbol instanceof AnnotationSymbol annotationSymbol) {
+            lcAnnotation.symbol = annotationSymbol;
+        } else {
+            // TODO dump error
         }
 
         return null;
