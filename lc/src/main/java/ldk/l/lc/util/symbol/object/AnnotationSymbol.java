@@ -12,7 +12,7 @@ public final class AnnotationSymbol extends ObjectSymbol {
     public List<AnnotationFieldSymbol> fields;
 
     public AnnotationSymbol(LCAnnotationDeclaration declaration, Type theType, List<TypeParameterSymbol> typeParameters, long flags, List<String> attributes, List<AnnotationFieldSymbol> fields) {
-        super(declaration.getPackageName(), declaration.name, theType, SymbolKind.Annotation, typeParameters, flags, attributes);
+        super(declaration.getRealPackageName(), declaration.name, theType, SymbolKind.Annotation, typeParameters, flags, attributes);
         this.declaration = declaration;
 
         this.fields = fields;

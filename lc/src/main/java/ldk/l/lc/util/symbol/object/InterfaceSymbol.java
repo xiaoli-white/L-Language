@@ -16,7 +16,7 @@ public final class InterfaceSymbol extends ObjectSymbol {
     public List<InterfaceSymbol> extendedInterfaces = null;
 
     public InterfaceSymbol(LCInterfaceDeclaration declaration, Type theType, List<TypeParameterSymbol> typeParameters, long flags, List<String> attributes, List<MethodSymbol> methods) {
-        super(declaration.getPackageName(), declaration.name, theType, SymbolKind.Interface, typeParameters, flags, attributes);
+        super(declaration.getRealPackageName(), declaration.name, theType, SymbolKind.Interface, typeParameters, flags, attributes);
         this.declaration = declaration;
 
         this.methods = methods;

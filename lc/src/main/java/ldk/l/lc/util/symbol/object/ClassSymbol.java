@@ -20,7 +20,7 @@ public final class ClassSymbol extends ObjectSymbol {
     public List<ClassSymbol> permittedClasses = null;
 
     public ClassSymbol(LCClassDeclaration declaration, Type theType, List<TypeParameterSymbol> typeParameters, long flags, List<String> attributes, List<VariableSymbol> properties, List<MethodSymbol> constructors, List<MethodSymbol> methods, MethodSymbol destructor) {
-        super(declaration.getPackageName(), declaration.name, theType, SymbolKind.Class, typeParameters, flags, attributes);
+        super(declaration.getRealPackageName(), declaration.name, theType, SymbolKind.Class, typeParameters, flags, attributes);
         this.declaration = declaration;
 
         this.properties = properties;

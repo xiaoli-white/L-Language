@@ -19,7 +19,7 @@ public final class EnumSymbol extends ObjectSymbol {
     public MethodSymbol destructor;
 
     public EnumSymbol(LCEnumDeclaration declaration, Type theType, List<TypeParameterSymbol> typeParameters, long flags, List<String> attributes, List<EnumFieldSymbol> fields, List<VariableSymbol> properties, List<MethodSymbol> constructors, List<MethodSymbol> methods, MethodSymbol destructor) {
-        super(declaration.getPackageName(), declaration.name, theType, SymbolKind.Enum, typeParameters, flags, attributes);
+        super(declaration.getRealPackageName(), declaration.name, theType, SymbolKind.Enum, typeParameters, flags, attributes);
         this.flags |= LCFlags.FINAL;
 
         this.declaration = declaration;

@@ -11,7 +11,7 @@ public abstract sealed class ObjectSymbol extends Symbol permits ClassSymbol, In
     public long flags;
     public List<String> attributes;
 
-    public ObjectSymbol(String _package, String name, Type theType, SymbolKind kind, List<TypeParameterSymbol> typeParameters, long flags, List<String> attributes) {
+    protected ObjectSymbol(String _package, String name, Type theType, SymbolKind kind, List<TypeParameterSymbol> typeParameters, long flags, List<String> attributes) {
         super(name, theType, kind);
         this._package = _package;
 

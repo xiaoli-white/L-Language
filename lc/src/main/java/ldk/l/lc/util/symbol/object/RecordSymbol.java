@@ -19,7 +19,7 @@ public final class RecordSymbol extends ObjectSymbol {
     public MethodSymbol destructor;
 
     public RecordSymbol(LCRecordDeclaration declaration, Type theType, List<TypeParameterSymbol> typeParameters, long flags, List<String> attributes, List<VariableSymbol> fields, List<VariableSymbol> properties, List<MethodSymbol> constructors, List<MethodSymbol> methods, MethodSymbol destructor) {
-        super(declaration.getPackageName(), declaration.name, theType, SymbolKind.Record, typeParameters, flags, attributes);
+        super(declaration.getRealPackageName(), declaration.name, theType, SymbolKind.Record, typeParameters, flags, attributes);
         this.flags |= LCFlags.FINAL;
 
         this.declaration = declaration;

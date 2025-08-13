@@ -54,11 +54,13 @@ public abstract sealed class LCObjectDeclaration extends LCDeclaration permits L
     }
 
     public String getRealPackageName() {
-        String fullName = this.getFullName();
-        int index = fullName.lastIndexOf(".");
-        if (index != -1)
-            return fullName.substring(0, index);
-        else
-            return fullName;
+        StringBuilder builder = new StringBuilder(getPackageName());
+        LCAstNode node = this.parentNode;
+        while (node != null && !(node instanceof LCSourceFile)) {
+            if (node instanceof LCObjectDeclaration objectDeclaration)
+                builder.append(".").append(objectDeclaration.name);
+            node = node.parentNode;
+        }
+        return builder.toString();
     }
 }

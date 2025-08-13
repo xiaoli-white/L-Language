@@ -43,14 +43,14 @@ public final class IRGenerator extends LCAstVisitor {
     private final ErrorStream errorStream;
     private LCAst ast = null;
     private IRControlFlowGraph initCFG = null;
-    private final ArrayList<IRField> initFields = new ArrayList<>();
-    private final Map<String, Stack<String>> initVariableName2FieldName = new HashMap<>();
-    private final Map<String, Long> initCountOfSameNameVariables = new HashMap<>();
+    private List<IRField> initFields = null;
+    private Map<String, Stack<String>> initVariableName2FieldName = null;
+    private Map<String, Long> initCountOfSameNameVariables = null;
     private boolean inInit = false;
     private IRControlFlowGraph staticInitCFG = null;
-    private final ArrayList<IRField> staticInitFields = new ArrayList<>();
-    private final Map<String, Stack<String>> staticInitVariableName2FieldName = new HashMap<>();
-    private final Map<String, Long> staticInitCountOfSameNameVariables = new HashMap<>();
+    private List<IRField> staticInitFields = null;
+    private Map<String, Stack<String>> staticInitVariableName2FieldName = null;
+    private Map<String, Long> staticInitCountOfSameNameVariables = null;
     private boolean inStaticInit = false;
     private final Stack<IROperand> operandStack = new Stack<>();
     private IRControlFlowGraph currentCFG = null;
@@ -158,8 +158,23 @@ public final class IRGenerator extends LCAstVisitor {
     public Object visitClassDeclaration(LCClassDeclaration lcClassDeclaration, Object additional) {
         this.createClassInstance(lcClassDeclaration);
 
+        var lastInitCFG = this.initCFG;
+        var lastInitFields = this.initFields;
+        var lastInitVariableName2FieldName = this.initVariableName2FieldName;
+        var lastInitCountOfSameNameVariables = this.initCountOfSameNameVariables;
+        var lastStaticInitCFG = this.staticInitCFG;
+        var lastStaticInitFields = this.staticInitFields;
+        var lastStaticInitVariableName2FieldName = this.staticInitVariableName2FieldName;
+        var lastStaticInitCountOfSameNameVariables = this.staticInitCountOfSameNameVariables;
+
         this.initCFG = createControlFlowGraph();
+        this.initFields = new ArrayList<>();
+        this.initVariableName2FieldName = new HashMap<>();
+        this.initCountOfSameNameVariables = new HashMap<>();
         this.staticInitCFG = createControlFlowGraph();
+        this.staticInitFields = new ArrayList<>();
+        this.staticInitVariableName2FieldName = new HashMap<>();
+        this.staticInitCountOfSameNameVariables = new HashMap<>();
 
         this.initFields.add(new IRField("<this_instance>", new IRPointerType(IRType.getVoidType())));
 
@@ -208,10 +223,14 @@ public final class IRGenerator extends LCAstVisitor {
 
         this.objectStaticInitInvocations.add(new IRInvoke(IRType.getVoidType(), new IRMacro("function_address", new String[]{staticInitFunctionName}), new IRType[0], new IROperand[0], null));
 
-        this.initFields.clear();
-        this.initVariableName2FieldName.clear();
-        this.staticInitFields.clear();
-        this.staticInitVariableName2FieldName.clear();
+        this.initCFG = lastInitCFG;
+        this.initFields = lastInitFields;
+        this.initVariableName2FieldName = lastInitVariableName2FieldName;
+        this.initCountOfSameNameVariables = lastInitCountOfSameNameVariables;
+        this.staticInitCFG = lastStaticInitCFG;
+        this.staticInitFields = lastStaticInitFields;
+        this.staticInitVariableName2FieldName = lastStaticInitVariableName2FieldName;
+        this.staticInitCountOfSameNameVariables = lastStaticInitCountOfSameNameVariables;
         return null;
     }
 
@@ -231,6 +250,24 @@ public final class IRGenerator extends LCAstVisitor {
     @Override
     public Object visitEnumDeclaration(LCEnumDeclaration lcEnumDeclaration, Object additional) {
         this.createClassInstance(lcEnumDeclaration);
+
+        var lastInitCFG = this.initCFG;
+        var lastInitFields = this.initFields;
+        var lastInitVariableName2FieldName = this.initVariableName2FieldName;
+        var lastInitCountOfSameNameVariables = this.initCountOfSameNameVariables;
+        var lastStaticInitCFG = this.staticInitCFG;
+        var lastStaticInitFields = this.staticInitFields;
+        var lastStaticInitVariableName2FieldName = this.staticInitVariableName2FieldName;
+        var lastStaticInitCountOfSameNameVariables = this.staticInitCountOfSameNameVariables;
+
+        this.initCFG = createControlFlowGraph();
+        this.initFields = new ArrayList<>();
+        this.initVariableName2FieldName = new HashMap<>();
+        this.initCountOfSameNameVariables = new HashMap<>();
+        this.staticInitCFG = createControlFlowGraph();
+        this.staticInitFields = new ArrayList<>();
+        this.staticInitVariableName2FieldName = new HashMap<>();
+        this.staticInitCountOfSameNameVariables = new HashMap<>();
 
         this.initCFG = createControlFlowGraph();
         this.staticInitCFG = createControlFlowGraph();
@@ -299,10 +336,14 @@ public final class IRGenerator extends LCAstVisitor {
 
         this.objectStaticInitInvocations.add(new IRInvoke(IRType.getVoidType(), new IRMacro("function_address", new String[]{staticInitFunctionName}), new IRType[0], new IROperand[0], null));
 
-        this.initFields.clear();
-        this.initVariableName2FieldName.clear();
-        this.staticInitFields.clear();
-        this.staticInitVariableName2FieldName.clear();
+        this.initCFG = lastInitCFG;
+        this.initFields = lastInitFields;
+        this.initVariableName2FieldName = lastInitVariableName2FieldName;
+        this.initCountOfSameNameVariables = lastInitCountOfSameNameVariables;
+        this.staticInitCFG = lastStaticInitCFG;
+        this.staticInitFields = lastStaticInitFields;
+        this.staticInitVariableName2FieldName = lastStaticInitVariableName2FieldName;
+        this.staticInitCountOfSameNameVariables = lastStaticInitCountOfSameNameVariables;
         return null;
     }
 
@@ -330,6 +371,24 @@ public final class IRGenerator extends LCAstVisitor {
     @Override
     public Object visitRecordDeclaration(LCRecordDeclaration lcRecordDeclaration, Object additional) {
         this.createClassInstance(lcRecordDeclaration);
+
+        var lastInitCFG = this.initCFG;
+        var lastInitFields = this.initFields;
+        var lastInitVariableName2FieldName = this.initVariableName2FieldName;
+        var lastInitCountOfSameNameVariables = this.initCountOfSameNameVariables;
+        var lastStaticInitCFG = this.staticInitCFG;
+        var lastStaticInitFields = this.staticInitFields;
+        var lastStaticInitVariableName2FieldName = this.staticInitVariableName2FieldName;
+        var lastStaticInitCountOfSameNameVariables = this.staticInitCountOfSameNameVariables;
+
+        this.initCFG = createControlFlowGraph();
+        this.initFields = new ArrayList<>();
+        this.initVariableName2FieldName = new HashMap<>();
+        this.initCountOfSameNameVariables = new HashMap<>();
+        this.staticInitCFG = createControlFlowGraph();
+        this.staticInitFields = new ArrayList<>();
+        this.staticInitVariableName2FieldName = new HashMap<>();
+        this.staticInitCountOfSameNameVariables = new HashMap<>();
 
         this.initCFG = createControlFlowGraph();
         this.staticInitCFG = createControlFlowGraph();
@@ -385,10 +444,14 @@ public final class IRGenerator extends LCAstVisitor {
 
         this.objectStaticInitInvocations.add(new IRInvoke(IRType.getVoidType(), new IRMacro("function_address", new String[]{staticInitFunctionName}), new IRType[0], new IROperand[0], null));
 
-        this.initFields.clear();
-        this.initVariableName2FieldName.clear();
-        this.staticInitFields.clear();
-        this.staticInitVariableName2FieldName.clear();
+        this.initCFG = lastInitCFG;
+        this.initFields = lastInitFields;
+        this.initVariableName2FieldName = lastInitVariableName2FieldName;
+        this.initCountOfSameNameVariables = lastInitCountOfSameNameVariables;
+        this.staticInitCFG = lastStaticInitCFG;
+        this.staticInitFields = lastStaticInitFields;
+        this.staticInitVariableName2FieldName = lastStaticInitVariableName2FieldName;
+        this.staticInitCountOfSameNameVariables = lastStaticInitCountOfSameNameVariables;
         return null;
     }
 
@@ -707,6 +770,12 @@ public final class IRGenerator extends LCAstVisitor {
         while (scope != null && !(scope.node instanceof LCMethodDeclaration) && !(scope.node instanceof LCObjectDeclaration)) {
             releaseScope(scope);
             scope = scope.enclosingScope;
+        }
+        LCMethodDeclaration methodDeclaration = getEnclosingMethodDeclaration(lcReturn);
+        if (methodDeclaration != null && !LCFlags.hasStatic(methodDeclaration.modifier.flags)) {
+            getThisInstance();
+            IROperand thisInstance = operandStack.pop();
+            release(thisInstance, LCAstUtil.getObjectSymbol(getEnclosingObjectDeclaration(lcReturn)).theType);
         }
 
         addInstruction(new IRReturn(value));
@@ -1585,6 +1654,11 @@ public final class IRGenerator extends LCAstVisitor {
             String addressRegister = allocateVirtualRegister();
             addInstruction(new IRMalloc(new IRMacro("structure_length", new String[]{typeName}), new IRVirtualRegister(addressRegister)));
             place = new IRVirtualRegister(addressRegister);
+            int constant8Index = this.module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 8));
+            String tempRegister = allocateVirtualRegister();
+            addInstruction(new IRCalculate(false, IRCalculate.Operator.ADD, new IRPointerType(IRType.getUnsignedLongType()), place, new IRConstant(constant8Index), new IRVirtualRegister(tempRegister)));
+            int constant0Index = this.module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 0));
+            addInstruction(new IRSet(new IRPointerType(IRType.getUnsignedLongType()), new IRVirtualRegister(tempRegister), new IRConstant(constant0Index)));
         }
 
         retain(place, lcNewObject.theType);
@@ -1898,6 +1972,7 @@ public final class IRGenerator extends LCAstVisitor {
         this.currentCFG = this.module.globalInitSection;
         createBasicBlock();
         retain(classInstanceAddress, SystemTypes.Class_Type);
+        retain(classInstanceAddress, SystemTypes.Class_Type);
         if (!(superClassInstanceAddress instanceof IRConstant constant) || constant.index != constantNullptrIndex) {
             retain(superClassInstanceAddress, SystemTypes.Class_Type);
         }
@@ -2096,8 +2171,11 @@ public final class IRGenerator extends LCAstVisitor {
                         }
                     }
                     IRMacro interfaceClassInstance = new IRMacro("global_data_address", new String[]{"<class_instance " + interfaceSymbol.getFullName() + ">"});
+                    IRVirtualRegister classInstance = new IRVirtualRegister(classInstanceAddressRegister);
+                    retain(classInstance, SystemTypes.Class_Type);
+                    retain(interfaceClassInstance, SystemTypes.Class_Type);
                     String itableAddressRegister = allocateVirtualRegister();
-                    addInstruction(new IRInvoke(new IRPointerType(IRType.getVoidType()), new IRMacro("function_address", new String[]{Objects.requireNonNull(methodSymbol2).getFullName()}), new IRType[]{new IRPointerType(IRType.getVoidType()), new IRPointerType(IRType.getVoidType())}, new IROperand[]{new IRVirtualRegister(classInstanceAddressRegister), interfaceClassInstance}, new IRVirtualRegister(itableAddressRegister)));
+                    addInstruction(new IRInvoke(new IRPointerType(IRType.getVoidType()), new IRMacro("function_address", new String[]{Objects.requireNonNull(methodSymbol2).getFullName()}), new IRType[]{new IRPointerType(IRType.getVoidType()), new IRPointerType(IRType.getVoidType())}, new IROperand[]{classInstance, interfaceClassInstance}, new IRVirtualRegister(itableAddressRegister)));
                     String temp = allocateVirtualRegister();
                     addInstruction(new IRCalculate(IRCalculate.Operator.ADD, new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(itableAddressRegister), new IRMacro("itable_entry_offset", new String[]{interfaceSymbol.getFullName(), methodSymbol.getSimpleName()}), new IRVirtualRegister(temp)));
                     String addressRegister = allocateVirtualRegister();
@@ -2240,8 +2318,11 @@ public final class IRGenerator extends LCAstVisitor {
                 }
             }
             IRMacro interfaceClassInstance = new IRMacro("global_data_address", new String[]{"<class_instance " + interfaceSymbol.getFullName() + ">"});
+            IRVirtualRegister classInstance = new IRVirtualRegister(classInstanceAddressRegister);
+            retain(classInstance, SystemTypes.Class_Type);
+            retain(interfaceClassInstance, SystemTypes.Class_Type);
             String itableAddressRegister = allocateVirtualRegister();
-            addInstruction(new IRInvoke(new IRPointerType(IRType.getVoidType()), new IRMacro("function_address", new String[]{Objects.requireNonNull(methodSymbol).getFullName()}), new IRType[]{new IRPointerType(IRType.getVoidType()), new IRPointerType(IRType.getVoidType())}, new IROperand[]{new IRVirtualRegister(classInstanceAddressRegister), interfaceClassInstance}, new IRVirtualRegister(itableAddressRegister)));
+            addInstruction(new IRInvoke(new IRPointerType(IRType.getVoidType()), new IRMacro("function_address", new String[]{Objects.requireNonNull(methodSymbol).getFullName()}), new IRType[]{new IRPointerType(IRType.getVoidType()), new IRPointerType(IRType.getVoidType())}, new IROperand[]{classInstance, interfaceClassInstance}, new IRVirtualRegister(itableAddressRegister)));
             String temp = allocateVirtualRegister();
             addInstruction(new IRCalculate(IRCalculate.Operator.ADD, new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(itableAddressRegister), new IRMacro("itable_entry_offset", new String[]{interfaceSymbol.getFullName(), "<deinit>()V"}), new IRVirtualRegister(temp)));
             addInstruction(new IRGet(new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(temp), new IRVirtualRegister(destructorAddress)));
