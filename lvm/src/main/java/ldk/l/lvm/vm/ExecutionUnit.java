@@ -1217,6 +1217,22 @@ public final class ExecutionUnit implements Runnable {
                         default -> throw new IllegalStateException("Unexpected size: " + size);
                     }
                 }
+                case ByteCode.JUMP_IF_TRUE -> {
+                    byte register = memory.getByte(pc++);
+                    byte target = memory.getByte(pc++);
+                    setRegister(ByteCode.PC_REGISTER, pc);
+                    if (getRegister(register) != 0) {
+                        setRegister(ByteCode.PC_REGISTER, target);
+                    }
+                }
+                case ByteCode.JUMP_IF_FALSE -> {
+                    byte register = memory.getByte(pc++);
+                    byte target = memory.getByte(pc++);
+                    setRegister(ByteCode.PC_REGISTER, pc);
+                    if (getRegister(register) == 0) {
+                        setRegister(ByteCode.PC_REGISTER, target);
+                    }
+                }
             }
         }
     }

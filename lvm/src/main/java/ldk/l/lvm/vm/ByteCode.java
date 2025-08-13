@@ -152,6 +152,8 @@ public class ByteCode {
     public static final byte STORE_LOCAL = 0x7e;
     public static final byte LOAD_PARAMETER = 0x7f;
     public static final byte STORE_PARAMETER = (byte) 0x80;
+    public static final byte JUMP_IF_TRUE = (byte) 0x81;
+    public static final byte JUMP_IF_FALSE = (byte) 0x82;
 
     public static String getInstructionName(byte code) {
         return switch (code) {
@@ -284,6 +286,8 @@ public class ByteCode {
             case STORE_LOCAL -> "STORE_LOCAL";
             case LOAD_PARAMETER -> "LOAD_PARAMETER";
             case STORE_PARAMETER -> "STORE_PARAMETER";
+            case JUMP_IF_TRUE -> "JUMP_IF_TRUE";
+            case JUMP_IF_FALSE -> "JUMP_IF_FALSE";
             default -> throw new IllegalArgumentException("Unknown instruction code: " + code);
         };
     }
@@ -419,6 +423,8 @@ public class ByteCode {
             case "STORE_LOCAL" -> STORE_LOCAL;
             case "LOAD_PARAMETER" -> LOAD_PARAMETER;
             case "STORE_PARAMETER" -> STORE_PARAMETER;
+            case "JUMP_IF_TRUE" -> JUMP_IF_TRUE;
+            case "JUMP_IF_FALSE" -> JUMP_IF_FALSE;
             default -> throw new IllegalArgumentException("Unknown instruction code: " + code);
         };
     }

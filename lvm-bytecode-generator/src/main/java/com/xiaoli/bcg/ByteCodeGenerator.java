@@ -11,6 +11,7 @@ import ldk.l.lg.Generator;
 import ldk.l.lg.ir.IRConstantPool;
 import ldk.l.lg.ir.IRModule;
 import ldk.l.lg.ir.IRVisitor;
+import ldk.l.lg.ir.base.IRCondition;
 import ldk.l.lg.ir.base.IRControlFlowGraph;
 import ldk.l.lg.ir.base.IRFunction;
 import ldk.l.lg.ir.base.IRGlobalDataSection;
@@ -559,29 +560,35 @@ public final class ByteCodeGenerator extends Generator {
             this.visit(irConditionalJump.operand2, additional);
             BCRegister operand2 = registerStack.pop();
 
-            if (irConditionalJump.type instanceof IRIntegerType irIntegerType) {
-                addInstruction(new BCInstruction(ByteCode.CMP, new BCImmediate1(switch (irIntegerType.size) {
-                    case OneBit, OneByte -> ByteCode.BYTE_TYPE;
-                    case TwoBytes -> ByteCode.SHORT_TYPE;
-                    case FourBytes -> ByteCode.INT_TYPE;
-                    case EightBytes -> ByteCode.LONG_TYPE;
-                }), operand1, operand2));
-            } else if (irConditionalJump.type instanceof IRPointerType) {
-                addInstruction(new BCInstruction(ByteCode.CMP, new BCImmediate1(ByteCode.LONG_TYPE), operand1, operand2));
-            } else {
-                throw new RuntimeException("Unsupported type: " + irConditionalJump.type);
-            }
-
             BCRegister address = allocateVirtualRegister();
             addInstruction(new BCInstruction(ByteCode.MOV_IMMEDIATE8, new BCImmediate8(0, "<ir_basic_block>" + irConditionalJump.target), address));
-            addInstruction(new BCInstruction(switch (irConditionalJump.condition) {
-                case Equal -> ByteCode.JE;
-                case NotEqual -> ByteCode.JNE;
-                case Less -> ByteCode.JL;
-                case LessEqual -> ByteCode.JLE;
-                case Greater -> ByteCode.JG;
-                case GreaterEqual -> ByteCode.JGE;
-            }, address));
+            if (irConditionalJump.condition == IRCondition.IfTrue) {
+                addInstruction(new BCInstruction(ByteCode.JUMP_IF_TRUE, operand1, address));
+            } else if (irConditionalJump.condition == IRCondition.IfFalse) {
+                addInstruction(new BCInstruction(ByteCode.JUMP_IF_FALSE, operand1, address));
+            } else {
+                if (irConditionalJump.type instanceof IRIntegerType irIntegerType) {
+                    addInstruction(new BCInstruction(ByteCode.CMP, new BCImmediate1(switch (irIntegerType.size) {
+                        case OneBit, OneByte -> ByteCode.BYTE_TYPE;
+                        case TwoBytes -> ByteCode.SHORT_TYPE;
+                        case FourBytes -> ByteCode.INT_TYPE;
+                        case EightBytes -> ByteCode.LONG_TYPE;
+                    }), operand1, operand2));
+                } else if (irConditionalJump.type instanceof IRPointerType) {
+                    addInstruction(new BCInstruction(ByteCode.CMP, new BCImmediate1(ByteCode.LONG_TYPE), operand1, operand2));
+                } else {
+                    throw new RuntimeException("Unsupported type: " + irConditionalJump.type);
+                }
+                addInstruction(new BCInstruction(switch (irConditionalJump.condition) {
+                    case Equal -> ByteCode.JE;
+                    case NotEqual -> ByteCode.JNE;
+                    case Less -> ByteCode.JL;
+                    case LessEqual -> ByteCode.JLE;
+                    case Greater -> ByteCode.JG;
+                    case GreaterEqual -> ByteCode.JGE;
+                    default -> throw new IllegalStateException("Unexpected value: " + irConditionalJump.condition);
+                }, address));
+            }
             return null;
         }
 
@@ -1146,6 +1153,7 @@ public final class ByteCodeGenerator extends Generator {
                     case "BP" -> ByteCode.BP_REGISTER;
                     case "SP" -> ByteCode.SP_REGISTER;
                     case "PC" -> ByteCode.PC_REGISTER;
+                    case "RETURN_VALUE" -> ByteCode.RETURN_VALUE_REGISTER;
                     default -> Byte.parseByte(registerName);
                 };
                 return new BCRegister(register);
