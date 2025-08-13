@@ -20,7 +20,7 @@ public final class MemoryPage {
 
     public synchronized void initialize() {
         if ((this.flags & MP_PRESENT) != 0) return;
-        this.arena = Arena.ofShared();
+        this.arena = Arena.ofAuto();
         this.data = this.arena.allocate(Memory.PAGE_SIZE);
         this.flags |= MP_PRESENT;
     }
@@ -37,7 +37,7 @@ public final class MemoryPage {
     }
 
     private void destroy() {
-        this.arena.close();
+        this.arena = null;
         this.data = null;
         this.flags &= ~MP_PRESENT;
     }

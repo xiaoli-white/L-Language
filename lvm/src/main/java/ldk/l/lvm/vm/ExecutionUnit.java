@@ -20,7 +20,7 @@ public final class ExecutionUnit implements Runnable {
     public void init(long threadID, long stackStart, long entryPoint) {
         this.threadID = threadID;
 
-        this.arena = Arena.ofShared();
+        this.arena = Arena.ofAuto();
         this.registers = this.arena.allocate(MemoryLayout.sequenceLayout(ByteCode.REGISTER_COUNT, Memory.LAYOUT_LONG));
         setRegister(ByteCode.BP_REGISTER, stackStart);
         setRegister(ByteCode.SP_REGISTER, stackStart);
@@ -1227,7 +1227,7 @@ public final class ExecutionUnit implements Runnable {
     }
 
     public void destroy() {
-        arena.close();
+        this.arena = null;
     }
 
     public long getRegister(byte register) {
