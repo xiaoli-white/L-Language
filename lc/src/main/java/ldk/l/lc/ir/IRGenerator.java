@@ -518,7 +518,7 @@ public final class IRGenerator extends LCAstVisitor {
         } else {
             boolean inMethod = this.getEnclosingMethodDeclaration(lcVariableDeclaration) != null;
             IRControlFlowGraph lastCFG = this.currentCFG;
-            boolean isField = !inMethod && !inInit && inStaticInit;
+            boolean isField = !inMethod && !inInit && !inStaticInit;
             if (!isField) {
                 Stack<String> stack = this.variableName2FieldName.get(lcVariableDeclaration.name);
                 String name = lcVariableDeclaration.name + "_" + stack.size();
