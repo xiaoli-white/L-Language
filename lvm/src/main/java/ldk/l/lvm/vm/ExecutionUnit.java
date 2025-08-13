@@ -168,7 +168,7 @@ public final class ExecutionUnit implements Runnable {
                         flags = (flags & ~ByteCode.ZERO_MARK & ~ByteCode.CARRY_MARK & ~ByteCode.UNSIGNED_MARK) | 1;
                     } else {
                         long signedResult = value1 - value2;
-                        long unsignedResult = new BigInteger(Long.toUnsignedString(value1)).compareTo(new BigInteger(Long.toUnsignedString(value2)));
+                        long unsignedResult = Long.compareUnsigned(value1, value2);
                         flags = (flags & ~ByteCode.ZERO_MARK & ~ByteCode.CARRY_MARK & ~ByteCode.UNSIGNED_MARK) | ((signedResult < 0 ? 1 : 0) << 1) | ((unsignedResult < 0 ? 1 : 0) << 2);
                     }
                     setRegister(ByteCode.FLAGS_REGISTER, flags);
@@ -198,7 +198,7 @@ public final class ExecutionUnit implements Runnable {
                         flags = (flags & ~ByteCode.ZERO_MARK & ~ByteCode.CARRY_MARK & ~ByteCode.UNSIGNED_MARK) | 1;
                     } else {
                         long signedResult = value1 - value2;
-                        long unsignedResult = new BigInteger(Long.toUnsignedString(value1)).compareTo(new BigInteger(Long.toUnsignedString(value2)));
+                        long unsignedResult = Long.compareUnsigned(value1, value2);
                         flags = (flags & ~ByteCode.ZERO_MARK & ~ByteCode.CARRY_MARK & ~ByteCode.UNSIGNED_MARK) | ((signedResult < 0 ? 1 : 0) << 1) | ((unsignedResult < 0 ? 1 : 0) << 2);
                     }
                     setRegister(ByteCode.FLAGS_REGISTER, flags);
