@@ -671,8 +671,7 @@ public final class IRGenerator extends LCAstVisitor {
         this.visit(lcDoWhile.condition, additional);
         IROperand result = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
 
-        int constantTrueIndex = module.constantPool.put(new IRConstantPool.Entry(IRType.getBooleanType(), true));
-        addInstruction(new IRConditionalJump(IRType.getBooleanType(), IRCondition.Equal, result, new IRConstant(constantTrueIndex), begin.name));
+        addInstruction(new IRConditionalJump(IRType.getBooleanType(), IRCondition.IfTrue, result, begin.name));
 
         var end = createBasicBlock();
 
@@ -912,7 +911,7 @@ public final class IRGenerator extends LCAstVisitor {
             if (lcBinary._operator == Tokens.Operator.And) {
                 this.visit(lcBinary.expression1, additional);
                 IROperand operand1 = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
-                IRConditionalJump irConditionalJump = new IRConditionalJump(operand1Type, IRCondition.NotEqual, operand1, new IRConstant(constantTrueIndex), null);
+                IRConditionalJump irConditionalJump = new IRConditionalJump(IRType.getBooleanType(), IRCondition.IfFalse, operand1, null);
                 addInstruction(irConditionalJump);
                 createBasicBlock();
                 this.visit(lcBinary.expression2, additional);
@@ -922,7 +921,7 @@ public final class IRGenerator extends LCAstVisitor {
                 String tempRegister = allocateVirtualRegister();
                 addInstruction(new IRStackAllocate(new IRConstant(constant1Index), new IRVirtualRegister(tempRegister)));
 
-                IRConditionalJump irConditionalJump2 = new IRConditionalJump(operand2Type, IRCondition.NotEqual, operand2, new IRConstant(constantTrueIndex), null);
+                IRConditionalJump irConditionalJump2 = new IRConditionalJump(IRType.getBooleanType(), IRCondition.IfFalse, operand2, null);
                 addInstruction(irConditionalJump2);
                 createBasicBlock();
 
@@ -939,7 +938,7 @@ public final class IRGenerator extends LCAstVisitor {
             } else if (lcBinary._operator == Tokens.Operator.Or) {
                 this.visit(lcBinary.expression1, additional);
                 IROperand operand1 = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
-                IRConditionalJump irConditionalJump = new IRConditionalJump(operand1Type, IRCondition.Equal, operand1, new IRConstant(constantTrueIndex), null);
+                IRConditionalJump irConditionalJump = new IRConditionalJump(IRType.getBooleanType(), IRCondition.IfTrue, operand1, null);
                 addInstruction(irConditionalJump);
                 createBasicBlock();
                 this.visit(lcBinary.expression2, additional);
@@ -947,7 +946,7 @@ public final class IRGenerator extends LCAstVisitor {
                 int constant1Index = module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 1));
                 String tempRegister = allocateVirtualRegister();
                 addInstruction(new IRStackAllocate(new IRConstant(constant1Index), new IRVirtualRegister(tempRegister)));
-                IRConditionalJump irConditionalJump2 = new IRConditionalJump(operand2Type, IRCondition.NotEqual, operand2, new IRConstant(constantTrueIndex), null);
+                IRConditionalJump irConditionalJump2 = new IRConditionalJump(IRType.getBooleanType(), IRCondition.IfFalse, operand2, null);
                 addInstruction(irConditionalJump2);
 
                 IRControlFlowGraph.BasicBlock bb = createBasicBlock();
@@ -1568,8 +1567,7 @@ public final class IRGenerator extends LCAstVisitor {
             String resultRegister = allocateVirtualRegister();
             IRMacro methodAddress = new IRMacro("function_address", new String[]{Objects.requireNonNull(methodSymbol).getFullName()});
             addInstruction(new IRInvoke(IRType.getBooleanType(), methodAddress, new IRType[]{new IRPointerType(IRType.getVoidType()), new IRPointerType(IRType.getVoidType())}, new IROperand[]{new IRVirtualRegister(operandClassInstanceAddressRegister), new IRMacro("global_data_address", new String[]{classInstanceName})}, new IRVirtualRegister(resultRegister)));
-            int constantTrueIndex = this.module.constantPool.put(new IRConstantPool.Entry(IRType.getBooleanType(), true));
-            IRConditionalJump irConditionalJump = new IRConditionalJump(IRType.getBooleanType(), IRCondition.Equal, new IRVirtualRegister(resultRegister), new IRConstant(constantTrueIndex), "");
+            IRConditionalJump irConditionalJump = new IRConditionalJump(IRType.getBooleanType(), IRCondition.IfTrue, new IRVirtualRegister(resultRegister), null);
             addInstruction(irConditionalJump);
             createBasicBlock();
             // TODO throw exception
@@ -1597,7 +1595,7 @@ public final class IRGenerator extends LCAstVisitor {
 
         int constantTrueIndex = this.module.constantPool.put(new IRConstantPool.Entry(IRType.getBooleanType(), true));
         int constantFalseIndex = this.module.constantPool.put(new IRConstantPool.Entry(IRType.getBooleanType(), false));
-        IRConditionalJump irConditionalJump = new IRConditionalJump(type, IRCondition.NotEqual, operand1, operand2, "");
+        IRConditionalJump irConditionalJump = new IRConditionalJump(type, IRCondition.NotEqual, operand1, operand2, null);
         addInstruction(irConditionalJump);
 
         createBasicBlock();
