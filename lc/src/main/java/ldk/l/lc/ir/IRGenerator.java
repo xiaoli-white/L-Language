@@ -518,20 +518,19 @@ public final class IRGenerator extends LCAstVisitor {
         } else {
             boolean inMethod = this.getEnclosingMethodDeclaration(lcVariableDeclaration) != null;
             IRControlFlowGraph lastCFG = this.currentCFG;
-            if (inMethod || inInit || inStaticInit) {
+            boolean isField = !inMethod && !inInit && inStaticInit;
+            if (!isField) {
                 Stack<String> stack = this.variableName2FieldName.get(lcVariableDeclaration.name);
                 String name = lcVariableDeclaration.name + "_" + stack.size();
                 stack.push(name);
             } else {
-                this.currentCFG = null;
+                this.currentCFG = this.initCFG;
             }
             if (lcVariableDeclaration.init != null) {
                 this.visit(lcVariableDeclaration.init, additional);
                 IROperand result = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
                 IROperand address;
-                if (this.currentCFG == null) {
-                    this.currentCFG = this.initCFG;
-
+                if (isField) {
                     this.getThisInstance();
                     IROperand op = operandStack.pop();
                     address = new IRMacro("field_address", new String[]{lcVariableDeclaration.symbol.objectSymbol.getFullName(), lcVariableDeclaration.name}, new IROperand[]{op});
