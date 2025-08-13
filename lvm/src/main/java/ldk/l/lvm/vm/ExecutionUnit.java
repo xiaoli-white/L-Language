@@ -1220,17 +1220,19 @@ public final class ExecutionUnit implements Runnable {
                 case ByteCode.JUMP_IF_TRUE -> {
                     byte register = memory.getByte(pc++);
                     byte target = memory.getByte(pc++);
-                    setRegister(ByteCode.PC_REGISTER, pc);
-                    if (getRegister(register) != 0) {
-                        setRegister(ByteCode.PC_REGISTER, target);
+                    if (this.getRegister(register) != 0) {
+                        setRegister(ByteCode.PC_REGISTER, getRegister(target));
+                    } else {
+                        setRegister(ByteCode.PC_REGISTER, pc);
                     }
                 }
                 case ByteCode.JUMP_IF_FALSE -> {
                     byte register = memory.getByte(pc++);
                     byte target = memory.getByte(pc++);
-                    setRegister(ByteCode.PC_REGISTER, pc);
                     if (getRegister(register) == 0) {
-                        setRegister(ByteCode.PC_REGISTER, target);
+                        setRegister(ByteCode.PC_REGISTER, getRegister(target));
+                    } else {
+                        setRegister(ByteCode.PC_REGISTER, pc);
                     }
                 }
             }

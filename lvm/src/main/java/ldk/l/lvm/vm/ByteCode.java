@@ -430,18 +430,22 @@ public class ByteCode {
     }
 
     public static boolean isJump(byte code) {
-        return code >= JUMP && code <= JUGE;
+        int i = code & 0xFF;
+        return (i >= JUMP && i <= JUGE) || i == (JUMP_IF_TRUE & 0xFF) || i == (JUMP_IF_FALSE & 0xFF);
     }
 
     public static boolean isConditionalJump(byte code) {
-        return code >= JE && code <= JUGE;
+        int i = code & 0xFF;
+        return (i >= JE && i <= JUGE) || i == (JUMP_IF_TRUE & 0xFF) || i == (JUMP_IF_FALSE & 0xFF);
     }
 
     public static boolean isUnconditionalJump(byte code) {
-        return code == JUMP || code == JUMP_IMMEDIATE;
+        int i = code & 0xFF;
+        return i == JUMP || i == JUMP_IMMEDIATE;
     }
 
     public static boolean isArithmetic(byte code) {
-        return code >= ADD && code <= DEC;
+        int i = code & 0xFF;
+        return i >= ADD && i <= DEC;
     }
 }

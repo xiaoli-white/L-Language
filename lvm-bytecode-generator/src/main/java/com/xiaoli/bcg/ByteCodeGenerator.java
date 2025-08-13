@@ -557,14 +557,21 @@ public final class ByteCodeGenerator extends Generator {
         public Object visitConditionalJump(IRConditionalJump irConditionalJump, Object additional) {
             this.visit(irConditionalJump.operand1, additional);
             BCRegister operand1 = registerStack.pop();
-            this.visit(irConditionalJump.operand2, additional);
-            BCRegister operand2 = registerStack.pop();
+            BCRegister operand2;
+            if (irConditionalJump.operand2 != null) {
+                this.visit(irConditionalJump.operand2, additional);
+                operand2 = registerStack.pop();
+            } else {
+                operand2 = null;
+            }
 
-            BCRegister address = allocateVirtualRegister();
-            addInstruction(new BCInstruction(ByteCode.MOV_IMMEDIATE8, new BCImmediate8(0, "<ir_basic_block>" + irConditionalJump.target), address));
             if (irConditionalJump.condition == IRCondition.IfTrue) {
+                BCRegister address = allocateVirtualRegister();
+                addInstruction(new BCInstruction(ByteCode.MOV_IMMEDIATE8, new BCImmediate8(0, "<ir_basic_block>" + irConditionalJump.target), address));
                 addInstruction(new BCInstruction(ByteCode.JUMP_IF_TRUE, operand1, address));
             } else if (irConditionalJump.condition == IRCondition.IfFalse) {
+                BCRegister address = allocateVirtualRegister();
+                addInstruction(new BCInstruction(ByteCode.MOV_IMMEDIATE8, new BCImmediate8(0, "<ir_basic_block>" + irConditionalJump.target), address));
                 addInstruction(new BCInstruction(ByteCode.JUMP_IF_FALSE, operand1, address));
             } else {
                 if (irConditionalJump.type instanceof IRIntegerType irIntegerType) {
@@ -579,6 +586,9 @@ public final class ByteCodeGenerator extends Generator {
                 } else {
                     throw new RuntimeException("Unsupported type: " + irConditionalJump.type);
                 }
+
+                BCRegister address = allocateVirtualRegister();
+                addInstruction(new BCInstruction(ByteCode.MOV_IMMEDIATE8, new BCImmediate8(0, "<ir_basic_block>" + irConditionalJump.target), address));
                 addInstruction(new BCInstruction(switch (irConditionalJump.condition) {
                     case Equal -> ByteCode.JE;
                     case NotEqual -> ByteCode.JNE;
@@ -586,7 +596,8 @@ public final class ByteCodeGenerator extends Generator {
                     case LessEqual -> ByteCode.JLE;
                     case Greater -> ByteCode.JG;
                     case GreaterEqual -> ByteCode.JGE;
-                    default -> throw new IllegalStateException("Unexpected value: " + irConditionalJump.condition);
+                    default ->
+                            throw new RuntimeException("Invalid relation operator: " + irConditionalJump.condition.text);
                 }, address));
             }
             return null;
@@ -1153,7 +1164,6 @@ public final class ByteCodeGenerator extends Generator {
                     case "BP" -> ByteCode.BP_REGISTER;
                     case "SP" -> ByteCode.SP_REGISTER;
                     case "PC" -> ByteCode.PC_REGISTER;
-                    case "RETURN_VALUE" -> ByteCode.RETURN_VALUE_REGISTER;
                     default -> Byte.parseByte(registerName);
                 };
                 return new BCRegister(register);
