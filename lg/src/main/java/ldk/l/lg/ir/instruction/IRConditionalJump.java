@@ -13,6 +13,10 @@ public final class IRConditionalJump extends IRInstruction {
     public final IROperand operand2;
     public String target;
 
+    public IRConditionalJump(IRType type, IRCondition condition, IROperand operand, String target) {
+        this(false, type, condition, operand, null, target);
+    }
+
     public IRConditionalJump(IRType type, IRCondition condition, IROperand operand1, IROperand operand2, String target) {
         this(false, type, condition, operand1, operand2, target);
     }

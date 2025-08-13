@@ -641,8 +641,7 @@ public final class IRGenerator extends LCAstVisitor {
         this.visit(lcWhile.condition, additional);
         IROperand result = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
 
-        int constantTrueIndex = module.constantPool.put(new IRConstantPool.Entry(IRType.getBooleanType(), true));
-        IRConditionalJump irConditionalJump = new IRConditionalJump(IRType.getBooleanType(), IRCondition.NotEqual, result, new IRConstant(constantTrueIndex), null);
+        IRConditionalJump irConditionalJump = new IRConditionalJump(IRType.getBooleanType(), IRCondition.IfFalse, result, null);
         addInstruction(irConditionalJump);
 
         createBasicBlock();
@@ -1001,27 +1000,19 @@ public final class IRGenerator extends LCAstVisitor {
                 }
                 operandStack.push(new IRVirtualRegister(resultRegister));
             } else if (Token.isRelationOperator(lcBinary._operator)) {
-                int constant1Index = module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 1));
-                String tempRegister = allocateVirtualRegister();
-                addInstruction(new IRStackAllocate(new IRConstant(constant1Index), new IRVirtualRegister(tempRegister)));
-
                 IRConditionalJump irConditionalJump = new IRConditionalJump(parseType(TypeUtil.getUpperBound(lcBinary.expression1.theType, lcBinary.expression2.theType)), this.negatesCondition(this.parseRelationOperator(lcBinary._operator)), operand1, operand2, null);
                 addInstruction(irConditionalJump);
 
-                createBasicBlock();
-
-                int constantTrueIndex = module.constantPool.put(new IRConstantPool.Entry(IRType.getBooleanType(), true));
-                int constantFalseIndex = module.constantPool.put(new IRConstantPool.Entry(IRType.getBooleanType(), false));
-
-                addInstruction(new IRSet(IRType.getBooleanType(), new IRVirtualRegister(tempRegister), new IRConstant(constantTrueIndex)));
+                var trueBranch = createBasicBlock();
                 IRGoto irGoto = new IRGoto(null);
                 addInstruction(irGoto);
-                IRControlFlowGraph.BasicBlock bb = createBasicBlock();
-                irConditionalJump.target = bb.name;
-                addInstruction(new IRSet(IRType.getBooleanType(), new IRVirtualRegister(tempRegister), new IRConstant(constantFalseIndex)));
+                var falseBranch = createBasicBlock();
+                irConditionalJump.target = falseBranch.name;
                 var end = createBasicBlock();
+                int constantTrueIndex = module.constantPool.put(new IRConstantPool.Entry(IRType.getBooleanType(), true));
+                int constantFalseIndex = module.constantPool.put(new IRConstantPool.Entry(IRType.getBooleanType(), false));
                 String resultRegister = allocateVirtualRegister();
-                end.instructions.add(new IRGet(IRType.getBooleanType(), new IRVirtualRegister(tempRegister), new IRVirtualRegister(resultRegister)));
+                addInstruction(new IRSetVirtualRegister(new IRPhi(IRType.getBooleanType(), new String[]{trueBranch.name, falseBranch.name}, new IROperand[]{new IRConstant(constantTrueIndex), new IRConstant(constantFalseIndex)}), new IRVirtualRegister(resultRegister)));
                 irGoto.target = end.name;
                 operandStack.push(new IRVirtualRegister(resultRegister));
             } else if (Token.isArithmeticOperator(lcBinary._operator)) {
@@ -2552,6 +2543,7 @@ public final class IRGenerator extends LCAstVisitor {
             case GreaterEqual -> IRCondition.Less;
             case Less -> IRCondition.GreaterEqual;
             case LessEqual -> IRCondition.Greater;
+            default -> throw new RuntimeException("Invalid relation operator");
         };
     }
 

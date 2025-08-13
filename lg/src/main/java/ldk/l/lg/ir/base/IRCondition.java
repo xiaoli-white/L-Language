@@ -6,7 +6,9 @@ public enum IRCondition {
     Greater("g"),
     GreaterEqual("ge"),
     Less("l"),
-    LessEqual("le");
+    LessEqual("le"),
+    IfTrue("if_true"),
+    IfFalse("if_false");
     public final String text;
 
     IRCondition(String text) {
