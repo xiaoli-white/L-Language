@@ -151,25 +151,37 @@ public final class ExecutionUnit implements Runnable {
                     setRegister(ByteCode.PC_REGISTER, pc);
                     long value1 = getRegister(operand1);
                     long value2 = getRegister(operand2);
-                    if (type == ByteCode.BYTE_TYPE) {
-                        value1 = (byte) (value1 & 0xFF);
-                        value2 = (byte) (value2 & 0xFF);
-                    } else if (type == ByteCode.SHORT_TYPE) {
-                        value1 = (short) (value1 & 0xFFFF);
-                        value2 = (short) (value2 & 0xFFFF);
-                    } else if (type == ByteCode.INT_TYPE) {
-                        value1 = (int) (value1 & 0xFFFFFFFFL);
-                        value2 = (int) (value2 & 0xFFFFFFFFL);
-                    } else if (type != ByteCode.LONG_TYPE) {
-                        throw new RuntimeException("Unsupported type: " + type);
-                    }
                     long flags = getRegister(ByteCode.FLAGS_REGISTER);
-                    if (value1 == value2) {
-                        flags = (flags & ~ByteCode.ZERO_MARK & ~ByteCode.CARRY_MARK & ~ByteCode.UNSIGNED_MARK) | 1;
+                    if (type == ByteCode.FLOAT_TYPE) {
+                        float float1 = Float.intBitsToFloat((int) (value1 & 0xFFFFFFFFL));
+                        float float2 = Float.intBitsToFloat((int) (value2 & 0xFFFFFFFFL));
+                        boolean result = float1 < float2;
+                        flags = (flags & ~ByteCode.ZERO_MARK & ~ByteCode.CARRY_MARK & ~ByteCode.UNSIGNED_MARK) | ((result ? 0b11 : 0b00) << 1);
+                    } else if (type == ByteCode.DOUBLE_TYPE) {
+                        double double1 = Double.longBitsToDouble(value1);
+                        double double2 = Double.longBitsToDouble(value2);
+                        boolean result = double1 < double2;
+                        flags = (flags & ~ByteCode.ZERO_MARK & ~ByteCode.CARRY_MARK & ~ByteCode.UNSIGNED_MARK) | ((result ? 0b11 : 0b00) << 1);
                     } else {
-                        long signedResult = value1 - value2;
-                        long unsignedResult = Long.compareUnsigned(value1, value2);
-                        flags = (flags & ~ByteCode.ZERO_MARK & ~ByteCode.CARRY_MARK & ~ByteCode.UNSIGNED_MARK) | ((signedResult < 0 ? 1 : 0) << 1) | ((unsignedResult < 0 ? 1 : 0) << 2);
+                        if (type == ByteCode.BYTE_TYPE) {
+                            value1 = (byte) (value1 & 0xFF);
+                            value2 = (byte) (value2 & 0xFF);
+                        } else if (type == ByteCode.SHORT_TYPE) {
+                            value1 = (short) (value1 & 0xFFFF);
+                            value2 = (short) (value2 & 0xFFFF);
+                        } else if (type == ByteCode.INT_TYPE) {
+                            value1 = (int) (value1 & 0xFFFFFFFFL);
+                            value2 = (int) (value2 & 0xFFFFFFFFL);
+                        } else if (type != ByteCode.LONG_TYPE) {
+                            throw new RuntimeException("Unsupported type: " + type);
+                        }
+                        if (value1 == value2) {
+                            flags = (flags & ~ByteCode.ZERO_MARK & ~ByteCode.CARRY_MARK & ~ByteCode.UNSIGNED_MARK) | 1;
+                        } else {
+                            boolean signedResult = value1 < value2;
+                            int unsignedResult = Long.compareUnsigned(value1, value2);
+                            flags = (flags & ~ByteCode.ZERO_MARK & ~ByteCode.CARRY_MARK & ~ByteCode.UNSIGNED_MARK) | ((signedResult ? 1 : 0) << 1) | ((unsignedResult < 0 ? 1 : 0) << 2);
+                        }
                     }
                     setRegister(ByteCode.FLAGS_REGISTER, flags);
                 }
@@ -181,25 +193,37 @@ public final class ExecutionUnit implements Runnable {
                     setRegister(ByteCode.PC_REGISTER, pc);
                     long value1 = memory.getLong(getRegister(operand1));
                     long value2 = getRegister(operand2);
-                    if (type == ByteCode.BYTE_TYPE) {
-                        value1 = (byte) (value1 & 0xFF);
-                        value2 = (byte) (value2 & 0xFF);
-                    } else if (type == ByteCode.SHORT_TYPE) {
-                        value1 = (short) (value1 & 0xFFFF);
-                        value2 = (short) (value2 & 0xFFFF);
-                    } else if (type == ByteCode.INT_TYPE) {
-                        value1 = (int) (value1 & 0xFFFFFFFFL);
-                        value2 = (int) (value2 & 0xFFFFFFFFL);
-                    } else if (type != ByteCode.LONG_TYPE) {
-                        throw new RuntimeException("Unsupported type: " + type);
-                    }
                     long flags = getRegister(ByteCode.FLAGS_REGISTER);
-                    if (value1 == value2) {
-                        flags = (flags & ~ByteCode.ZERO_MARK & ~ByteCode.CARRY_MARK & ~ByteCode.UNSIGNED_MARK) | 1;
+                    if (type == ByteCode.FLOAT_TYPE) {
+                        float float1 = Float.intBitsToFloat((int) (value1 & 0xFFFFFFFFL));
+                        float float2 = Float.intBitsToFloat((int) (value2 & 0xFFFFFFFFL));
+                        boolean result = float1 < float2;
+                        flags = (flags & ~ByteCode.ZERO_MARK & ~ByteCode.CARRY_MARK & ~ByteCode.UNSIGNED_MARK) | ((result ? 0b11 : 0b00) << 1);
+                    } else if (type == ByteCode.DOUBLE_TYPE) {
+                        double double1 = Double.longBitsToDouble(value1);
+                        double double2 = Double.longBitsToDouble(value2);
+                        boolean result = double1 < double2;
+                        flags = (flags & ~ByteCode.ZERO_MARK & ~ByteCode.CARRY_MARK & ~ByteCode.UNSIGNED_MARK) | ((result ? 0b11 : 0b00) << 1);
                     } else {
-                        long signedResult = value1 - value2;
-                        long unsignedResult = Long.compareUnsigned(value1, value2);
-                        flags = (flags & ~ByteCode.ZERO_MARK & ~ByteCode.CARRY_MARK & ~ByteCode.UNSIGNED_MARK) | ((signedResult < 0 ? 1 : 0) << 1) | ((unsignedResult < 0 ? 1 : 0) << 2);
+                        if (type == ByteCode.BYTE_TYPE) {
+                            value1 = (byte) (value1 & 0xFF);
+                            value2 = (byte) (value2 & 0xFF);
+                        } else if (type == ByteCode.SHORT_TYPE) {
+                            value1 = (short) (value1 & 0xFFFF);
+                            value2 = (short) (value2 & 0xFFFF);
+                        } else if (type == ByteCode.INT_TYPE) {
+                            value1 = (int) (value1 & 0xFFFFFFFFL);
+                            value2 = (int) (value2 & 0xFFFFFFFFL);
+                        } else if (type != ByteCode.LONG_TYPE) {
+                            throw new RuntimeException("Unsupported type: " + type);
+                        }
+                        if (value1 == value2) {
+                            flags = (flags & ~ByteCode.ZERO_MARK & ~ByteCode.CARRY_MARK & ~ByteCode.UNSIGNED_MARK) | 1;
+                        } else {
+                            boolean signedResult = value1 < value2;
+                            long unsignedResult = Long.compareUnsigned(value1, value2);
+                            flags = (flags & ~ByteCode.ZERO_MARK & ~ByteCode.CARRY_MARK & ~ByteCode.UNSIGNED_MARK) | ((signedResult ? 1 : 0) << 1) | ((unsignedResult < 0 ? 1 : 0) << 2);
+                        }
                     }
                     setRegister(ByteCode.FLAGS_REGISTER, flags);
                     memory.unlock();

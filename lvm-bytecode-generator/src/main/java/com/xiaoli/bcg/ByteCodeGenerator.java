@@ -574,18 +574,19 @@ public final class ByteCodeGenerator extends Generator {
                 addInstruction(new BCInstruction(ByteCode.MOV_IMMEDIATE8, new BCImmediate8(0, "<ir_basic_block>" + irConditionalJump.target), address));
                 addInstruction(new BCInstruction(ByteCode.JUMP_IF_FALSE, operand1, address));
             } else {
-                if (irConditionalJump.type instanceof IRIntegerType irIntegerType) {
-                    addInstruction(new BCInstruction(ByteCode.CMP, new BCImmediate1(switch (irIntegerType.size) {
+                byte type = switch (irConditionalJump.type) {
+                    case IRIntegerType irIntegerType -> switch (irIntegerType.size) {
                         case OneBit, OneByte -> ByteCode.BYTE_TYPE;
                         case TwoBytes -> ByteCode.SHORT_TYPE;
                         case FourBytes -> ByteCode.INT_TYPE;
                         case EightBytes -> ByteCode.LONG_TYPE;
-                    }), operand1, operand2));
-                } else if (irConditionalJump.type instanceof IRPointerType) {
-                    addInstruction(new BCInstruction(ByteCode.CMP, new BCImmediate1(ByteCode.LONG_TYPE), operand1, operand2));
-                } else {
-                    throw new RuntimeException("Unsupported type: " + irConditionalJump.type);
-                }
+                    };
+                    case IRPointerType _ -> ByteCode.LONG_TYPE;
+                    case IRFloatType _ -> ByteCode.FLOAT_TYPE;
+                    case IRDoubleType _ -> ByteCode.DOUBLE_TYPE;
+                    case null, default -> throw new RuntimeException("Unsupported type: " + irConditionalJump.type);
+                };
+                addInstruction(new BCInstruction(ByteCode.CMP, new BCImmediate1(type), operand1, operand2));
 
                 BCRegister address = allocateVirtualRegister();
                 addInstruction(new BCInstruction(ByteCode.MOV_IMMEDIATE8, new BCImmediate8(0, "<ir_basic_block>" + irConditionalJump.target), address));

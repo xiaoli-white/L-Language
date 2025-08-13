@@ -18,6 +18,8 @@ public class ByteCode {
     public static final byte SHORT_TYPE = 1;
     public static final byte INT_TYPE = 2;
     public static final byte LONG_TYPE = 3;
+    public static final byte FLOAT_TYPE = 4;
+    public static final byte DOUBLE_TYPE = 5;
     public static final byte TC_STOP = 0; // TC = Thread Control
     public static final byte TC_WAIT = 1;
     public static final byte TC_GET_REGISTER = 2;
