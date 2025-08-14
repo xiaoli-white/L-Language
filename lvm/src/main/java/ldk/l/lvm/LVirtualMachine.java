@@ -33,6 +33,6 @@ public final class LVirtualMachine {
                 .add(List.of("--help", "-h"), "help", Type.Boolean, false)
                 .add(List.of("--version", "-v"), "version", Type.Boolean, false)
                 .add(List.of("--verbose", "-verbose"), "verbose", Type.Boolean, false)
-                .add(List.of("--stackSize", "--s"), "stackSize", Type.Integer, DEFAULT_STACK_SIZE);
+                .add(List.of("--stackSize", "-s"), "stackSize", Type.Integer, DEFAULT_STACK_SIZE);
     }
 }
