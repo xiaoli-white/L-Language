@@ -903,8 +903,6 @@ public final class IRGenerator extends LCAstVisitor {
                 }
             }
         } else if (Token.isLogicalOperator(lcBinary._operator)) {
-            IRType operand1Type = parseType(lcBinary.expression1.theType);
-            IRType operand2Type = parseType(lcBinary.expression2.theType);
             int constantTrueIndex = module.constantPool.put(new IRConstantPool.Entry(operandType, true));
             int constantFalseIndex = module.constantPool.put(new IRConstantPool.Entry(operandType, false));
             String result = allocateVirtualRegister();
