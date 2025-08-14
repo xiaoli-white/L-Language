@@ -29,7 +29,7 @@ public final class ExecutionUnit implements Runnable {
 
     public void execute() {
         Memory memory = virtualMachine.memory;
-        long start = System.nanoTime();
+//        long start = System.nanoTime();
         loop:
         for (; ; ) {
             long pc = getRegister(ByteCode.PC_REGISTER);
@@ -1262,8 +1262,8 @@ public final class ExecutionUnit implements Runnable {
                 }
             }
         }
-        long end = System.nanoTime();
-        System.out.println("Execution time: " + (end - start) / 1000000 + " ms");
+//        long end = System.nanoTime();
+//        System.out.println("Execution time: " + (end - start) / 1000000 + " ms");
     }
 
     @Override
