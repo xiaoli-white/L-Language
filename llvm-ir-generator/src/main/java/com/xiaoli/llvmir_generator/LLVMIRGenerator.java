@@ -157,6 +157,9 @@ public final class LLVMIRGenerator extends Generator {
         public native Object visitRealloc(IRRealloc irRealloc, Object additional);
 
         @Override
+        public native Object visitCompare(IRCompare irCompare, Object additional);
+
+        @Override
         public native Object visitPhi(IRPhi irPhi, Object additional);
 
         @Override

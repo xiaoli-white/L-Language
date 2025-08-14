@@ -8,27 +8,28 @@ import java.lang.foreign.MemorySegment;
 import java.math.BigInteger;
 
 public final class ExecutionUnit implements Runnable {
-    public final VirtualMachine virtualMachine;
+    private final VirtualMachine virtualMachine;
     public long threadID;
-    public Arena arena;
-    public MemorySegment registers;
+    private Arena arena;
+    private MemorySegment registers;
 
     public ExecutionUnit(VirtualMachine virtualMachine) {
         this.virtualMachine = virtualMachine;
     }
 
-    public void init(long threadID, long stackStart, long entryPoint) {
+    public void init(long threadID, long stackBase, long entryPoint) {
         this.threadID = threadID;
 
         this.arena = Arena.ofAuto();
         this.registers = this.arena.allocate(MemoryLayout.sequenceLayout(ByteCode.REGISTER_COUNT, Memory.LAYOUT_LONG));
-        setRegister(ByteCode.BP_REGISTER, stackStart);
-        setRegister(ByteCode.SP_REGISTER, stackStart);
+        setRegister(ByteCode.BP_REGISTER, stackBase);
+        setRegister(ByteCode.SP_REGISTER, stackBase);
         setRegister(ByteCode.PC_REGISTER, entryPoint);
     }
 
     public void execute() {
         Memory memory = virtualMachine.memory;
+        long start = System.nanoTime();
         loop:
         for (; ; ) {
             long pc = getRegister(ByteCode.PC_REGISTER);
@@ -1261,6 +1262,8 @@ public final class ExecutionUnit implements Runnable {
                 }
             }
         }
+        long end = System.nanoTime();
+        System.out.println("Execution time: " + (end - start) / 1000000 + " ms");
     }
 
     @Override

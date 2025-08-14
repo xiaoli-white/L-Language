@@ -62,8 +62,8 @@ public final class VirtualMachine {
 
     private ExecutionUnit createExecutionUnit(long threadID, long entryPoint) {
         ExecutionUnit executionUnit = new ExecutionUnit(this);
-        long stackStart = memory.allocateMemory(this.stackSize);
-        executionUnit.init(threadID, stackStart + this.stackSize - 1, entryPoint);
+        long stack = memory.allocateMemory(this.stackSize);
+        executionUnit.init(threadID, stack + this.stackSize - 1, entryPoint);
         return executionUnit;
     }
 

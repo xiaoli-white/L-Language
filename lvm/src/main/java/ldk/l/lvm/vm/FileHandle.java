@@ -35,7 +35,7 @@ public final class FileHandle {
     }
 
     public int read(byte[] buffer, int count) {
-        if (inputStream == null) throw new RuntimeException("File not open for reading");
+        if (inputStream == null) throw new RuntimeException("File '" + path + "' not open for reading");
         try {
             return inputStream.read(buffer, 0, count);
         } catch (IOException e) {
@@ -44,7 +44,7 @@ public final class FileHandle {
     }
 
     public void write(byte[] buffer) {
-        if (outputStream == null) throw new RuntimeException("File not open for writing");
+        if (outputStream == null) throw new RuntimeException("File '" + path + "' not open for writing");
         try {
             outputStream.write(buffer);
         } catch (IOException e) {

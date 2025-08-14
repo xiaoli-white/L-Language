@@ -870,6 +870,52 @@ public final class ByteCodeGenerator extends Generator {
         }
 
         @Override
+        public Object visitCompare(IRCompare irCompare, Object additional) {
+            this.visit(irCompare.operand1, additional);
+            BCRegister operand1 = registerStack.pop();
+            this.visit(irCompare.operand2, additional);
+            BCRegister operand2 = registerStack.pop();
+            this.visitVirtualRegister(irCompare.target, additional);
+            BCRegister target = registerStack.pop();
+            byte type = switch (irCompare.type) {
+                case IRIntegerType irIntegerType -> switch (irIntegerType.size) {
+                    case OneBit, OneByte -> ByteCode.BYTE_TYPE;
+                    case TwoBytes -> ByteCode.SHORT_TYPE;
+                    case FourBytes -> ByteCode.INT_TYPE;
+                    case EightBytes -> ByteCode.LONG_TYPE;
+                };
+                case IRPointerType _ -> ByteCode.LONG_TYPE;
+                case IRFloatType _ -> ByteCode.FLOAT_TYPE;
+                case IRDoubleType _ -> ByteCode.DOUBLE_TYPE;
+                case null, default -> throw new RuntimeException("Unsupported type: " + irCompare.type);
+            };
+            addInstruction(new BCInstruction(ByteCode.CMP, new BCImmediate1(type), operand1, operand2));
+
+            BCImmediate8 trueBasicBlockAddress = new BCImmediate8(0, null);
+            BCRegister register = allocateVirtualRegister();
+            addInstruction(new BCInstruction(ByteCode.MOV_IMMEDIATE8, trueBasicBlockAddress, register));
+            addInstruction(new BCInstruction(switch (irCompare.condition) {
+                case Equal -> ByteCode.JE;
+                case NotEqual -> ByteCode.JNE;
+                case Less -> ByteCode.JL;
+                case LessEqual -> ByteCode.JLE;
+                case Greater -> ByteCode.JG;
+                case GreaterEqual -> ByteCode.JGE;
+                default -> throw new RuntimeException("Invalid relation operator: " + irCompare.condition.text);
+            }, register));
+            createBasicBlock();
+            addInstruction(new BCInstruction(ByteCode.MOV_IMMEDIATE1, new BCImmediate1((byte) 0), new BCRegister(target.virtualRegister)));
+            BCImmediate8 endBasicBlockAddress = new BCImmediate8(0, null);
+            addInstruction(new BCInstruction(ByteCode.JUMP_IMMEDIATE, endBasicBlockAddress));
+            var trueBasicBlock = createBasicBlock();
+            addInstruction(new BCInstruction(ByteCode.MOV_IMMEDIATE1, new BCImmediate1((byte) 1), new BCRegister(target.virtualRegister)));
+            trueBasicBlockAddress.comment = "<basic_block>" + trueBasicBlock.name;
+            var end = createBasicBlock();
+            endBasicBlockAddress.comment = "<basic_block>" + end.name;
+            return null;
+        }
+
+        @Override
         public Object visitStackAllocate(IRStackAllocate irStackAllocate, Object additional) {
             this.visit(irStackAllocate.size, additional);
             BCRegister size = registerStack.pop();

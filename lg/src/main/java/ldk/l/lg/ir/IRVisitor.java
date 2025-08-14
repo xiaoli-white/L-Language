@@ -236,6 +236,14 @@ public abstract class IRVisitor {
         return null;
     }
 
+    public Object visitCompare(IRCompare irCompare, Object additional) {
+        this.visit(irCompare.type, additional);
+        this.visit(irCompare.operand1, additional);
+        this.visit(irCompare.operand2, additional);
+        this.visitVirtualRegister(irCompare.target, additional);
+        return null;
+    }
+
     public Object visitConstant(IRConstant irConstant, Object additional) {
         return null;
     }

@@ -996,28 +996,8 @@ public final class IRGenerator extends LCAstVisitor {
                 }
                 operandStack.push(new IRVirtualRegister(resultRegister));
             } else if (Token.isRelationOperator(lcBinary._operator)) {
-                int constant1Index = module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 1));
-                String tempRegister = allocateVirtualRegister();
-                addInstruction(new IRStackAllocate(new IRConstant(constant1Index), new IRVirtualRegister(tempRegister)));
-
-                IRConditionalJump irConditionalJump = new IRConditionalJump(parseType(TypeUtil.getUpperBound(lcBinary.expression1.theType, lcBinary.expression2.theType)), this.negatesCondition(this.parseRelationOperator(lcBinary._operator)), operand1, operand2, null);
-                addInstruction(irConditionalJump);
-
-                createBasicBlock();
-
-                int constantTrueIndex = module.constantPool.put(new IRConstantPool.Entry(IRType.getBooleanType(), true));
-                int constantFalseIndex = module.constantPool.put(new IRConstantPool.Entry(IRType.getBooleanType(), false));
-
-                addInstruction(new IRSet(IRType.getBooleanType(), new IRVirtualRegister(tempRegister), new IRConstant(constantTrueIndex)));
-                IRGoto irGoto = new IRGoto(null);
-                addInstruction(irGoto);
-                IRControlFlowGraph.BasicBlock bb = createBasicBlock();
-                irConditionalJump.target = bb.name;
-                addInstruction(new IRSet(IRType.getBooleanType(), new IRVirtualRegister(tempRegister), new IRConstant(constantFalseIndex)));
-                var end = createBasicBlock();
                 String resultRegister = allocateVirtualRegister();
-                end.instructions.add(new IRGet(IRType.getBooleanType(), new IRVirtualRegister(tempRegister), new IRVirtualRegister(resultRegister)));
-                irGoto.target = end.name;
+                addInstruction(new IRCompare(parseType(TypeUtil.getUpperBound(lcBinary.expression1.theType, lcBinary.expression2.theType)), this.parseRelationOperator(lcBinary._operator), operand1, operand2, new IRVirtualRegister(resultRegister)));
                 operandStack.push(new IRVirtualRegister(resultRegister));
             } else if (Token.isArithmeticOperator(lcBinary._operator)) {
                 String resultRegister = allocateVirtualRegister();
