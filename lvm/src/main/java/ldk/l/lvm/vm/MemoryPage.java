@@ -134,7 +134,13 @@ public final class MemoryPage {
 //            if (threadHandle != null) {
 //                ExecutionUnit executionUnit = threadHandle.executionUnit;
 //                executionUnit.setRegister(ByteCode.FLAGS_REGISTER, executionUnit.getRegister(ByteCode.FLAGS_REGISTER) | ByteCode.PAGE_NOT_READABLE);
-//                executionUnit.interrupt(ByteCode.INTERRUPT_PAGE_ERROR);
+//                Memory memory = executionUnit.virtualMachine.memory;
+//                long sp = executionUnit.getRegister(ByteCode.SP_REGISTER) - 16;
+//                memory.setLong(null, sp + 8, executionUnit.getRegister(ByteCode.FLAGS_REGISTER));
+//                memory.setLong(null, sp, executionUnit.getRegister(ByteCode.PC_REGISTER));
+//                executionUnit.setRegister(ByteCode.SP_REGISTER, sp);
+//                long idtEntry = executionUnit.getRegister(ByteCode.IDTR_REGISTER) + 8 * ByteCode.INTERRUPT_PAGE_ERROR;
+//                executionUnit.setRegister(ByteCode.PC_REGISTER, memory.getLong(null, idtEntry));
 //            } else {
             throw new RuntimeException("Page is not readable(address: " + (start + offset) + ")");
 //            }
@@ -148,7 +154,13 @@ public final class MemoryPage {
 //            if (threadHandle != null) {
 //                ExecutionUnit executionUnit = threadHandle.executionUnit;
 //                executionUnit.setRegister(ByteCode.FLAGS_REGISTER, executionUnit.getRegister(ByteCode.FLAGS_REGISTER) | ByteCode.PAGE_NOT_WRITABLE);
-//                executionUnit.interrupt(ByteCode.INTERRUPT_PAGE_ERROR);
+//                Memory memory = executionUnit.virtualMachine.memory;
+//                long sp = executionUnit.getRegister(ByteCode.SP_REGISTER) - 16;
+//                memory.setLong(null, sp + 8, executionUnit.getRegister(ByteCode.FLAGS_REGISTER));
+//                memory.setLong(null, sp, executionUnit.getRegister(ByteCode.PC_REGISTER));
+//                executionUnit.setRegister(ByteCode.SP_REGISTER, sp);
+//                long idtEntry = executionUnit.getRegister(ByteCode.IDTR_REGISTER) + 8 * ByteCode.INTERRUPT_PAGE_ERROR;
+//                executionUnit.setRegister(ByteCode.PC_REGISTER, memory.getLong(null, idtEntry));
 //            } else {
             throw new RuntimeException("Page is not writable(address: " + (start + offset) + ")");
 //            }
@@ -162,7 +174,13 @@ public final class MemoryPage {
 //            if (threadHandle != null) {
 //                ExecutionUnit executionUnit = threadHandle.executionUnit;
 //                executionUnit.setRegister(ByteCode.FLAGS_REGISTER, executionUnit.getRegister(ByteCode.FLAGS_REGISTER) | ByteCode.PAGE_NOT_EXECUTABLE);
-//                executionUnit.interrupt(ByteCode.INTERRUPT_PAGE_ERROR);
+//                Memory memory = executionUnit.virtualMachine.memory;
+//                long sp = executionUnit.getRegister(ByteCode.SP_REGISTER) - 16;
+//                memory.setLong(null, sp + 8, executionUnit.getRegister(ByteCode.FLAGS_REGISTER));
+//                memory.setLong(null, sp, executionUnit.getRegister(ByteCode.PC_REGISTER));
+//                executionUnit.setRegister(ByteCode.SP_REGISTER, sp);
+//                long idtEntry = executionUnit.getRegister(ByteCode.IDTR_REGISTER) + 8 * ByteCode.INTERRUPT_PAGE_ERROR;
+//                executionUnit.setRegister(ByteCode.PC_REGISTER, memory.getLong(null, idtEntry));
 //            } else {
             throw new RuntimeException("Page is not executable(address: " + (start + offset) + ")");
 //            }

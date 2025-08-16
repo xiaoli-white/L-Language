@@ -8,7 +8,7 @@ import java.lang.foreign.MemorySegment;
 import java.math.BigInteger;
 
 public final class ExecutionUnit implements Runnable {
-    private final VirtualMachine virtualMachine;
+    public final VirtualMachine virtualMachine;
     public ThreadHandle threadHandle;
     private Arena arena;
     private MemorySegment registers;
@@ -424,7 +424,7 @@ public final class ExecutionUnit implements Runnable {
                     byte size = memory.getByte(threadHandle, pc++);
                     byte result = memory.getByte(threadHandle, pc++);
                     setRegister(ByteCode.PC_REGISTER, pc);
-                    setRegister(result, memory.allocateMemory(threadHandle,getRegister(size)));
+                    setRegister(result, memory.allocateMemory(threadHandle, getRegister(size)));
                 }
                 case ByteCode.FREE -> {
                     byte ptr = memory.getByte(threadHandle, pc++);
@@ -1278,7 +1278,7 @@ public final class ExecutionUnit implements Runnable {
         memory.setLong(threadHandle, sp, getRegister(ByteCode.PC_REGISTER));
         setRegister(ByteCode.SP_REGISTER, sp);
         long idtEntry = getRegister(ByteCode.IDTR_REGISTER) + 8 * interruptNumber;
-        setRegister(ByteCode.PC_REGISTER, memory.getLong(null, idtEntry));
+        setRegister(ByteCode.PC_REGISTER, memory.getLong(threadHandle, idtEntry));
     }
 
     public void destroy() {
