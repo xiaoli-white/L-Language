@@ -177,7 +177,7 @@ public final class Memory {
         }
         MemoryPage memoryPage = getMemoryPageSafely(address);
         memoryPage.release();
-        if (memoryPage.referenceCount == 0) resetMemoryPageIfAbsent(address);
+        if (memoryPage.referenceCount == 0) resetMemoryPageIfExist(address);
     }
 
     private synchronized boolean setMemoryPageIfAbsent(long address, int flags) {
@@ -215,7 +215,7 @@ public final class Memory {
         return ret;
     }
 
-    private synchronized void resetMemoryPageIfAbsent(long address) {
+    private synchronized void resetMemoryPageIfExist(long address) {
         int pgdOffset = (int) ((address >> 39) & 0x1ff);
         MemoryPage[][][] pud = memoryPageTable[pgdOffset];
         if (pud == null) return;
@@ -234,7 +234,7 @@ public final class Memory {
     }
 
     public short getShort(ThreadHandle threadHandle, long address) {
-        if (((address & PAGE_OFFSET_MASK) + 2) < PAGE_SIZE) {
+        if (((address & PAGE_OFFSET_MASK) + 1) < PAGE_SIZE) {
             return getMemoryPageSafely(address).getShort(threadHandle, address & PAGE_OFFSET_MASK);
         } else {
             return (short) (getMemoryPageSafely(address).getByte(threadHandle, address & PAGE_OFFSET_MASK) | (getMemoryPageSafely(address + 1).getByte(threadHandle, 0) << 8));
@@ -242,7 +242,7 @@ public final class Memory {
     }
 
     public int getInt(ThreadHandle threadHandle, long address) {
-        if (((address & PAGE_OFFSET_MASK) + 4) < PAGE_SIZE) {
+        if (((address & PAGE_OFFSET_MASK) + 3) < PAGE_SIZE) {
             return getMemoryPageSafely(address).getInt(threadHandle, address & PAGE_OFFSET_MASK);
         } else {
             int value = 0;
@@ -255,7 +255,7 @@ public final class Memory {
     }
 
     public long getLong(ThreadHandle threadHandle, long address) {
-        if (((address & PAGE_OFFSET_MASK) + 8) < PAGE_SIZE) {
+        if (((address & PAGE_OFFSET_MASK) + 7) < PAGE_SIZE) {
             return getMemoryPageSafely(address).getLong(threadHandle, address & PAGE_OFFSET_MASK);
         } else {
             long value = 0;
@@ -268,7 +268,7 @@ public final class Memory {
     }
 
     public float getFloat(ThreadHandle threadHandle, long address) {
-        if (((address & PAGE_OFFSET_MASK) + 4) < PAGE_SIZE) {
+        if (((address & PAGE_OFFSET_MASK) + 3) < PAGE_SIZE) {
             return getMemoryPageSafely(address).getFloat(threadHandle, address & PAGE_OFFSET_MASK);
         } else {
             int value = 0;
@@ -281,7 +281,7 @@ public final class Memory {
     }
 
     public double getDouble(ThreadHandle threadHandle, long address) {
-        if (((address & PAGE_OFFSET_MASK) + 8) < PAGE_SIZE) {
+        if (((address & PAGE_OFFSET_MASK) + 7) < PAGE_SIZE) {
             return getMemoryPageSafely(address).getDouble(threadHandle, address & PAGE_OFFSET_MASK);
         } else {
             long value = 0;
@@ -298,7 +298,7 @@ public final class Memory {
     }
 
     public void setShort(ThreadHandle threadHandle, long address, short value) {
-        if (((address & PAGE_OFFSET_MASK) + 2) < PAGE_SIZE) {
+        if (((address & PAGE_OFFSET_MASK) + 1) < PAGE_SIZE) {
             getMemoryPageSafely(address).setShort(threadHandle, address & PAGE_OFFSET_MASK, value);
         } else {
             getMemoryPageSafely(address).setByte(threadHandle, address & PAGE_OFFSET_MASK, (byte) (value & 0xff));
@@ -307,7 +307,7 @@ public final class Memory {
     }
 
     public void setInt(ThreadHandle threadHandle, long address, int value) {
-        if (((address & PAGE_OFFSET_MASK) + 4) < PAGE_SIZE) {
+        if (((address & PAGE_OFFSET_MASK) + 3) < PAGE_SIZE) {
             getMemoryPageSafely(address).setInt(threadHandle, address & PAGE_OFFSET_MASK, value);
         } else {
             for (int i = 0; i < 4; i++) {
@@ -318,7 +318,7 @@ public final class Memory {
     }
 
     public void setLong(ThreadHandle threadHandle, long address, long value) {
-        if (((address & PAGE_OFFSET_MASK) + 8) < PAGE_SIZE) {
+        if (((address & PAGE_OFFSET_MASK) + 7) < PAGE_SIZE) {
             getMemoryPageSafely(address).setLong(threadHandle, address & PAGE_OFFSET_MASK, value);
         } else {
             for (int i = 0; i < 8; i++) {
@@ -329,7 +329,7 @@ public final class Memory {
     }
 
     public void setFloat(ThreadHandle threadHandle, long address, float value) {
-        if (((address & PAGE_OFFSET_MASK) + 4) < PAGE_SIZE) {
+        if (((address & PAGE_OFFSET_MASK) + 3) < PAGE_SIZE) {
             getMemoryPageSafely(address).setFloat(threadHandle, address & PAGE_OFFSET_MASK, value);
         } else {
             int bits = Float.floatToRawIntBits(value);
@@ -341,7 +341,7 @@ public final class Memory {
     }
 
     public void setDouble(ThreadHandle threadHandle, long address, double value) {
-        if (((address & PAGE_OFFSET_MASK) + 8) < PAGE_SIZE) {
+        if (((address & PAGE_OFFSET_MASK) + 7) < PAGE_SIZE) {
             getMemoryPageSafely(address).setDouble(threadHandle, address & PAGE_OFFSET_MASK, value);
         } else {
             long bits = Double.doubleToRawLongBits(value);
@@ -350,5 +350,4 @@ public final class Memory {
             }
         }
     }
-
 }
