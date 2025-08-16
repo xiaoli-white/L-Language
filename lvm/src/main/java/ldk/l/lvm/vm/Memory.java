@@ -177,7 +177,7 @@ public final class Memory {
         }
         MemoryPage memoryPage = getMemoryPageSafely(address);
         memoryPage.release();
-        if (memoryPage.refCount == 0) resetMemoryPageIfAbsent(address);
+        if (memoryPage.referenceCount == 0) resetMemoryPageIfAbsent(address);
     }
 
     private synchronized boolean setMemoryPageIfAbsent(long address, int flags) {

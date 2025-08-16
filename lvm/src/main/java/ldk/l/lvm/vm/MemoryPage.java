@@ -13,7 +13,7 @@ public final class MemoryPage {
     public Arena arena;
     public MemorySegment data;
     public int flags;
-    public long refCount;
+    public long referenceCount;
 
     public MemoryPage(long start, int flags) {
         this.start = start;
@@ -28,12 +28,12 @@ public final class MemoryPage {
     }
 
     public synchronized void retain() {
-        refCount++;
+        referenceCount++;
     }
 
     public synchronized void release() {
-        refCount--;
-        if (refCount == 0) {
+        referenceCount--;
+        if (referenceCount == 0) {
             destroy();
         }
     }
@@ -131,19 +131,13 @@ public final class MemoryPage {
     public boolean checkReadable(ThreadHandle threadHandle, long offset) {
         boolean readable = (this.flags & MP_READ) != 0;
         if (!readable) {
-//            if (threadHandle != null) {
-//                ExecutionUnit executionUnit = threadHandle.executionUnit;
-//                executionUnit.setRegister(ByteCode.FLAGS_REGISTER, executionUnit.getRegister(ByteCode.FLAGS_REGISTER) | ByteCode.PAGE_NOT_READABLE);
-//                Memory memory = executionUnit.virtualMachine.memory;
-//                long sp = executionUnit.getRegister(ByteCode.SP_REGISTER) - 16;
-//                memory.setLong(null, sp + 8, executionUnit.getRegister(ByteCode.FLAGS_REGISTER));
-//                memory.setLong(null, sp, executionUnit.getRegister(ByteCode.PC_REGISTER));
-//                executionUnit.setRegister(ByteCode.SP_REGISTER, sp);
-//                long idtEntry = executionUnit.getRegister(ByteCode.IDTR_REGISTER) + 8 * ByteCode.INTERRUPT_PAGE_ERROR;
-//                executionUnit.setRegister(ByteCode.PC_REGISTER, memory.getLong(null, idtEntry));
-//            } else {
-            throw new RuntimeException("Page is not readable(address: " + (start + offset) + ")");
-//            }
+            if (threadHandle != null) {
+                ExecutionUnit executionUnit = threadHandle.executionUnit;
+                executionUnit.setRegister(ByteCode.FLAGS_REGISTER, executionUnit.getRegister(ByteCode.FLAGS_REGISTER) | ByteCode.PAGE_NOT_READABLE);
+                executionUnit.interrupt(null, ByteCode.INTERRUPT_PAGE_ERROR);
+            } else {
+                throw new RuntimeException("Page is not readable(address: " + (start + offset) + ")");
+            }
         }
         return readable;
     }
@@ -151,19 +145,13 @@ public final class MemoryPage {
     public boolean checkWritable(ThreadHandle threadHandle, long offset) {
         boolean writable = (this.flags & MP_WRITE) != 0;
         if (!writable) {
-//            if (threadHandle != null) {
-//                ExecutionUnit executionUnit = threadHandle.executionUnit;
-//                executionUnit.setRegister(ByteCode.FLAGS_REGISTER, executionUnit.getRegister(ByteCode.FLAGS_REGISTER) | ByteCode.PAGE_NOT_WRITABLE);
-//                Memory memory = executionUnit.virtualMachine.memory;
-//                long sp = executionUnit.getRegister(ByteCode.SP_REGISTER) - 16;
-//                memory.setLong(null, sp + 8, executionUnit.getRegister(ByteCode.FLAGS_REGISTER));
-//                memory.setLong(null, sp, executionUnit.getRegister(ByteCode.PC_REGISTER));
-//                executionUnit.setRegister(ByteCode.SP_REGISTER, sp);
-//                long idtEntry = executionUnit.getRegister(ByteCode.IDTR_REGISTER) + 8 * ByteCode.INTERRUPT_PAGE_ERROR;
-//                executionUnit.setRegister(ByteCode.PC_REGISTER, memory.getLong(null, idtEntry));
-//            } else {
-            throw new RuntimeException("Page is not writable(address: " + (start + offset) + ")");
-//            }
+            if (threadHandle != null) {
+                ExecutionUnit executionUnit = threadHandle.executionUnit;
+                executionUnit.setRegister(ByteCode.FLAGS_REGISTER, executionUnit.getRegister(ByteCode.FLAGS_REGISTER) | ByteCode.PAGE_NOT_WRITABLE);
+                executionUnit.interrupt(null, ByteCode.INTERRUPT_PAGE_ERROR);
+            } else {
+                throw new RuntimeException("Page is not writable(address: " + (start + offset) + ")");
+            }
         }
         return writable;
     }
@@ -171,19 +159,13 @@ public final class MemoryPage {
     public boolean checkExecutable(ThreadHandle threadHandle, long offset) {
         boolean executable = (this.flags & MP_EXEC) != 0;
         if (!executable) {
-//            if (threadHandle != null) {
-//                ExecutionUnit executionUnit = threadHandle.executionUnit;
-//                executionUnit.setRegister(ByteCode.FLAGS_REGISTER, executionUnit.getRegister(ByteCode.FLAGS_REGISTER) | ByteCode.PAGE_NOT_EXECUTABLE);
-//                Memory memory = executionUnit.virtualMachine.memory;
-//                long sp = executionUnit.getRegister(ByteCode.SP_REGISTER) - 16;
-//                memory.setLong(null, sp + 8, executionUnit.getRegister(ByteCode.FLAGS_REGISTER));
-//                memory.setLong(null, sp, executionUnit.getRegister(ByteCode.PC_REGISTER));
-//                executionUnit.setRegister(ByteCode.SP_REGISTER, sp);
-//                long idtEntry = executionUnit.getRegister(ByteCode.IDTR_REGISTER) + 8 * ByteCode.INTERRUPT_PAGE_ERROR;
-//                executionUnit.setRegister(ByteCode.PC_REGISTER, memory.getLong(null, idtEntry));
-//            } else {
-            throw new RuntimeException("Page is not executable(address: " + (start + offset) + ")");
-//            }
+            if (threadHandle != null) {
+                ExecutionUnit executionUnit = threadHandle.executionUnit;
+                executionUnit.setRegister(ByteCode.FLAGS_REGISTER, executionUnit.getRegister(ByteCode.FLAGS_REGISTER) | ByteCode.PAGE_NOT_EXECUTABLE);
+                executionUnit.interrupt(null, ByteCode.INTERRUPT_PAGE_ERROR);
+            } else {
+                throw new RuntimeException("Page is not executable(address: " + (start + offset) + ")");
+            }
         }
         return executable;
     }

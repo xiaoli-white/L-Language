@@ -961,7 +961,7 @@ public final class ExecutionUnit implements Runnable {
                 case ByteCode.INTERRUPT -> {
                     byte interruptNumber = memory.getByte(threadHandle, pc++);
                     setRegister(ByteCode.PC_REGISTER, pc);
-                    interrupt(interruptNumber);
+                    interrupt(threadHandle, interruptNumber);
                 }
                 case ByteCode.INTERRUPT_RETURN -> {
                     setRegister(ByteCode.PC_REGISTER, pc);
@@ -1113,10 +1113,10 @@ public final class ExecutionUnit implements Runnable {
                     setRegister(targetRegister, getRegister(ByteCode.BP_REGISTER) + offset);
                 }
                 case ByteCode.CREATE_THREAD -> {
-                    long entryPoint = memory.getLong(threadHandle, pc);
-                    byte resultRegister = memory.getByte(threadHandle, pc + 8);
-                    setRegister(resultRegister, virtualMachine.createThread(entryPoint));
-                    setRegister(ByteCode.PC_REGISTER, pc + 9);
+                    byte entryPointRegister = memory.getByte(threadHandle, pc++);
+                    byte resultRegister = memory.getByte(threadHandle, pc++);
+                    setRegister(ByteCode.PC_REGISTER, pc);
+                    setRegister(resultRegister, virtualMachine.createThread(getRegister(entryPointRegister)));
                 }
                 case ByteCode.THREAD_CONTROL -> {
                     byte threadIDRegister = memory.getByte(threadHandle, pc++);
@@ -1275,8 +1275,7 @@ public final class ExecutionUnit implements Runnable {
         this.execute();
     }
 
-    public void interrupt(byte interruptNumber) {
-        ThreadHandle threadHandle = this.threadHandle;
+    public void interrupt(ThreadHandle threadHandle, byte interruptNumber) {
         Memory memory = this.virtualMachine.memory;
         long sp = getRegister(ByteCode.SP_REGISTER) - 16;
         memory.setLong(threadHandle, sp + 8, getRegister(ByteCode.FLAGS_REGISTER));
