@@ -1259,6 +1259,11 @@ public final class ExecutionUnit implements Runnable {
                         setRegister(ByteCode.PC_REGISTER, pc);
                     }
                 }
+                case ByteCode.SYSCALL -> {
+                    byte syscallRegister = memory.getByte(threadHandle, pc++);
+                    setRegister(ByteCode.PC_REGISTER, pc);
+                    long syscallNumber = getRegister(syscallRegister);
+                }
             }
         }
 //        long end = System.nanoTime();
