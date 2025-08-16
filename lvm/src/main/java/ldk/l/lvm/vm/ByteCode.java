@@ -11,9 +11,12 @@ public class ByteCode {
     public static final byte PC_REGISTER = 39;
     public static final byte FLAGS_REGISTER = 40;
     public static final byte IDTR_REGISTER = 41;
-    public static final long ZERO_MARK = 0b01L;
-    public static final long CARRY_MARK = 0b10L;
-    public static final long UNSIGNED_MARK = 0b100L;
+    public static final long ZERO_MARK = 1;
+    public static final long CARRY_MARK = 1 << 1;
+    public static final long UNSIGNED_MARK = 1 << 2;
+    public static final long PAGE_NOT_READABLE = 1 << 3;
+    public static final long PAGE_NOT_WRITABLE = 1 << 4;
+    public static final long PAGE_NOT_EXECUTABLE = 1 << 5;
     public static final byte BYTE_TYPE = 0;
     public static final byte SHORT_TYPE = 1;
     public static final byte INT_TYPE = 2;
@@ -24,6 +27,8 @@ public class ByteCode {
     public static final byte TC_WAIT = 1;
     public static final byte TC_GET_REGISTER = 2;
     public static final byte TC_SET_REGISTER = 3;
+    public static final byte INTERRUPT_DIVIDE_BY_ZERO = 0;
+    public static final byte INTERRUPT_PAGE_ERROR = 1;
 
     public static final byte NOP = 0x00;
     public static final byte PUSH_1 = 0x01;

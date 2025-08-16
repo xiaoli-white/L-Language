@@ -2,8 +2,6 @@ package ldk.l.lvm.vm;
 
 import java.lang.foreign.ValueLayout;
 import java.nio.ByteOrder;
-import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
 public final class Memory {
@@ -36,7 +34,7 @@ public final class Memory {
 
         long offset = 0;
         for (byte b : text) {
-            currentPage.setByte(offset, b);
+            currentPage.setByte(null, offset, b);
             offset++;
             if (offset == PAGE_SIZE) {
                 currentPage.flags &= ~MemoryPage.MP_WRITE;
@@ -50,7 +48,7 @@ public final class Memory {
             currentPage.flags &= ~MemoryPage.MP_EXEC;
         }
         for (byte b : rodata) {
-            currentPage.setByte(offset, b);
+            currentPage.setByte(null, offset, b);
             offset++;
             if (offset == PAGE_SIZE) {
                 currentPage.flags &= ~MemoryPage.MP_WRITE;
@@ -62,7 +60,7 @@ public final class Memory {
         }
         currentPage.flags |= MemoryPage.MP_WRITE;
         for (byte b : data) {
-            currentPage.setByte(offset, b);
+            currentPage.setByte(null, offset, b);
             offset++;
             if (offset == PAGE_SIZE) {
                 setMemoryPageIfAbsent(address, MemoryPage.MP_READ | MemoryPage.MP_WRITE);
@@ -77,8 +75,9 @@ public final class Memory {
             setMemoryPageIfAbsent(address, MemoryPage.MP_READ | MemoryPage.MP_WRITE);
             address += PAGE_SIZE;
         }
+        offset = (offset + bssSectionLength) % PAGE_SIZE;
         MemoryPage.FreeMemory head = new MemoryPage.FreeMemory(0, 0);
-        head.next = new MemoryPage.FreeMemory(address - PAGE_SIZE + (bssSectionLength % PAGE_SIZE), MAX_MEMORY_ADDRESS);
+        head.next = new MemoryPage.FreeMemory(address - PAGE_SIZE + offset, MAX_MEMORY_ADDRESS);
         freeMemoryList = head;
     }
 
@@ -90,7 +89,7 @@ public final class Memory {
         lock.unlock();
     }
 
-    public synchronized long allocateMemory(long size) {
+    public synchronized long allocateMemory(ThreadHandle threadHandle, long size) {
         long length = size + 8;
         MemoryPage.FreeMemory freeMemory = freeMemoryList;
         while (freeMemory != null) {
@@ -104,7 +103,7 @@ public final class Memory {
                     length -= tmp;
                     address += tmp;
                 }
-                setLong(start, size);
+                setLong(threadHandle, start, size);
                 return start + 8;
             }
             freeMemory = freeMemory.next;
@@ -112,19 +111,19 @@ public final class Memory {
         throw new RuntimeException("Out of memory");
     }
 
-    public synchronized long reallocateMemory(long address, long size) {
-        long oldSize = getLong(address - 8);
+    public synchronized long reallocateMemory(ThreadHandle threadHandle, long address, long size) {
+        long oldSize = getLong(threadHandle, address - 8);
         byte[] bytes = new byte[(int) oldSize];
-        for (int i = 0; i < oldSize; i++) bytes[i] = getByte(address + i);
-        freeMemory(address);
-        long newAddress = allocateMemory(size);
-        for (int i = 0; i < Math.min(oldSize, size); i++) setByte(newAddress + i, bytes[i]);
+        for (int i = 0; i < oldSize; i++) bytes[i] = getByte(threadHandle, address + i);
+        freeMemory(threadHandle, address);
+        long newAddress = allocateMemory(threadHandle, size);
+        for (int i = 0; i < Math.min(oldSize, size); i++) setByte(threadHandle, newAddress + i, bytes[i]);
         return newAddress;
     }
 
-    public synchronized void freeMemory(long address) {
+    public synchronized void freeMemory(ThreadHandle threadHandle, long address) {
         address -= 8;
-        long size = getLong(address) + 8;
+        long size = getLong(threadHandle, address) + 8;
         MemoryPage.FreeMemory freeMemory = freeMemoryList;
         while (freeMemory.next != null) {
             if (freeMemory.end == address) {
@@ -207,7 +206,7 @@ public final class Memory {
         MemoryPage page = pte[pteOffset];
         boolean ret = page != null;
         if (page == null) {
-            page = new MemoryPage(flags);
+            page = new MemoryPage(address & ~Memory.PAGE_OFFSET_MASK, flags);
             pte[pteOffset] = page;
         } else {
             page.flags |= flags;
@@ -230,124 +229,124 @@ public final class Memory {
         pte[pteOffset] = null;
     }
 
-    public byte getByte(long address) {
-        return getMemoryPageSafely(address).getByte(address & PAGE_OFFSET_MASK);
+    public byte getByte(ThreadHandle threadHandle, long address) {
+        return getMemoryPageSafely(address).getByte(threadHandle, address & PAGE_OFFSET_MASK);
     }
 
-    public short getShort(long address) {
+    public short getShort(ThreadHandle threadHandle, long address) {
         if (((address & PAGE_OFFSET_MASK) + 2) < PAGE_SIZE) {
-            return getMemoryPageSafely(address).getShort(address & PAGE_OFFSET_MASK);
+            return getMemoryPageSafely(address).getShort(threadHandle, address & PAGE_OFFSET_MASK);
         } else {
-            return (short) (getMemoryPageSafely(address).getByte(address & PAGE_OFFSET_MASK) | (getMemoryPageSafely(address + 1).getByte(0) << 8));
+            return (short) (getMemoryPageSafely(address).getByte(threadHandle, address & PAGE_OFFSET_MASK) | (getMemoryPageSafely(address + 1).getByte(threadHandle, 0) << 8));
         }
     }
 
-    public int getInt(long address) {
+    public int getInt(ThreadHandle threadHandle, long address) {
         if (((address & PAGE_OFFSET_MASK) + 4) < PAGE_SIZE) {
-            return getMemoryPageSafely(address).getInt(address & PAGE_OFFSET_MASK);
+            return getMemoryPageSafely(address).getInt(threadHandle, address & PAGE_OFFSET_MASK);
         } else {
             int value = 0;
             for (int i = 0; i < 4; i++) {
-                value |= (getMemoryPageSafely(address).getByte(address & PAGE_OFFSET_MASK) & 0xff) << (i * 8);
+                value |= (getMemoryPageSafely(address).getByte(threadHandle, address & PAGE_OFFSET_MASK) & 0xff) << (i * 8);
                 address++;
             }
             return value;
         }
     }
 
-    public long getLong(long address) {
+    public long getLong(ThreadHandle threadHandle, long address) {
         if (((address & PAGE_OFFSET_MASK) + 8) < PAGE_SIZE) {
-            return getMemoryPageSafely(address).getLong(address & PAGE_OFFSET_MASK);
+            return getMemoryPageSafely(address).getLong(threadHandle, address & PAGE_OFFSET_MASK);
         } else {
             long value = 0;
             for (int i = 0; i < 8; i++) {
-                value |= (getMemoryPageSafely(address).getByte(address & PAGE_OFFSET_MASK) & 0xffL) << (i * 8);
+                value |= (getMemoryPageSafely(address).getByte(threadHandle, address & PAGE_OFFSET_MASK) & 0xffL) << (i * 8);
                 address++;
             }
             return value;
         }
     }
 
-    public float getFloat(long address) {
+    public float getFloat(ThreadHandle threadHandle, long address) {
         if (((address & PAGE_OFFSET_MASK) + 4) < PAGE_SIZE) {
-            return getMemoryPageSafely(address).getFloat(address & PAGE_OFFSET_MASK);
+            return getMemoryPageSafely(address).getFloat(threadHandle, address & PAGE_OFFSET_MASK);
         } else {
             int value = 0;
             for (int i = 0; i < 4; i++) {
-                value |= (getMemoryPageSafely(address).getByte(address & PAGE_OFFSET_MASK) & 0xff) << (i * 8);
+                value |= (getMemoryPageSafely(address).getByte(threadHandle, address & PAGE_OFFSET_MASK) & 0xff) << (i * 8);
                 address++;
             }
             return Float.intBitsToFloat(value);
         }
     }
 
-    public double getDouble(long address) {
+    public double getDouble(ThreadHandle threadHandle, long address) {
         if (((address & PAGE_OFFSET_MASK) + 8) < PAGE_SIZE) {
-            return getMemoryPageSafely(address).getDouble(address & PAGE_OFFSET_MASK);
+            return getMemoryPageSafely(address).getDouble(threadHandle, address & PAGE_OFFSET_MASK);
         } else {
             long value = 0;
             for (int i = 0; i < 8; i++) {
-                value |= (getMemoryPageSafely(address).getByte(address & PAGE_OFFSET_MASK) & 0xffL) << (i * 8);
+                value |= (getMemoryPageSafely(address).getByte(threadHandle, address & PAGE_OFFSET_MASK) & 0xffL) << (i * 8);
                 address++;
             }
             return Double.longBitsToDouble(value);
         }
     }
 
-    public void setByte(long address, byte value) {
-        getMemoryPageSafely(address).setByte(address & PAGE_OFFSET_MASK, value);
+    public void setByte(ThreadHandle threadHandle, long address, byte value) {
+        getMemoryPageSafely(address).setByte(threadHandle, address & PAGE_OFFSET_MASK, value);
     }
 
-    public void setShort(long address, short value) {
+    public void setShort(ThreadHandle threadHandle, long address, short value) {
         if (((address & PAGE_OFFSET_MASK) + 2) < PAGE_SIZE) {
-            getMemoryPageSafely(address).setShort(address & PAGE_OFFSET_MASK, value);
+            getMemoryPageSafely(address).setShort(threadHandle, address & PAGE_OFFSET_MASK, value);
         } else {
-            getMemoryPageSafely(address).setByte(address & PAGE_OFFSET_MASK, (byte) (value & 0xff));
-            getMemoryPageSafely(address + 1).setByte(0, (byte) (value >> 8));
+            getMemoryPageSafely(address).setByte(threadHandle, address & PAGE_OFFSET_MASK, (byte) (value & 0xff));
+            getMemoryPageSafely(address + 1).setByte(threadHandle, 0, (byte) (value >> 8));
         }
     }
 
-    public void setInt(long address, int value) {
+    public void setInt(ThreadHandle threadHandle, long address, int value) {
         if (((address & PAGE_OFFSET_MASK) + 4) < PAGE_SIZE) {
-            getMemoryPageSafely(address).setInt(address & PAGE_OFFSET_MASK, value);
+            getMemoryPageSafely(address).setInt(threadHandle, address & PAGE_OFFSET_MASK, value);
         } else {
             for (int i = 0; i < 4; i++) {
-                getMemoryPageSafely(address).setByte(address & PAGE_OFFSET_MASK, (byte) (value >> (i * 8)));
+                getMemoryPageSafely(address).setByte(threadHandle, address & PAGE_OFFSET_MASK, (byte) (value >> (i * 8)));
                 address++;
             }
         }
     }
 
-    public void setLong(long address, long value) {
+    public void setLong(ThreadHandle threadHandle, long address, long value) {
         if (((address & PAGE_OFFSET_MASK) + 8) < PAGE_SIZE) {
-            getMemoryPageSafely(address).setLong(address & PAGE_OFFSET_MASK, value);
+            getMemoryPageSafely(address).setLong(threadHandle, address & PAGE_OFFSET_MASK, value);
         } else {
             for (int i = 0; i < 8; i++) {
-                getMemoryPageSafely(address).setByte(address & PAGE_OFFSET_MASK, (byte) (value >> (i * 8)));
+                getMemoryPageSafely(address).setByte(threadHandle, address & PAGE_OFFSET_MASK, (byte) (value >> (i * 8)));
                 address++;
             }
         }
     }
 
-    public void setFloat(long address, float value) {
+    public void setFloat(ThreadHandle threadHandle, long address, float value) {
         if (((address & PAGE_OFFSET_MASK) + 4) < PAGE_SIZE) {
-            getMemoryPageSafely(address).setFloat(address & PAGE_OFFSET_MASK, value);
+            getMemoryPageSafely(address).setFloat(threadHandle, address & PAGE_OFFSET_MASK, value);
         } else {
             int bits = Float.floatToRawIntBits(value);
             for (int i = 0; i < 4; i++) {
-                getMemoryPageSafely(address).setByte(address & PAGE_OFFSET_MASK, (byte) (bits >> (i * 8)));
+                getMemoryPageSafely(address).setByte(threadHandle, address & PAGE_OFFSET_MASK, (byte) (bits >> (i * 8)));
                 address++;
             }
         }
     }
 
-    public void setDouble(long address, double value) {
+    public void setDouble(ThreadHandle threadHandle, long address, double value) {
         if (((address & PAGE_OFFSET_MASK) + 8) < PAGE_SIZE) {
-            getMemoryPageSafely(address).setDouble(address & PAGE_OFFSET_MASK, value);
+            getMemoryPageSafely(address).setDouble(threadHandle, address & PAGE_OFFSET_MASK, value);
         } else {
             long bits = Double.doubleToRawLongBits(value);
             for (int i = 0; i < 8; i++) {
-                getMemoryPageSafely(address).setByte(address & PAGE_OFFSET_MASK, (byte) (bits >> (i * 8)));
+                getMemoryPageSafely(address).setByte(threadHandle, address & PAGE_OFFSET_MASK, (byte) (bits >> (i * 8)));
             }
         }
     }

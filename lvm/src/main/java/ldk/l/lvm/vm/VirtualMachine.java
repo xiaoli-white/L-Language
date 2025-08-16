@@ -43,7 +43,7 @@ public final class VirtualMachine {
                 ThreadHandle threadHandle = threadID2Handle.values().stream().toList().getFirst();
                 threadHandle.thread.join();
                 threadHandle.executionUnit.destroy();
-                threadID2Handle.remove(threadHandle.executionUnit.threadID);
+                threadID2Handle.remove(threadHandle.threadID);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -53,17 +53,18 @@ public final class VirtualMachine {
 
     public long createThread(long entryPoint) {
         long threadID = getThreadID();
-        ExecutionUnit executionUnit = createExecutionUnit(threadID, entryPoint);
-        ThreadHandle threadHandle = new ThreadHandle(executionUnit);
+        ExecutionUnit executionUnit = createExecutionUnit(entryPoint);
+        ThreadHandle threadHandle = new ThreadHandle(threadID, executionUnit);
+        executionUnit.setThreadHandle(threadHandle);
         threadID2Handle.put(threadID, threadHandle);
         threadHandle.thread.start();
         return threadID;
     }
 
-    private ExecutionUnit createExecutionUnit(long threadID, long entryPoint) {
+    private ExecutionUnit createExecutionUnit(long entryPoint) {
         ExecutionUnit executionUnit = new ExecutionUnit(this);
-        long stack = memory.allocateMemory(this.stackSize);
-        executionUnit.init(threadID, stack + this.stackSize - 1, entryPoint);
+        long stack = memory.allocateMemory(null, this.stackSize);
+        executionUnit.init(stack + this.stackSize - 1, entryPoint);
         return executionUnit;
     }
 
