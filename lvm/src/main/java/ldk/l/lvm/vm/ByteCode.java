@@ -135,7 +135,7 @@ public class ByteCode {
     public static final byte RETURN = 0x66;
     public static final byte INTERRUPT = 0x67;
     public static final byte INTERRUPT_RETURN = 0x68;
-    public static final byte TYPE_CAST = 0x69;
+    public static final byte INT_TYPE_CAST = 0x69;
     public static final byte LONG_TO_DOUBLE = 0x6a;
     public static final byte DOUBLE_TO_LONG = 0x6b;
     public static final byte DOUBLE_TO_FLOAT = 0x6c;
@@ -162,6 +162,11 @@ public class ByteCode {
     public static final byte JUMP_IF_TRUE = (byte) 0x81;
     public static final byte JUMP_IF_FALSE = (byte) 0x82;
     public static final byte SYSCALL = (byte) 0x83;
+    public static final byte THREAD_FINISH = (byte) 0x84;
+    public static final byte NEG_DOUBLE = (byte) 0x85;
+    public static final byte NEG_FLOAT = (byte) 0x86;
+    public static final byte ATOMIC_NEG_DOUBLE = (byte) 0x87;
+    public static final byte ATOMIC_NEG_FLOAT = (byte) 0x88;
 
     public static String getInstructionName(byte code) {
         return switch (code) {
@@ -270,7 +275,7 @@ public class ByteCode {
             case RETURN -> "RETURN";
             case INTERRUPT -> "INTERRUPT";
             case INTERRUPT_RETURN -> "INTERRUPT_RETURN";
-            case TYPE_CAST -> "TYPE_CAST";
+            case INT_TYPE_CAST -> "INT_TYPE_CAST";
             case LONG_TO_DOUBLE -> "LONG_TO_DOUBLE";
             case DOUBLE_TO_LONG -> "DOUBLE_TO_LONG";
             case DOUBLE_TO_FLOAT -> "DOUBLE_TO_FLOAT";
@@ -297,11 +302,16 @@ public class ByteCode {
             case JUMP_IF_TRUE -> "JUMP_IF_TRUE";
             case JUMP_IF_FALSE -> "JUMP_IF_FALSE";
             case SYSCALL -> "SYSCALL";
+            case THREAD_FINISH -> "THREAD_FINISH";
+            case NEG_DOUBLE -> "NEG_DOUBLE";
+            case NEG_FLOAT -> "NEG_FLOAT";
+            case ATOMIC_NEG_DOUBLE -> "ATOMIC_NEG_DOUBLE";
+            case ATOMIC_NEG_FLOAT -> "ATOMIC_NEG_FLOAT";
             default -> throw new IllegalArgumentException("Unknown instruction code: " + code);
         };
     }
 
-    public static byte parseInstruction(String code) {
+    public static byte parseInstructionCode(String code) {
         return switch (code.toUpperCase()) {
             case "NOP" -> NOP;
             case "PUSH_1" -> PUSH_1;
@@ -408,7 +418,7 @@ public class ByteCode {
             case "RETURN" -> RETURN;
             case "INTERRUPT" -> INTERRUPT;
             case "INTERRUPT_RETURN" -> INTERRUPT_RETURN;
-            case "TYPE_CAST" -> TYPE_CAST;
+            case "INT_TYPE_CAST" -> INT_TYPE_CAST;
             case "LONG_TO_DOUBLE" -> LONG_TO_DOUBLE;
             case "DOUBLE_TO_LONG" -> DOUBLE_TO_LONG;
             case "DOUBLE_TO_FLOAT" -> DOUBLE_TO_FLOAT;
@@ -435,6 +445,11 @@ public class ByteCode {
             case "JUMP_IF_TRUE" -> JUMP_IF_TRUE;
             case "JUMP_IF_FALSE" -> JUMP_IF_FALSE;
             case "SYSCALL" -> SYSCALL;
+            case "THREAD_FINISH" -> THREAD_FINISH;
+            case "NEG_DOUBLE" -> NEG_DOUBLE;
+            case "NEG_FLOAT" -> NEG_FLOAT;
+            case "ATOMIC_NEG_DOUBLE" -> ATOMIC_NEG_DOUBLE;
+            case "ATOMIC_NEG_FLOAT" -> ATOMIC_NEG_FLOAT;
             default -> throw new IllegalArgumentException("Unknown instruction code: " + code);
         };
     }

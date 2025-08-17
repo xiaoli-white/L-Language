@@ -808,12 +808,12 @@ public final class ByteCodeGenerator extends Generator {
                 case SignExtend -> {
                     byte code1 = getBCType(irTypeCast.originalType);
                     byte code2 = getBCType(irTypeCast.targetType);
-                    addInstruction(new BCInstruction(ByteCode.TYPE_CAST, new BCImmediate1((byte) (((code1 << 4) | code2) & 0xff)), source, target));
+                    addInstruction(new BCInstruction(ByteCode.INT_TYPE_CAST, new BCImmediate1((byte) (((code1 << 4) | code2) & 0xff)), source, target));
                 }
                 case IntToFloat -> {
                     byte code1 = getBCType(irTypeCast.originalType);
                     var tempRegister = allocateVirtualRegister();
-                    addInstruction(new BCInstruction(ByteCode.TYPE_CAST, new BCImmediate1((byte) (((code1 << 4) | ByteCode.LONG_TYPE) & 0xff)), source, tempRegister));
+                    addInstruction(new BCInstruction(ByteCode.INT_TYPE_CAST, new BCImmediate1((byte) (((code1 << 4) | ByteCode.LONG_TYPE) & 0xff)), source, tempRegister));
                     var tempRegister2 = allocateVirtualRegister();
                     addInstruction(new BCInstruction(ByteCode.LONG_TO_DOUBLE, new BCRegister(tempRegister.virtualRegister), tempRegister2));
                     byte code2;
@@ -832,7 +832,7 @@ public final class ByteCodeGenerator extends Generator {
                     var tempRegister2 = allocateVirtualRegister();
                     addInstruction(new BCInstruction(ByteCode.DOUBLE_TO_LONG, new BCRegister(tempRegister.virtualRegister), tempRegister2));
                     byte code2 = getBCType(irTypeCast.targetType);
-                    addInstruction(new BCInstruction(ByteCode.TYPE_CAST, new BCImmediate1((byte) (((ByteCode.LONG_TYPE << 4) | code2) & 0xff)), new BCRegister(tempRegister2.virtualRegister), target));
+                    addInstruction(new BCInstruction(ByteCode.INT_TYPE_CAST, new BCImmediate1((byte) (((ByteCode.LONG_TYPE << 4) | code2) & 0xff)), new BCRegister(tempRegister2.virtualRegister), target));
                 }
                 case FloatExtend, FloatTruncate -> {
                     byte code;
@@ -1139,7 +1139,7 @@ public final class ByteCodeGenerator extends Generator {
                     codeText.append(c);
                 }
             }
-            byte code = ByteCode.parseInstruction(codeText.toString());
+            byte code = ByteCode.parseInstructionCode(codeText.toString());
             BCOperand operand1 = null;
             BCOperand operand2 = null;
             BCOperand operand3 = null;

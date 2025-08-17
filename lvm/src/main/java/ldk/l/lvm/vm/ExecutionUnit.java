@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemorySegment;
-import java.math.BigInteger;
 
 public final class ExecutionUnit implements Runnable {
     public final VirtualMachine virtualMachine;
@@ -259,7 +258,7 @@ public final class ExecutionUnit implements Runnable {
                     byte target = memory.getByte(threadHandle, pc++);
                     setRegister(ByteCode.PC_REGISTER, pc);
                     long flags = getRegister(ByteCode.FLAGS_REGISTER);
-                    if ((flags & ByteCode.ZERO_MARK) == 1 || ((flags & ByteCode.CARRY_MARK) >> 1) == 1)
+                    if ((flags & ByteCode.ZERO_MARK) == 1 || ((flags & ByteCode.CARRY_MARK) >> 1) != 0)
                         setRegister(target, getRegister(value));
                 }
                 case ByteCode.MOV_G -> {
@@ -932,9 +931,9 @@ public final class ExecutionUnit implements Runnable {
                         flags = (flags & ~ByteCode.ZERO_MARK) | 1;
                         setRegister(operand1, getRegister(operand3));
                     } else {
-                        long signedResult = getRegister(operand1) - getRegister(operand2);
-                        long unsignedResult = new BigInteger(Long.toUnsignedString(value1)).compareTo(new BigInteger(Long.toUnsignedString(value2)));
-                        flags = (flags & ~ByteCode.ZERO_MARK & ~ByteCode.CARRY_MARK & ~ByteCode.UNSIGNED_MARK) | ((signedResult < 0 ? 1 : 0) << 1) | ((unsignedResult < 0 ? 1 : 0) << 2);
+                        boolean signedResult = value1 < value2;
+                        int unsignedResult = Long.compareUnsigned(value1, value2);
+                        flags = (flags & ~ByteCode.ZERO_MARK & ~ByteCode.CARRY_MARK & ~ByteCode.UNSIGNED_MARK) | ((signedResult ? 1 : 0) << 1) | ((unsignedResult < 0 ? 1 : 0) << 2);
                         setRegister(operand2, getRegister(operand1));
                     }
                     setRegister(ByteCode.FLAGS_REGISTER, flags);
@@ -970,7 +969,7 @@ public final class ExecutionUnit implements Runnable {
                     setRegister(ByteCode.PC_REGISTER, memory.getLong(threadHandle, sp));
                     setRegister(ByteCode.SP_REGISTER, sp + 16);
                 }
-                case ByteCode.TYPE_CAST -> {
+                case ByteCode.INT_TYPE_CAST -> {
                     byte types = memory.getByte(threadHandle, pc++);
                     byte source = memory.getByte(threadHandle, pc++);
                     byte target = memory.getByte(threadHandle, pc++);
@@ -1041,15 +1040,15 @@ public final class ExecutionUnit implements Runnable {
                     setRegister(ByteCode.PC_REGISTER, pc);
                     long bufferAddress = getRegister(buFFerRegister);
                     long count = getRegister(countRegister);
-                    byte[] buFFer = new byte[(int) count];
+                    byte[] buffer = new byte[(int) count];
                     int readCount;
                     try {
-                        readCount = virtualMachine.read(getRegister(fdRegister), buFFer, (int) count);
+                        readCount = virtualMachine.read(getRegister(fdRegister), buffer, (int) count);
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
                     setRegister(resultRegister, readCount);
-                    for (int i = 0; i < readCount; i++) memory.setByte(threadHandle, bufferAddress + i, buFFer[i]);
+                    for (int i = 0; i < readCount; i++) memory.setByte(threadHandle, bufferAddress + i, buffer[i]);
                 }
                 case ByteCode.WRITE -> {
                     byte fdRegister = memory.getByte(threadHandle, pc++);
@@ -1059,10 +1058,10 @@ public final class ExecutionUnit implements Runnable {
                     setRegister(ByteCode.PC_REGISTER, pc);
                     long address = getRegister(bufferRegister);
                     long count = getRegister(countRegister);
-                    byte[] buFFer = new byte[(int) count];
-                    for (int i = 0; i < count; i++) buFFer[i] = memory.getByte(threadHandle, address + i);
+                    byte[] buffer = new byte[(int) count];
+                    for (int i = 0; i < count; i++) buffer[i] = memory.getByte(threadHandle, address + i);
                     try {
-                        setRegister(resultRegister, virtualMachine.write(getRegister(fdRegister), buFFer));
+                        setRegister(resultRegister, virtualMachine.write(getRegister(fdRegister), buffer));
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -1083,13 +1082,13 @@ public final class ExecutionUnit implements Runnable {
                     setRegister(ByteCode.SP_REGISTER, sp + 8);
                 }
                 case ByteCode.EXIT -> {
-                    byte exitCodeRegister = memory.getByte(threadHandle, pc);
-                    virtualMachine.exit(getRegister(exitCodeRegister));
+                    byte statusRegister = memory.getByte(threadHandle, pc);
+                    virtualMachine.exit(getRegister(statusRegister));
                     break loop;
                 }
                 case ByteCode.EXIT_IMMEDIATE -> {
-                    long exitCode = memory.getLong(threadHandle, pc);
-                    virtualMachine.exit(exitCode);
+                    long status = memory.getLong(threadHandle, pc);
+                    virtualMachine.exit(status);
                     break loop;
                 }
                 case ByteCode.GET_FIELD_ADDRESS -> {
@@ -1263,6 +1262,37 @@ public final class ExecutionUnit implements Runnable {
                     byte syscallRegister = memory.getByte(threadHandle, pc++);
                     setRegister(ByteCode.PC_REGISTER, pc);
                     long syscallNumber = getRegister(syscallRegister);
+                }
+                case ByteCode.THREAD_FINISH -> {
+                    break loop;
+                }
+                case ByteCode.NEG_DOUBLE -> {
+                    byte operand = memory.getByte(threadHandle, pc++);
+                    setRegister(ByteCode.PC_REGISTER, pc);
+                    setRegister(operand, Double.doubleToLongBits(-Double.longBitsToDouble(getRegister(operand))));
+                }
+                case ByteCode.NEG_FLOAT -> {
+                    byte operand = memory.getByte(threadHandle, pc++);
+                    setRegister(ByteCode.PC_REGISTER, pc);
+                    setRegister(operand, Float.floatToIntBits(-Float.intBitsToFloat((int) (getRegister(operand) & 0xFFFFFFFFL))));
+                }
+                case ByteCode.ATOMIC_NEG_DOUBLE -> {
+                    memory.lock();
+                    byte operand = memory.getByte(threadHandle, pc++);
+                    setRegister(ByteCode.PC_REGISTER, pc);
+                    long address = getRegister(operand);
+                    double temp = -memory.getDouble(threadHandle, address);
+                    memory.setDouble(threadHandle, address, temp);
+                    memory.unlock();
+                }
+                case ByteCode.ATOMIC_NEG_FLOAT -> {
+                    memory.lock();
+                    byte operand = memory.getByte(threadHandle, pc++);
+                    setRegister(ByteCode.PC_REGISTER, pc);
+                    long address = getRegister(operand);
+                    float temp = -memory.getFloat(threadHandle, address);
+                    memory.setFloat(threadHandle, address, temp);
+                    memory.unlock();
                 }
             }
         }

@@ -15,7 +15,7 @@ public final class VirtualMachine {
     public final Map<Long, FileHandle> fd2FileHandle = new HashMap<>();
     public long entryPoint = 0;
     private boolean running = false;
-    private long lastThreadID;
+    private long lastThreadID = 0;
     private long lastFd;
 
     public VirtualMachine(long stackSize) {
@@ -42,8 +42,7 @@ public final class VirtualMachine {
             try {
                 ThreadHandle threadHandle = threadID2Handle.values().stream().toList().getFirst();
                 threadHandle.thread.join();
-                threadHandle.executionUnit.destroy();
-                threadID2Handle.remove(threadHandle.threadID);
+                destroyThread(threadHandle);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -68,16 +67,22 @@ public final class VirtualMachine {
         return executionUnit;
     }
 
-    public int open(String path, int flags, int mode) throws FileNotFoundException {
+    private synchronized void destroyThread(ThreadHandle threadHandle) {
+        threadHandle.executionUnit.destroy();
+        threadID2Handle.remove(threadHandle.threadID);
+        if (threadHandle.threadID <= lastThreadID) lastThreadID = threadHandle.threadID - 1;
+    }
+
+    public long open(String path, int flags, int mode) throws FileNotFoundException {
         long fd = getFd();
         fd2FileHandle.put(fd, new FileHandle(path, flags, mode));
-        return -1;
+        return fd;
     }
 
     public synchronized int close(long fd) {
         FileHandle fileHandle = fd2FileHandle.remove(fd);
         fileHandle.close();
-        lastFd = 2;
+        if (fd <= lastFd) lastFd = fd - 1;
         return 0;
     }
 
