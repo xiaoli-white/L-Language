@@ -155,12 +155,4 @@ object LiteCompiler {
     private fun shutdown() {
         Stdin.close()
     }
-
-    /**
-     * 程序入口点
-     */
-    @JvmStatic
-    fun main(args: Array<String>) {
-        LiteCompiler.startRepl()
-    }
 }
