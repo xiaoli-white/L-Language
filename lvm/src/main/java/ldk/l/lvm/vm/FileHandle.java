@@ -5,7 +5,7 @@ import java.io.*;
 public final class FileHandle {
     public static final int FH_READ = 1;
     public static final int FH_WRITE = 1 << 1;
-    private static final int FH_PREOPEN = 1;
+    private static final int FH_PREOPEN = 1 << 2;
     private final String path;
     private final int flags;
     private final int mode;

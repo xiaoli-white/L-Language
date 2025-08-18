@@ -1115,7 +1115,7 @@ public final class ExecutionUnit implements Runnable {
                     byte entryPointRegister = memory.getByte(threadHandle, pc++);
                     byte resultRegister = memory.getByte(threadHandle, pc++);
                     setRegister(ByteCode.PC_REGISTER, pc);
-                    setRegister(resultRegister, virtualMachine.createThread(getRegister(entryPointRegister)));
+                    setRegister(resultRegister, virtualMachine.createThread(threadHandle, getRegister(entryPointRegister)));
                 }
                 case ByteCode.THREAD_CONTROL -> {
                     byte threadIDRegister = memory.getByte(threadHandle, pc++);

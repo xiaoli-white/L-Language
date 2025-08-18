@@ -36,7 +36,7 @@ public final class VirtualMachine {
     }
 
     public int run() {
-        createThread(this.entryPoint);
+        createThread(null, this.entryPoint);
         running = true;
         while (running && !threadID2Handle.isEmpty()) {
             try {
@@ -50,19 +50,19 @@ public final class VirtualMachine {
         return 0;
     }
 
-    public long createThread(long entryPoint) {
+    public long createThread(ThreadHandle threadHandle, long entryPoint) {
         long threadID = getThreadID();
-        ExecutionUnit executionUnit = createExecutionUnit(entryPoint);
-        ThreadHandle threadHandle = new ThreadHandle(threadID, executionUnit);
-        executionUnit.setThreadHandle(threadHandle);
-        threadID2Handle.put(threadID, threadHandle);
-        threadHandle.thread.start();
+        ExecutionUnit executionUnit = createExecutionUnit(threadHandle, entryPoint);
+        ThreadHandle handle = new ThreadHandle(threadID, executionUnit);
+        executionUnit.setThreadHandle(handle);
+        threadID2Handle.put(threadID, handle);
+        handle.thread.start();
         return threadID;
     }
 
-    private ExecutionUnit createExecutionUnit(long entryPoint) {
+    private ExecutionUnit createExecutionUnit(ThreadHandle threadHandle, long entryPoint) {
         ExecutionUnit executionUnit = new ExecutionUnit(this);
-        long stack = memory.allocateMemory(null, this.stackSize);
+        long stack = memory.allocateMemory(threadHandle, this.stackSize);
         executionUnit.init(stack + this.stackSize - 1, entryPoint);
         return executionUnit;
     }

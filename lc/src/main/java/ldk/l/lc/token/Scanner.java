@@ -3,23 +3,13 @@ package ldk.l.lc.token;
 import ldk.l.lc.util.error.ErrorStream;
 import ldk.l.lc.util.Position;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
-public final class Scanner {
-    private static final HashMap<String, Tokens.TokenCode> keywordMap = new HashMap<>() {{
+public record Scanner(CharStream stream, ErrorStream errorStream) {
+    private static final Map<String, Tokens.TokenCode> keywordMap = new HashMap<>() {{
         Arrays.stream(Tokens.Keyword.values()).forEach(keyword -> put(keyword.getCode(), keyword));
         Arrays.stream(Tokens.Type.values()).forEach(type -> put(type.getCode(), type));
     }};
-    private final CharStream stream;
-    private final ErrorStream errorStream;
-
-    public Scanner(CharStream stream, ErrorStream errorStream) {
-        this.stream = stream;
-        this.errorStream = errorStream;
-    }
 
     public Token[] scan() {
         if (this.stream.eof()) {
