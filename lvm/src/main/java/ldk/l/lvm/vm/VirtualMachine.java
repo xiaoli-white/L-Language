@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public final class VirtualMachine {
+    public static final byte ENDIAN = ByteCode.LITTLE_ENDIAN;
     public static final long LVM_VERSION = 0;
 
     public final long stackSize;

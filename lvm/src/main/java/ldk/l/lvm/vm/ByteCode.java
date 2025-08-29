@@ -4,6 +4,8 @@ public class ByteCode {
     private ByteCode() {
     }
 
+    public static final byte LITTLE_ENDIAN = 0;
+    public static final byte BIG_ENDIAN = 1;
     public static final long REGISTER_COUNT = 42;
     public static final byte RETURN_VALUE_REGISTER = 36;
     public static final byte BP_REGISTER = 37;

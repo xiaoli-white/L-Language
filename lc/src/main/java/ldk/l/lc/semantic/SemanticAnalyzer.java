@@ -10,6 +10,7 @@ public final class SemanticAnalyzer {
     private final LCAst ast;
     private final ErrorStream errorStream;
     public final TypeBuilder typeBuilder;
+    public final AutomaticInjector automaticInjector;
     public final TypeResolver typeResolver;
     public final Enter enter;
     public final ObjectSymbolResolver objectSymbolResolver;
@@ -30,6 +31,7 @@ public final class SemanticAnalyzer {
         this.errorStream = errorStream;
 
         this.typeBuilder = new TypeBuilder();
+        this.automaticInjector = new AutomaticInjector(errorStream);
         this.typeResolver = new TypeResolver(this, errorStream);
         this.enter = new Enter(errorStream);
         this.objectSymbolResolver = new ObjectSymbolResolver(errorStream);
@@ -47,6 +49,7 @@ public final class SemanticAnalyzer {
     public void execute() {
         this.typeBuilder.visitAst(this.ast, null);
         SystemTypes.setObjectTypes(this.ast, this.errorStream);
+        this.automaticInjector.visitAst(this.ast, null);
         this.typeResolver.visitAst(this.ast, null);
         this.enter.visitAst(this.ast, null);
         this.objectSymbolResolver.visitAst(this.ast, null);

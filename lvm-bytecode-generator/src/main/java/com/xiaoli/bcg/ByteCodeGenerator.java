@@ -86,7 +86,7 @@ public final class ByteCodeGenerator extends Generator {
 
 
         Module vmModule = toModule(byteCodeModule);
-        byte[] raw = vmModule.raw();
+        byte[] raw = vmModule.raw(true);
         String output = options.get("output", String.class);
         if (output.isEmpty()) output = "a.lvme";
         try (FileOutputStream fos = new FileOutputStream(output)) {
