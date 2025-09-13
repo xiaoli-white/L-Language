@@ -1468,7 +1468,7 @@ public final class IRGenerator extends LCAstVisitor {
 
     @Override
     public Object visitSizeof(LCSizeof lcSizeof, Object additional) {
-        if (SystemTypes.BYTE.equals(lcSizeof.expression.theType) || SystemTypes.UNSIGNED_BYTE.equals(lcSizeof.expression.theType)) {
+        if (SystemTypes.BYTE.equals(lcSizeof.expression.theType) || SystemTypes.UNSIGNED_BYTE.equals(lcSizeof.expression.theType) || SystemTypes.BOOLEAN.equals(lcSizeof.expression.theType)) {
             int index = this.module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 1));
             operandStack.push(new IRConstant(index));
         } else if (SystemTypes.SHORT.equals(lcSizeof.expression.theType) || SystemTypes.UNSIGNED_SHORT.equals(lcSizeof.expression.theType)) {
