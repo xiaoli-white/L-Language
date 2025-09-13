@@ -1,4 +1,4 @@
-rootProject.name = "L-Language-Dev"
+rootProject.name = "L-Language"
 include("lutil")
 include("lvm")
 include("lvm-bytecode-generator")

@@ -1294,6 +1294,12 @@ public final class ExecutionUnit implements Runnable {
                     memory.setFloat(threadHandle, address, temp);
                     memory.unlock();
                 }
+                case ByteCode.JIT_FOR_RANGE -> {
+                    // TODO
+                }
+                case ByteCode.INVOKE_NATIVE ->  {
+                    // TODO
+                }
             }
         }
 //        long end = System.nanoTime();
