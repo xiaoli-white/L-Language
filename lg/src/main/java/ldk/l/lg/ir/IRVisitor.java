@@ -130,14 +130,18 @@ public abstract class IRVisitor {
     public Object visitNot(IRNot irNot, Object additional) {
         this.visit(irNot.type, additional);
         this.visit(irNot.operand, additional);
-        this.visitVirtualRegister(irNot.target, additional);
+        if (irNot.target != null) {
+            this.visitVirtualRegister(irNot.target, additional);
+        }
         return null;
     }
 
     public Object visitNegate(IRNegate irNegate, Object additional) {
         this.visit(irNegate.type, additional);
         this.visit(irNegate.operand, additional);
-        this.visitVirtualRegister(irNegate.target, additional);
+        if (irNegate.target != null) {
+            this.visitVirtualRegister(irNegate.target, additional);
+        }
         return null;
     }
 

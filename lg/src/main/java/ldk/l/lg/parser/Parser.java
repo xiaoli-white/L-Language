@@ -191,6 +191,7 @@ public final class Parser {
         List<IRConstantPool.Entry> entries = new ArrayList<>();
         while (!charStream.eof() && charStream.peek() != '}') {
             IRType type = parseType();
+
         }
     }
 

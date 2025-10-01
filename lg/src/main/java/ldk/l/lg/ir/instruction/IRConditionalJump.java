@@ -38,6 +38,6 @@ public final class IRConditionalJump extends IRInstruction {
 
     @Override
     public String toString() {
-        return (isAtomic ? "atomic_" : "") + "conditional_jump " + type + " " + condition.text + ", " + operand1 + (operand2 != null ? ", " + operand2 : "") + ", #" + target;
+        return (isAtomic ? "atomic_" : "") + "conditional_jump " + type + " " + condition.text + " " + operand1 + (operand2 != null ? ", " + operand2 : "") + ", #" + target;
     }
 }

@@ -14,6 +14,6 @@ public final class IRNoOperate extends IRInstruction {
 
     @Override
     public String toString() {
-        return "IRNoOperate{}";
+        return "nop";
     }
 }

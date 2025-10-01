@@ -22,6 +22,6 @@ public final class IRSet extends IRInstruction {
 
     @Override
     public String toString() {
-        return "set " + type + ", " + address + ", " + value;
+        return "set " + type + " " + address + ", " + value;
     }
 }

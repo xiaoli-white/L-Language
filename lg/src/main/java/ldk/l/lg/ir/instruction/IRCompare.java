@@ -34,6 +34,6 @@ public final class IRCompare extends IRInstruction {
 
     @Override
     public String toString() {
-        return target + " = " + (isAtomic ? "atomic_" : "") + "cmp " + type + " " + condition.text + ", " + operand1 + ", " + operand2;
+        return target + " = " + (isAtomic ? "atomic_" : "") + "cmp " + type + " " + condition.text + " " + operand1 + ", " + operand2;
     }
 }
