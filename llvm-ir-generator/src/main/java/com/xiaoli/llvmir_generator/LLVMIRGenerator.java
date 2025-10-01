@@ -6,6 +6,7 @@ import ldk.l.lg.ir.IRVisitor;
 import ldk.l.lg.ir.base.IRControlFlowGraph;
 import ldk.l.lg.ir.base.IRFunction;
 import ldk.l.lg.ir.base.IRGlobalDataSection;
+import ldk.l.lg.ir.base.IRNode;
 import ldk.l.lg.ir.instruction.*;
 import ldk.l.lg.ir.operand.IRConstant;
 import ldk.l.lg.ir.operand.IRMacro;
@@ -79,13 +80,16 @@ public final class LLVMIRGenerator extends Generator {
             this.visitGlobalDataSection(module.globalDataSection, null);
             initializeITableInitializer();
             for (IRFunction irFunction : module.functions.values()) this.visitFunction(irFunction, null);
+            createMain();
         }
+
+        private native void createFunction(IRFunction irFunction);
 
         private native void initializeQueue();
 
         private native void initializeITableInitializer();
 
-        private native void createFunction(IRFunction irFunction);
+        private native void createMain();
 
 //        @Override
 //        public Object visit(IRNode irNode, Object additional) {
