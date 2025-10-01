@@ -13,15 +13,20 @@ public final class BCInstruction {
     public BCOperand operand2;
     public BCOperand operand3;
     public BCOperand operand4;
+    public BCOperand operand5;
     public final List<Long> allocatedRegisters;
 
-    public BCInstruction(byte code, BCOperand operand1, BCOperand operand2, BCOperand operand3, BCOperand operand4) {
+    public BCInstruction(byte code, BCOperand operand1, BCOperand operand2, BCOperand operand3, BCOperand operand4, BCOperand operand5) {
         this.code = code;
         this.operand1 = operand1;
         this.operand2 = operand2;
         this.operand3 = operand3;
         this.operand4 = operand4;
+        this.operand5 = operand5;
         this.allocatedRegisters = new ArrayList<>();
+    }
+    public BCInstruction(byte code, BCOperand operand1, BCOperand operand2, BCOperand operand3, BCOperand operand4) {
+        this(code, operand1, operand2, operand3, operand4, null);
     }
 
     public BCInstruction(byte code, BCOperand operand1, BCOperand operand2, BCOperand operand3) {
@@ -46,7 +51,7 @@ public final class BCInstruction {
 
     @Override
     public String toString() {
-        return ByteCode.getInstructionName(code) + (operand1 != null ? " " + operand1 : "") + (operand2 != null ? ", " + operand2 : "") + (operand3 != null ? ", " + operand3 : "") + (operand4 != null ? ", " + operand4 : "");
+        return ByteCode.getInstructionName(code) + (operand1 != null ? " " + operand1 : "") + (operand2 != null ? ", " + operand2 : "") + (operand3 != null ? ", " + operand3 : "") + (operand4 != null ? ", " + operand4 : "") + (operand5 != null ? ", " + operand5 : "");
     }
 
     public byte[] toByteCode() {
@@ -69,10 +74,14 @@ public final class BCInstruction {
             byte[] bytes = operand4.toByteCode();
             for (byte b : bytes) byteCode[(int) offset++] = b;
         }
+        if (operand5 != null) {
+            byte[] bytes = operand5.toByteCode();
+            for (byte b : bytes) byteCode[(int) offset++] = b;
+        }
         return byteCode;
     }
 
     public long getLength() {
-        return 1 + (operand1 != null ? operand1.getLength() : 0) + (operand2 != null ? operand2.getLength() : 0) + (operand3 != null ? operand3.getLength() : 0) + (operand4 != null ? operand4.getLength() : 0);
+        return 1 + (operand1 != null ? operand1.getLength() : 0) + (operand2 != null ? operand2.getLength() : 0) + (operand3 != null ? operand3.getLength() : 0) + (operand4 != null ? operand4.getLength() : 0) + (operand5 != null ? operand5.getLength() : 0);
     }
 }

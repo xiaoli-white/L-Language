@@ -31,6 +31,11 @@ public class ByteCode {
     public static final byte TC_SET_REGISTER = 3;
     public static final byte INTERRUPT_DIVIDE_BY_ZERO = 0;
     public static final byte INTERRUPT_PAGE_ERROR = 1;
+    public static final byte CONDITION_EQUAL = 1;
+    public static final byte CONDITION_NOT_EQUAL = 1 << 1;
+    public static final byte CONDITION_GREATER = 1 << 2;
+    public static final byte CONDITION_LESS = 1 << 3;
+    public static final byte CONDITION_UNSIGNED = 1 << 4;
 
     public static final byte NOP = 0x00;
     public static final byte PUSH_1 = 0x01;
@@ -169,7 +174,7 @@ public class ByteCode {
     public static final byte NEG_FLOAT = (byte) 0x86;
     public static final byte ATOMIC_NEG_DOUBLE = (byte) 0x87;
     public static final byte ATOMIC_NEG_FLOAT = (byte) 0x88;
-    public static final byte JIT_FOR_RANGE = (byte) 0x89;
+    public static final byte JUMP_IF = (byte) 0x89;
     public static final byte INVOKE_NATIVE = (byte) 0x8a;
 
     public static String getInstructionName(byte code) {
@@ -311,7 +316,7 @@ public class ByteCode {
             case NEG_FLOAT -> "NEG_FLOAT";
             case ATOMIC_NEG_DOUBLE -> "ATOMIC_NEG_DOUBLE";
             case ATOMIC_NEG_FLOAT -> "ATOMIC_NEG_FLOAT";
-            case JIT_FOR_RANGE -> "JIT_FOR_RANGE";
+            case JUMP_IF -> "JUMP_IF";
             case INVOKE_NATIVE -> "INVOKE_NATIVE";
             default -> throw new IllegalArgumentException("Unknown instruction code: " + code);
         };
@@ -456,7 +461,7 @@ public class ByteCode {
             case "NEG_FLOAT" -> NEG_FLOAT;
             case "ATOMIC_NEG_DOUBLE" -> ATOMIC_NEG_DOUBLE;
             case "ATOMIC_NEG_FLOAT" -> ATOMIC_NEG_FLOAT;
-            case "JIT_FOR_RANGE" -> JIT_FOR_RANGE;
+            case "JUMP_IF" -> JUMP_IF;
             case "INVOKE_NATIVE" -> INVOKE_NATIVE;
             default -> throw new IllegalArgumentException("Unknown instruction code: " + code);
         };

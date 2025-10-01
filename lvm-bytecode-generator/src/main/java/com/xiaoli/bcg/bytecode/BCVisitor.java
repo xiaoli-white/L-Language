@@ -32,6 +32,8 @@ public class BCVisitor {
             this.visitOperand(instruction.operand3, additional);
         if (instruction.operand4 != null)
             this.visitOperand(instruction.operand4, additional);
+        if (instruction.operand5 != null)
+            this.visitOperand(instruction.operand5, additional);
         return null;
     }
 

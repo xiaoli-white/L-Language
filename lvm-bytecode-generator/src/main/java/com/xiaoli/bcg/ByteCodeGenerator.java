@@ -586,20 +586,19 @@ public final class ByteCodeGenerator extends Generator {
                     case IRDoubleType _ -> ByteCode.DOUBLE_TYPE;
                     case null, default -> throw new RuntimeException("Unsupported type: " + irConditionalJump.type);
                 };
-                addInstruction(new BCInstruction(ByteCode.CMP, new BCImmediate1(type), operand1, operand2));
-
-                BCRegister address = allocateVirtualRegister();
-                addInstruction(new BCInstruction(ByteCode.MOV_IMMEDIATE8, new BCImmediate8(0, "<ir_basic_block>" + irConditionalJump.target), address));
-                addInstruction(new BCInstruction(switch (irConditionalJump.condition) {
-                    case Equal -> ByteCode.JE;
-                    case NotEqual -> ByteCode.JNE;
-                    case Less -> ByteCode.JL;
-                    case LessEqual -> ByteCode.JLE;
-                    case Greater -> ByteCode.JG;
-                    case GreaterEqual -> ByteCode.JGE;
+                byte condition = switch (irConditionalJump.condition) {
+                    case Equal -> ByteCode.CONDITION_EQUAL;
+                    case NotEqual -> ByteCode.CONDITION_NOT_EQUAL;
+                    case Less -> ByteCode.CONDITION_LESS;
+                    case LessEqual -> ByteCode.CONDITION_LESS | ByteCode.CONDITION_EQUAL;
+                    case Greater -> ByteCode.CONDITION_GREATER;
+                    case GreaterEqual -> ByteCode.CONDITION_GREATER | ByteCode.CONDITION_EQUAL;
                     default ->
                             throw new RuntimeException("Invalid relation operator: " + irConditionalJump.condition.text);
-                }, address));
+                };
+                BCRegister address = allocateVirtualRegister();
+                addInstruction(new BCInstruction(ByteCode.MOV_IMMEDIATE8, new BCImmediate8(0, "<ir_basic_block>" + irConditionalJump.target), address));
+                addInstruction(new BCInstruction(ByteCode.JUMP_IF, new BCImmediate1(type), new BCImmediate1(condition), operand1, operand2, address));
             }
             return null;
         }

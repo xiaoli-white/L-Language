@@ -1294,7 +1294,7 @@ public final class ExecutionUnit implements Runnable {
                     memory.setFloat(threadHandle, address, temp);
                     memory.unlock();
                 }
-                case ByteCode.JIT_FOR_RANGE -> {
+                case ByteCode.JUMP_IF -> {
                     // TODO
                 }
                 case ByteCode.INVOKE_NATIVE ->  {
