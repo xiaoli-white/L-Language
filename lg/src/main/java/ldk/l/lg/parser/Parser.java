@@ -1,5 +1,6 @@
 package ldk.l.lg.parser;
 
+import ldk.l.lg.ir.IRConstantPool;
 import ldk.l.lg.ir.IRModule;
 import ldk.l.lg.ir.base.IRCondition;
 import ldk.l.lg.ir.base.IRControlFlowGraph;
@@ -32,6 +33,10 @@ public final class Parser {
                 parseStructure();
             } else if (charStream.startsWith("function")) {
                 parseFunction();
+            } else if (charStream.startsWith("constant_pool")) {
+                parseConstantPool();
+            } else if (charStream.startsWith("globals")) {
+
             }
             skipWhiteSpace();
         }
@@ -172,6 +177,21 @@ public final class Parser {
         fields.addAll(locals);
         IRFunction function = new IRFunction(returnType, name.toString(), parameters.size(), fields.toArray(new IRField[0]), null);
         module.putFunction(function);
+    }
+
+    public void parseConstantPool() {
+        charStream.addPos(13);
+        skipWhiteSpace();
+        if (charStream.peek() == '{') {
+            charStream.addPos(1);
+        } else {
+            // TODO dump error
+        }
+        skipWhiteSpace();
+        List<IRConstantPool.Entry> entries = new ArrayList<>();
+        while (!charStream.eof() && charStream.peek() != '}') {
+            IRType type = parseType();
+        }
     }
 
     public IRControlFlowGraph.BasicBlock parseBasicBlock() {
@@ -511,6 +531,12 @@ public final class Parser {
                 } else if (charStream.startsWith("l")) {
                     condition = IRCondition.Less;
                     charStream.addPos(1);
+                } else if (charStream.startsWith("if_true")) {
+                    condition = IRCondition.IfTrue;
+                    charStream.addPos(7);
+                } else if (charStream.startsWith("if_false")) {
+                    condition = IRCondition.IfFalse;
+                    charStream.addPos(8);
                 } else {
                     // TODO dump error
                     throw new RuntimeException();
@@ -530,14 +556,19 @@ public final class Parser {
                     // TODO dump error
                 }
                 skipWhiteSpace();
-                IROperand operand2 = parseOperand();
-                skipWhiteSpace();
-                if (charStream.peek() == ',') {
-                    charStream.addPos(1);
+                IROperand operand2;
+                if (condition != IRCondition.IfTrue && condition != IRCondition.IfFalse) {
+                    operand2 = parseOperand();
+                    skipWhiteSpace();
+                    if (charStream.peek() == ',') {
+                        charStream.addPos(1);
+                    } else {
+                        // TODO dump error
+                    }
+                    skipWhiteSpace();
                 } else {
-                    // TODO dump error
+                    operand2 = null;
                 }
-                skipWhiteSpace();
                 if (charStream.peek() == '#') {
                     charStream.addPos(1);
                 } else {
