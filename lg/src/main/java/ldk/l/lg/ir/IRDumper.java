@@ -1,4 +1,4 @@
 package ldk.l.lg.ir;
 
-public class IRDumper extends IRVisitor {
+public final class IRDumper extends IRVisitor {
 }

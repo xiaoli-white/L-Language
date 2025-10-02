@@ -1,5 +1,7 @@
 grammar LGIR;
 
+program: structure* function* global_data* constant_pool? init?;
+
 structure: 'structure' CLOSE_BRACE fields CLOSE_BRACE;
 function: 'function' type IDENTIFIER OPEN_PAREN fields CLOSE_PAREN function_body;
 constant_pool: 'constant_pool' OPEN_BRACE constant_pool_entries CLOSE_BRACE;
@@ -106,3 +108,6 @@ I32: 'i32';
 I64: 'i64';
 FLOAT: 'float';
 DOUBLE: 'double';
+
+STRING_LITERAL: '"' (~["\\] | '\\' .)* '"';
+IDENTIFIER: [\p{L}_] [\p{L}0-9_]* | STRING_LITERAL;
