@@ -36,6 +36,11 @@ public class ByteCode {
     public static final byte CONDITION_GREATER = 1 << 2;
     public static final byte CONDITION_LESS = 1 << 3;
     public static final byte CONDITION_UNSIGNED = 1 << 4;
+    public static final long SYSCALL_TEST = 0;
+    public static final long SYSCALL_LOAD_NATIVE_LIBRARY = 1;
+    public static final long SYSCALL_LOAD_NATIVE_LIBRARY_SYMBOL = 2;
+    public static final long SYSCALL_LOAD_DYNAMIC_LIBRARY = 3;
+    public static final long SYSCALL_TEST_PRINT_INT = 0;
 
     public static final byte NOP = 0x00;
     public static final byte PUSH_1 = 0x01;
