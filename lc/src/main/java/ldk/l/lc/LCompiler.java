@@ -115,7 +115,6 @@ public class LCompiler {
             irGenerator.visitAst(ast, null);
 
             if (verbose) {
-                System.out.println("Entry point: " + irModule.entryPoint);
                 for (IRStructure structure : irModule.structures.values()) {
                     System.out.println("structure " + structure.name);
                     for (IRField field : structure.fields) {
@@ -129,13 +128,6 @@ public class LCompiler {
                 System.out.println("Global data section:");
                 for (IRGlobalDataSection.GlobalData globalData : irModule.globalDataSection.data) {
                     System.out.println("\t" + globalData);
-                }
-                System.out.println("Global init section:");
-                for (IRControlFlowGraph.BasicBlock basicBlock : irModule.globalInitSection.basicBlocks.values()) {
-                    System.out.printf("\t#%s:\n", basicBlock.name);
-                    for (IRInstruction instruction : basicBlock.instructions) {
-                        System.out.println("\t\t" + instruction);
-                    }
                 }
                 for (IRFunction function : irModule.functions.values()) {
                     System.out.println("function " + function.returnType + " " + function.name + ", arguments count: " + function.argumentCount);

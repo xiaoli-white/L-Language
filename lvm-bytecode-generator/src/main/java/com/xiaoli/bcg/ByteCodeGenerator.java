@@ -224,57 +224,8 @@ public final class ByteCodeGenerator extends Generator {
             for (IRStructure irStructure : irModule.structures.values()) this.visitStructure(irStructure, additional);
             this.visitConstantPool(irModule.constantPool, additional);
             this.visitGlobalDataSection(irModule.globalDataSection, additional);
-
-
-            Map<String, String> irBasicBlock2BCBasicBlock = new HashMap<>();
-            BCControlFlowGraph initCFG = new BCControlFlowGraph();
-            module.functionName2CFG.put("<init>", initCFG);
-            this.currentCFG = initCFG;
-            createBasicBlock();
-            createPrologue(0);
-            this.currentIRCFG = irModule.globalInitSection;
-            for (IRControlFlowGraph.BasicBlock block : irModule.globalInitSection.basicBlocks.values()) {
-                BCControlFlowGraph.BasicBlock basicBlock = createBasicBlock();
-                irBasicBlock2BCBasicBlock.put(block.name, basicBlock.name);
-                for (IRInstruction instruction : block.instructions) {
-                    this.visit(instruction, additional);
-                }
-            }
-            BCControlFlowGraph.BasicBlock end = createBasicBlock();
-            createEpilogue(0);
-            addInstruction(new BCInstruction(ByteCode.RETURN));
-            for (BCControlFlowGraph.BasicBlock block : initCFG.basicBlocks.values()) {
-                for (BCInstruction instruction : block.instructions) {
-                    if (instruction.code == ByteCode.MOV_IMMEDIATE8 || instruction.code == ByteCode.JUMP_IMMEDIATE) {
-                        BCImmediate8 imm = (BCImmediate8) instruction.operand1;
-                        if (imm.comment != null) {
-                            if (imm.comment.startsWith("<ir_basic_block>")) {
-                                imm.comment = "<basic_block>" + irBasicBlock2BCBasicBlock.get(imm.comment.substring("<ir_basic_block>".length()));
-                            } else if (imm.comment.equals("<end>")) {
-                                imm.comment = "<basic_block>" + end.name;
-                            }
-                        }
-                    }
-                }
-            }
-            this.virtualRegisterMap.clear();
-
-
             for (IRFunction irFunction : irModule.functions.values()) this.visitFunction(irFunction, additional);
-
-
-            BCControlFlowGraph mainCFG = new BCControlFlowGraph();
-            this.currentCFG = mainCFG;
-            createBasicBlock();
-            createPrologue(0);
-            createBasicBlock();
-            addInstruction(new BCInstruction(ByteCode.INVOKE_IMMEDIATE, new BCImmediate8(0, "<function_address><init>")));
-            addInstruction(new BCInstruction(ByteCode.INVOKE_IMMEDIATE, new BCImmediate8(0, "<function_address>" + irModule.entryPoint)));
-            createBasicBlock();
-            createEpilogue(0);
-            addInstruction(new BCInstruction(ByteCode.EXIT_IMMEDIATE, new BCImmediate8(0)));
-            module.functionName2CFG.put("<main>", mainCFG);
-            module.entryPoint = "<main>";
+            module.entryPoint = "main";
             return null;
         }
 

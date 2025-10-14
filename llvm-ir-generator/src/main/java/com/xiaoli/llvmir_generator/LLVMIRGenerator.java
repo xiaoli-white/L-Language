@@ -80,7 +80,6 @@ public final class LLVMIRGenerator extends Generator {
             this.visitGlobalDataSection(module.globalDataSection, null);
             initializeITableInitializer();
             for (IRFunction irFunction : module.functions.values()) this.visitFunction(irFunction, null);
-            createMain();
         }
 
         private native void createFunction(IRFunction irFunction);
@@ -88,8 +87,6 @@ public final class LLVMIRGenerator extends Generator {
         private native void initializeQueue();
 
         private native void initializeITableInitializer();
-
-        private native void createMain();
 
 //        @Override
 //        public Object visit(IRNode irNode, Object additional) {

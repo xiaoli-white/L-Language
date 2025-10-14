@@ -14,11 +14,9 @@ public final class IRModule extends IRNode {
     public final Map<String, IRStructure> structures = new LinkedHashMap<>();
     public final IRConstantPool constantPool = new IRConstantPool();
     public final IRGlobalDataSection globalDataSection = new IRGlobalDataSection();
-    public final IRControlFlowGraph globalInitSection = new IRControlFlowGraph();
     public final Map<String, IRFunction> functions = new LinkedHashMap<>();
     public final Map<String, List<String>> name2VTableKeys = new LinkedHashMap<>();
     public final Map<String, List<String>> name2ITableKeys = new LinkedHashMap<>();
-    public String entryPoint = null;
 
     public IRModule() {
     }
@@ -34,9 +32,7 @@ public final class IRModule extends IRNode {
                 "structures=" + structures +
                 ", constantPool=" + constantPool +
                 ", globalDataSection=" + globalDataSection +
-                ", globalInitSection=" + globalInitSection +
                 ", functions=" + functions +
-                ", entryPoint='" + entryPoint + '\'' +
                 '}';
     }
 

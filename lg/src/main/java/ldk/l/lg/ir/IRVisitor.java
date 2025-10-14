@@ -20,11 +20,6 @@ public abstract class IRVisitor {
         for (IRStructure irStructure : irModule.structures.values()) this.visitStructure(irStructure, additional);
         this.visitConstantPool(irModule.constantPool, additional);
         this.visitGlobalDataSection(irModule.globalDataSection, additional);
-        for (IRControlFlowGraph.BasicBlock basicBlock : irModule.globalInitSection.basicBlocks.values()) {
-            for (IRInstruction instruction : basicBlock.instructions) {
-                this.visit(instruction, additional);
-            }
-        }
         for (IRFunction irFunction : irModule.functions.values()) this.visitFunction(irFunction, additional);
         return null;
     }

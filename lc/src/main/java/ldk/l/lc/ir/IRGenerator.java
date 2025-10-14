@@ -115,13 +115,23 @@ public final class IRGenerator extends LCAstVisitor {
         this.ast = ast;
         super.visitAst(ast, additional);
 
-        this.currentCFG = module.globalInitSection;
+        var initCFG = createControlFlowGraph();
+        this.currentCFG = initCFG;
         createBasicBlock("<init_string_constants>");
         this.stringConstantInitInvocations.forEach(this::addInstruction);
         createBasicBlock("<retain_string_constants>");
         this.stringConstant2GlobalDataName.values().forEach(globalDataName -> retain(new IRMacro("global_data_address", new String[]{globalDataName}), SystemTypes.String_Type));
         createBasicBlock();
         this.objectStaticInitInvocations.forEach(this::addInstruction);
+        this.module.putFunction(new IRFunction(IRType.getVoidType(), "<init>", 0, new IRField[0], initCFG));
+
+        var mainCFG = createControlFlowGraph();
+        this.currentCFG = mainCFG;
+        createBasicBlock("<main>");
+        addInstruction(new IRInvoke(IRType.getVoidType(), new IRMacro("function_address", new String[]{"<init>"}), new IRType[0], new IROperand[0], null));
+        int constantNullptrIndex = this.module.constantPool.put(new IRConstantPool.Entry(new IRPointerType(IRType.getVoidType()), null));
+        addInstruction(new IRInvoke(IRType.getVoidType(), new IRMacro("function_address", new String[]{ast.mainMethod.getFullName()}), new IRType[]{new IRPointerType(IRType.getVoidType())}, new IROperand[]{new IRConstant(constantNullptrIndex)}, null));
+        this.module.putFunction(new IRFunction(IRType.getVoidType(), "main", 0, new IRField[0], mainCFG));
 
         module.functions.values().forEach(function -> {
             function.controlFlowGraph.basicBlocks.values().forEach(basicBlock -> basicBlock.instructions.forEach(instruction -> {
@@ -150,7 +160,6 @@ public final class IRGenerator extends LCAstVisitor {
                 toRemoveBasicBlocks.forEach(function.controlFlowGraph::removeBasicBlock);
             } while (!toRemoveBasicBlocks.isEmpty());
         });
-        module.entryPoint = ast.mainMethod.getFullName();
         return null;
     }
 
@@ -1943,7 +1952,7 @@ public final class IRGenerator extends LCAstVisitor {
         this.module.globalDataSection.add(new IRGlobalDataSection.GlobalData(classInstanceName, new IRMacro("structure_length", new String[]{SystemTypes.Class_Type.name})));
         IRMacro classInstanceAddress = new IRMacro("global_data_address", new String[]{classInstanceName});
         IRControlFlowGraph lastCFG = this.currentCFG;
-        this.currentCFG = this.module.globalInitSection;
+        this.currentCFG = this.module.functions.get("<init>").controlFlowGraph;
         createBasicBlock();
         retain(classInstanceAddress, SystemTypes.Class_Type);
         retain(classInstanceAddress, SystemTypes.Class_Type);
