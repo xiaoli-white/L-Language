@@ -367,6 +367,8 @@ public final class ByteCodeGenerator extends Generator {
 
         @Override
         public Object visitFunction(IRFunction irFunction, Object additional) {
+            if (irFunction.controlFlowGraph == null) return null;
+
             this.virtualRegisterCount = 0;
 
             long currentFunctionArgumentsSize = 0;

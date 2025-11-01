@@ -1,12 +1,11 @@
 grammar LGIR;
 
-program: structure* function* global_data* constant_pool? init?;
+program: structure* function* global_data* constant_pool?;
 
 structure: 'structure' CLOSE_BRACE fields CLOSE_BRACE;
 function: 'function' type IDENTIFIER OPEN_PAREN fields CLOSE_PAREN function_body;
 constant_pool: 'constant_pool' OPEN_BRACE constant_pool_entries CLOSE_BRACE;
 global_data: IDENTIFIER ((COLON type) | ('=' constant));
-init: 'init' function_body;
 
 function_body: OPEN_BRACE locals_? instruction* CLOSE_BRACE;
 
@@ -40,15 +39,15 @@ invoke: (virtual_register '=')? 'invoke' type operand (COMMA argument)*;
 fields: field (COMMA field)* | ;
 field: IDENTIFIER COLON type;
 type : base_type | type '*' | void_type;
-base_type: U1 | U8 | U16 | U32 | U64 | I1 | I8 | I16 | I32 | I64 | FLOAT | DOUBLE;
-void_type: VOID;
+base_type: 'u1' | 'u8' | 'u16' | 'u32' | 'u64' | 'i1' | 'i8' | 'i16' | 'i32' | 'i64' | 'float' | 'double';
+void_type: 'void';
 
 operand: virtual_register;
 virtual_register: PERCENT IDENTIFIER;
 condition: 'e' | 'ne' | 'l' | 'le' | 'g' | 'ge' | 'if_true' | 'if_false';
 label: SHARP IDENTIFIER;
-type_cast_kind: ZEXT | SEXT | TRUNC | ITOF | FTOI | FEXT | FTRUNC;
-calculation_operator: ADD | SUB | MUL | DIV | MOD | AND | OR | XOR | SHL | SHR | USHR;
+type_cast_kind: 'zext' | 'sext' | 'trunc' | 'itof' | 'ftoi' | 'fext' | 'ftrunc';
+calculation_operator: 'add' | 'sub' | 'mul' | 'div' | 'mod' | 'and' | 'or' | 'xor' | 'shl' | 'shr' | 'ushr';
 asm_resource: OPEN_BRACKET (type COMMA operand COMMA IDENTIFIER) CLOSE_BRACKET;
 argument: OPEN_BRACKET type COMMA operand CLOSE_BRACKET;
 constant_pool_entries: constant_pool_entry (COMMA constant_pool_entry)* | ;
@@ -72,42 +71,6 @@ CLOSE_BRACKET: ']';
 OPEN_BRACE: '{';
 CLOSE_BRACE: '}';
 
-ADD: 'add';
-SUB: 'sub';
-MUL: 'mul';
-DIV: 'div';
-MOD: 'mod';
-AND: 'and';
-OR: 'or';
-XOR: 'xor';
-SHL: 'shl';
-SHR: 'shr';
-USHR: 'ushr';
-NEG: 'neg';
-NOT: 'not';
-
-
-ZEXT: 'zext';
-SEXT: 'sext';
-TRUNC: 'trunc';
-ITOF: 'itof';
-FTOI: 'ftoi';
-FEXT: 'fext';
-FTRUNC: 'ftrunc';
-
-VOID: 'void';
-U1: 'u1';
-U8: 'u8';
-U16: 'u16';
-U32: 'u32';
-U64: 'u64';
-I1: 'i1';
-I8: 'i8';
-I16: 'i16';
-I32: 'i32';
-I64: 'i64';
-FLOAT: 'float';
-DOUBLE: 'double';
 
 STRING_LITERAL: '"' (~["\\] | '\\' .)* '"';
 IDENTIFIER: [\p{L}_] [\p{L}0-9_]* | STRING_LITERAL;

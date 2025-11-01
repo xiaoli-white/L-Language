@@ -41,6 +41,9 @@ public final class IRModule extends IRNode {
     }
 
     public void putFunction(IRFunction function) {
+        if (this.functions.containsKey(function.name)) {
+            throw new RuntimeException("Function " + function.name + " already exists");
+        }
         this.functions.put(function.name, function);
     }
 }

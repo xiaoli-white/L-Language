@@ -113,9 +113,14 @@ public final class IRGenerator extends LCAstVisitor {
     @Override
     public Object visitAst(LCAst ast, Object additional) {
         this.ast = ast;
-        super.visitAst(ast, additional);
 
         var initCFG = createControlFlowGraph();
+        currentCFG = initCFG;
+        createBasicBlock("entry");
+        this.module.putFunction(new IRFunction(IRType.getVoidType(), "<init>", 0, new IRField[0], initCFG));
+
+        super.visitAst(ast, additional);
+
         this.currentCFG = initCFG;
         createBasicBlock("<init_string_constants>");
         this.stringConstantInitInvocations.forEach(this::addInstruction);
@@ -123,14 +128,16 @@ public final class IRGenerator extends LCAstVisitor {
         this.stringConstant2GlobalDataName.values().forEach(globalDataName -> retain(new IRMacro("global_data_address", new String[]{globalDataName}), SystemTypes.String_Type));
         createBasicBlock();
         this.objectStaticInitInvocations.forEach(this::addInstruction);
-        this.module.putFunction(new IRFunction(IRType.getVoidType(), "<init>", 0, new IRField[0], initCFG));
+        createBasicBlock();
+        addInstruction(new IRReturn());
 
         var mainCFG = createControlFlowGraph();
         this.currentCFG = mainCFG;
-        createBasicBlock("<main>");
+        createBasicBlock("entry");
         addInstruction(new IRInvoke(IRType.getVoidType(), new IRMacro("function_address", new String[]{"<init>"}), new IRType[0], new IROperand[0], null));
         int constantNullptrIndex = this.module.constantPool.put(new IRConstantPool.Entry(new IRPointerType(IRType.getVoidType()), null));
         addInstruction(new IRInvoke(IRType.getVoidType(), new IRMacro("function_address", new String[]{ast.mainMethod.getFullName()}), new IRType[]{new IRPointerType(IRType.getVoidType())}, new IROperand[]{new IRConstant(constantNullptrIndex)}, null));
+        addInstruction(new IRReturn());
         this.module.putFunction(new IRFunction(IRType.getVoidType(), "main", 0, new IRField[0], mainCFG));
 
         module.functions.values().forEach(function -> {
@@ -467,43 +474,92 @@ public final class IRGenerator extends LCAstVisitor {
     @Override
     public Object visitMethodDeclaration(LCMethodDeclaration lcMethodDeclaration, Object additional) {
         if (LCFlags.hasAbstract(lcMethodDeclaration.modifier.flags)) return null;
+        if (LCFlags.hasExtern(lcMethodDeclaration.modifier.flags)) {
+            int argumentsCount = lcMethodDeclaration.parameterList.parameters.size();
 
-        this.registersCount = 0;
+            List<IRField> fields = new ArrayList<>();
+            boolean hasStatic = LCFlags.hasStatic(lcMethodDeclaration.modifier.flags);
+            if (!hasStatic) {
+                argumentsCount++;
+                fields.add(new IRField("<this_instance>", new IRPointerType(IRType.getVoidType())));
+            }
+            for (int i = 0; i < lcMethodDeclaration.parameterList.parameters.size(); i++) {
+                VariableSymbol variableSymbol = lcMethodDeclaration.parameterList.parameters.get(i).symbol;
+                fields.add(new IRField(variableSymbol.name, parseType(variableSymbol.theType)));
+            }
+            String externFunctionName = null;
+            for (String attribute : lcMethodDeclaration.modifier.attributes) {
+                if (attribute.startsWith("extern_name(")) {
+                    externFunctionName = attribute.substring(12, attribute.length() - 1);
+                    break;
+                }
+            }
+            if (externFunctionName == null) {
+                IRFunction irFunction = new IRFunction(List.of("extern"), parseType(lcMethodDeclaration.returnType), lcMethodDeclaration.symbol.getFullName(), argumentsCount, fields.toArray(new IRField[0]), null);
+                this.module.putFunction(irFunction);
+            } else {
+                IRFunction irFunction = new IRFunction(List.of("extern"), parseType(lcMethodDeclaration.returnType), externFunctionName, argumentsCount, fields.toArray(new IRField[0]), null);
+                this.module.putFunction(irFunction);
 
-        this.currentCFG = createControlFlowGraph();
+                IRControlFlowGraph cfg = createControlFlowGraph();
+                IRControlFlowGraph.BasicBlock entry = new IRControlFlowGraph.BasicBlock("entry");
+                String target;
+                if (lcMethodDeclaration.returnType.equals(SystemTypes.VOID)) {
+                    target = null;
+                } else {
+                    target = "tmp";
+                }
+                List<IRType> types = new ArrayList<>();
+                List<IROperand> operands = new ArrayList<>();
+                for (IRField field : fields) {
+                    types.add(field.type);
+                    operands.add(new IRMacro("field_address", new String[]{field.name}));
+                }
+                entry.instructions.add(new IRInvoke(IRType.getVoidType(), new IRMacro("function_address", new String[]{externFunctionName}), types.toArray(new IRType[0]), operands.toArray(new IROperand[0]), new IRVirtualRegister(target)));
+                entry.instructions.add(new IRReturn(target == null ? null : new IRVirtualRegister(target)));
+                IRFunction wrapper = new IRFunction(parseType(lcMethodDeclaration.returnType), lcMethodDeclaration.symbol.getFullName(), argumentsCount, fields.toArray(new IRField[0]), cfg);
+                this.module.putFunction(wrapper);
+            }
+            return null;
+        } else {
 
-        int argumentsCount = lcMethodDeclaration.parameterList.parameters.size();
+            this.registersCount = 0;
 
-        List<IRField> fields = new ArrayList<>();
-        boolean hasStatic = LCFlags.hasStatic(lcMethodDeclaration.modifier.flags);
-        if (!hasStatic) {
-            argumentsCount++;
-            fields.add(new IRField("<this_instance>", new IRPointerType(IRType.getVoidType())));
+            this.currentCFG = createControlFlowGraph();
+
+            int argumentsCount = lcMethodDeclaration.parameterList.parameters.size();
+
+            List<IRField> fields = new ArrayList<>();
+            boolean hasStatic = LCFlags.hasStatic(lcMethodDeclaration.modifier.flags);
+            if (!hasStatic) {
+                argumentsCount++;
+                fields.add(new IRField("<this_instance>", new IRPointerType(IRType.getVoidType())));
+            }
+            Map<String, Long> countOfSameNameVariables = new HashMap<>();
+            for (int i = 0; i < lcMethodDeclaration.symbol.vars.size(); i++) {
+                VariableSymbol variableSymbol = lcMethodDeclaration.symbol.vars.get(i);
+                long count = countOfSameNameVariables.getOrDefault(variableSymbol.name, 0L);
+                String name = variableSymbol.name + "_" + count;
+                countOfSameNameVariables.put(variableSymbol.name, count + 1);
+                fields.add(new IRField(name, parseType(variableSymbol.theType)));
+                Stack<String> stack = this.variableName2FieldName.getOrDefault(variableSymbol.name, new Stack<>());
+                if (i < (hasStatic ? argumentsCount : argumentsCount - 1)) stack.push(name);
+                this.variableName2FieldName.put(variableSymbol.name, stack);
+            }
+
+            createBasicBlock("entry");
+            createBasicBlock();
+            if (lcMethodDeclaration.body != null) {
+                this.visitBlock(lcMethodDeclaration.body, additional);
+            }
+
+            IRFunction irFunction = new IRFunction(parseType(lcMethodDeclaration.returnType), lcMethodDeclaration.symbol.getFullName(), argumentsCount, fields.toArray(new IRField[0]), this.currentCFG);
+            this.module.putFunction(irFunction);
+
+            this.variableName2FieldName.clear();
+
+            return null;
         }
-        Map<String, Long> countOfSameNameVariables = new HashMap<>();
-        for (int i = 0; i < lcMethodDeclaration.symbol.vars.size(); i++) {
-            VariableSymbol variableSymbol = lcMethodDeclaration.symbol.vars.get(i);
-            long count = countOfSameNameVariables.getOrDefault(variableSymbol.name, 0L);
-            String name = variableSymbol.name + "_" + count;
-            countOfSameNameVariables.put(variableSymbol.name, count + 1);
-            fields.add(new IRField(name, parseType(variableSymbol.theType)));
-            Stack<String> stack = this.variableName2FieldName.getOrDefault(variableSymbol.name, new Stack<>());
-            if (i < (hasStatic ? argumentsCount : argumentsCount - 1)) stack.push(name);
-            this.variableName2FieldName.put(variableSymbol.name, stack);
-        }
-
-        createBasicBlock("entry");
-        createBasicBlock();
-        if (lcMethodDeclaration.body != null) {
-            this.visitBlock(lcMethodDeclaration.body, additional);
-        }
-
-        IRFunction irFunction = new IRFunction(parseType(lcMethodDeclaration.returnType), lcMethodDeclaration.symbol.getFullName(), argumentsCount, fields.toArray(new IRField[0]), this.currentCFG);
-        this.module.putFunction(irFunction);
-
-        this.variableName2FieldName.clear();
-
-        return null;
     }
 
     @Override

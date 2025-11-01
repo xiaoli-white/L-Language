@@ -5,9 +5,10 @@ import ldk.l.lg.ir.structure.IRField;
 import ldk.l.lg.ir.type.IRType;
 
 import java.util.Arrays;
+import java.util.List;
 
 public final class IRFunction extends IRNode {
-    // public final String[] attributes;
+    public final List<String> attributes;
     public final IRType returnType;
     public final String name;
     public final long argumentCount;
@@ -15,6 +16,11 @@ public final class IRFunction extends IRNode {
     public final IRControlFlowGraph controlFlowGraph;
 
     public IRFunction(IRType returnType, String name, long argumentCount, IRField[] fields, IRControlFlowGraph controlFlowGraph) {
+        this(List.of(), returnType, name, argumentCount, fields, controlFlowGraph);
+    }
+
+    public IRFunction(List<String> attributes, IRType returnType, String name, long argumentCount, IRField[] fields, IRControlFlowGraph controlFlowGraph) {
+        this.attributes = attributes;
         this.returnType = returnType;
         this.name = name;
         this.argumentCount = argumentCount;
@@ -30,7 +36,8 @@ public final class IRFunction extends IRNode {
     @Override
     public String toString() {
         return "IRFunction{" +
-                "returnType=" + returnType +
+                "attributes=" + attributes +
+                ", returnType=" + returnType +
                 ", name='" + name + '\'' +
                 ", argumentsCount=" + argumentCount +
                 ", fields=" + Arrays.toString(fields) +

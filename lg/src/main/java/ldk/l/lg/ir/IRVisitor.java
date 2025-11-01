@@ -1,6 +1,5 @@
 package ldk.l.lg.ir;
 
-import ldk.l.lg.ir.attribute.IRAttributeGroupDeclaration;
 import ldk.l.lg.ir.base.IRControlFlowGraph;
 import ldk.l.lg.ir.base.IRFunction;
 import ldk.l.lg.ir.base.IRGlobalDataSection;
@@ -37,8 +36,10 @@ public abstract class IRVisitor {
     public Object visitFunction(IRFunction irFunction, Object additional) {
         this.visit(irFunction.returnType, additional);
         for (IRField field : irFunction.fields) this.visitField(field, additional);
-        for (IRControlFlowGraph.BasicBlock block : irFunction.controlFlowGraph.basicBlocks.values()) {
-            for (IRInstruction instruction : block.instructions) this.visit(instruction, additional);
+        if (irFunction.controlFlowGraph != null) {
+            for (IRControlFlowGraph.BasicBlock block : irFunction.controlFlowGraph.basicBlocks.values()) {
+                for (IRInstruction instruction : block.instructions) this.visit(instruction, additional);
+            }
         }
         return null;
     }
@@ -89,10 +90,6 @@ public abstract class IRVisitor {
     }
 
     public Object visitVoidType(IRVoidType irVoidType, Object additional) {
-        return null;
-    }
-
-    public Object visitAttributeGroupDeclaration(IRAttributeGroupDeclaration irAttributeGroupDeclaration, Object additional) {
         return null;
     }
 

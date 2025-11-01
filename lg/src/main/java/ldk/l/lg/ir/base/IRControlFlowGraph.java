@@ -82,6 +82,14 @@ public final class IRControlFlowGraph {
         }
 
         @Override
+        public String toString() {
+            return "BasicBlock{" +
+                    "name='" + name + '\'' +
+                    ", instructions=" + instructions +
+                    '}';
+        }
+
+        @Override
         public int compareTo(BasicBlock that) {
             return this.name.compareTo(that.name);
         }
