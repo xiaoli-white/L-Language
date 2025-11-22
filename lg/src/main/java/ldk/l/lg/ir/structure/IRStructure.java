@@ -5,13 +5,28 @@ import ldk.l.lg.ir.base.IRNode;
 import ldk.l.lg.ir.type.IRType;
 
 import java.util.Arrays;
+import java.util.List;
 
 public final class IRStructure extends IRNode {
-    // public final String[] attributes;
+     public final List<String> attributes;
     public final String name;
-    public final IRField[] fields;
+    @Deprecated
+    public final IRField[] ffields;
+    public final List<IRField> fields;
 
+    @Deprecated
     public IRStructure(String name, IRField[] fields) {
+        this.attributes = null;
+        this.name = name;
+        this.ffields = fields;
+        this.fields = Arrays.asList(fields);
+    }
+    public IRStructure(String name, List<IRField> fields) {
+        this(List.of(), name, fields);
+    }
+    public IRStructure(List<String> attributes,String name, List<IRField> fields) {
+        this.ffields = null;
+        this.attributes = attributes;
         this.name = name;
         this.fields = fields;
     }
@@ -24,14 +39,15 @@ public final class IRStructure extends IRNode {
     @Override
     public String toString() {
         return "IRStructure{" +
-                "name='" + name + '\'' +
-                ", fields=" + Arrays.toString(fields) +
+                "attributes=" + attributes +
+                ", name='" + name + '\'' +
+                ", fields=" + fields +
                 '}';
     }
 
     public long getLength() {
         long length = 0;
-        for (IRField field : this.fields) length += IRType.getLength(field.type);
+        for (IRField field : this.ffields) length += IRType.getLength(field.type);
         return length;
     }
 }

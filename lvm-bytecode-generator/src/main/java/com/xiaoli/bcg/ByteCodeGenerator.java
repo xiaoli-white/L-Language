@@ -11,10 +11,8 @@ import ldk.l.lg.Generator;
 import ldk.l.lg.ir.IRConstantPool;
 import ldk.l.lg.ir.IRModule;
 import ldk.l.lg.ir.IRVisitor;
-import ldk.l.lg.ir.base.IRCondition;
-import ldk.l.lg.ir.base.IRControlFlowGraph;
-import ldk.l.lg.ir.base.IRFunction;
-import ldk.l.lg.ir.base.IRGlobalDataSection;
+import ldk.l.lg.ir.base.*;
+import ldk.l.lg.ir.function.IRFunction;
 import ldk.l.lg.ir.operand.*;
 import ldk.l.lg.ir.instruction.*;
 import ldk.l.lg.ir.structure.IRField;
@@ -387,7 +385,7 @@ public final class ByteCodeGenerator extends Generator {
             createBasicBlock();
             createPrologue(currentFunctionLocalVarSize);
             this.currentIRCFG = irFunction.controlFlowGraph;
-            for (IRControlFlowGraph.BasicBlock block : irFunction.controlFlowGraph.basicBlocks.values()) {
+            for (IRBasicBlock block : irFunction.controlFlowGraph.basicBlocks.values()) {
                 BCControlFlowGraph.BasicBlock basicBlock = createBasicBlock();
                 irBasicBlock2BCBasicBlock.put(block.name, basicBlock.name);
                 for (IRInstruction instruction : block.instructions) this.visit(instruction, additional);
@@ -420,7 +418,7 @@ public final class ByteCodeGenerator extends Generator {
         }
 
         @Override
-        public Object visitNoOperate(IRNoOperate irNoOperate, Object additional) {
+        public Object visitNop(IRNop irNop, Object additional) {
             addInstruction(new BCInstruction(ByteCode.NOP));
             return null;
         }
@@ -502,17 +500,17 @@ public final class ByteCodeGenerator extends Generator {
 
         @Override
         public Object visitGoto(IRGoto irGoto, Object additional) {
-            addInstruction(new BCInstruction(ByteCode.JUMP_IMMEDIATE, new BCImmediate8(0, "<ir_basic_block>" + irGoto.target)));
+            addInstruction(new BCInstruction(ByteCode.JUMP_IMMEDIATE, new BCImmediate8(0, "<ir_basic_block>" + irGoto.ttarget)));
             return null;
         }
 
         @Override
         public Object visitConditionalJump(IRConditionalJump irConditionalJump, Object additional) {
-            this.visit(irConditionalJump.operand1, additional);
+            this.visit(irConditionalJump.ooperand1, additional);
             BCRegister operand1 = registerStack.pop();
             BCRegister operand2;
-            if (irConditionalJump.operand2 != null) {
-                this.visit(irConditionalJump.operand2, additional);
+            if (irConditionalJump.ooperand2 != null) {
+                this.visit(irConditionalJump.ooperand2, additional);
                 operand2 = registerStack.pop();
             } else {
                 operand2 = null;
@@ -520,11 +518,11 @@ public final class ByteCodeGenerator extends Generator {
 
             if (irConditionalJump.condition == IRCondition.IfTrue) {
                 BCRegister address = allocateVirtualRegister();
-                addInstruction(new BCInstruction(ByteCode.MOV_IMMEDIATE8, new BCImmediate8(0, "<ir_basic_block>" + irConditionalJump.target), address));
+                addInstruction(new BCInstruction(ByteCode.MOV_IMMEDIATE8, new BCImmediate8(0, "<ir_basic_block>" + irConditionalJump.ttarget), address));
                 addInstruction(new BCInstruction(ByteCode.JUMP_IF_TRUE, operand1, address));
             } else if (irConditionalJump.condition == IRCondition.IfFalse) {
                 BCRegister address = allocateVirtualRegister();
-                addInstruction(new BCInstruction(ByteCode.MOV_IMMEDIATE8, new BCImmediate8(0, "<ir_basic_block>" + irConditionalJump.target), address));
+                addInstruction(new BCInstruction(ByteCode.MOV_IMMEDIATE8, new BCImmediate8(0, "<ir_basic_block>" + irConditionalJump.ttarget), address));
                 addInstruction(new BCInstruction(ByteCode.JUMP_IF_FALSE, operand1, address));
             } else {
                 byte type = switch (irConditionalJump.type) {
@@ -550,18 +548,19 @@ public final class ByteCodeGenerator extends Generator {
                             throw new RuntimeException("Invalid relation operator: " + irConditionalJump.condition.text);
                 };
                 BCRegister address = allocateVirtualRegister();
-                addInstruction(new BCInstruction(ByteCode.MOV_IMMEDIATE8, new BCImmediate8(0, "<ir_basic_block>" + irConditionalJump.target), address));
+                addInstruction(new BCInstruction(ByteCode.MOV_IMMEDIATE8, new BCImmediate8(0, "<ir_basic_block>" + irConditionalJump.ttarget), address));
                 addInstruction(new BCInstruction(ByteCode.JUMP_IF, new BCImmediate1(type), new BCImmediate1(condition), operand1, operand2, address));
             }
             return null;
         }
 
         @Override
-        public Object visitGet(IRGet irGet, Object additional) {
-            this.visitVirtualRegister(irGet.target, additional);
+        public Object visitLoad(IRLoad irLoad, Object additional) {
+            this.visitVirtualRegister(irLoad.ttarget, additional);
             BCRegister result = registerStack.pop();
-            if (irGet.address instanceof IRMacro irMacro && "field_address".equals(irMacro.name)) {
-                BCImmediate1 typeLength = new BCImmediate1((byte) IRType.getLength(irGet.type));
+            if (irLoad.address instanceof IRMacro irMacro && "field_address".equals(irMacro.name)) {
+                /*
+                BCImmediate1 typeLength = new BCImmediate1((byte) IRType.getLength(irLoad.type));
                 if (irMacro.args.length == 1) {
                     if (this.localVarOffsets.containsKey(irMacro.args[0]))
                         addInstruction(new BCInstruction(ByteCode.LOAD_LOCAL, typeLength, new BCImmediate8(this.localVarOffsets.get(irMacro.args[0])), result));
@@ -571,7 +570,7 @@ public final class ByteCodeGenerator extends Generator {
                     IRStructure structure = this.irModule.structures.get(irMacro.args[0]);
                     long length = 0;
                     long offset = -1;
-                    for (IRField field : structure.fields) {
+                    for (IRField field : structure.ffields) {
                         if (field.name.equals(irMacro.args[1])) {
                             offset = length;
                         }
@@ -582,26 +581,30 @@ public final class ByteCodeGenerator extends Generator {
                     BCRegister object = registerStack.pop();
                     addInstruction(new BCInstruction(ByteCode.LOAD_FIELD, typeLength, object, new BCImmediate8(offset), result));
                 }
+
+                 */
             } else {
-                this.visit(irGet.address, additional);
+                /*
+                this.visit(irLoad.address, additional);
                 BCRegister address = registerStack.pop();
-                addInstruction(new BCInstruction(switch ((int) IRType.getLength(irGet.type)) {
+                addInstruction(new BCInstruction(switch ((int) IRType.getLength(irLoad.type)) {
                     case 1 -> ByteCode.LOAD_1;
                     case 2 -> ByteCode.LOAD_2;
                     case 4 -> ByteCode.LOAD_4;
                     case 8 -> ByteCode.LOAD_8;
                     default -> throw new RuntimeException("Unknown type size");
                 }, address, result));
+                */
             }
             return null;
         }
 
         @Override
-        public Object visitSet(IRSet irSet, Object additional) {
-            this.visit(irSet.value, additional);
+        public Object visitStore(IRStore irStore, Object additional) {
+            this.visit(irStore.vvalue, additional);
             BCRegister value = registerStack.pop();
-            if (irSet.address instanceof IRMacro irMacro && "field_address".equals(irMacro.name)) {
-                BCImmediate1 typeLength = new BCImmediate1((byte) IRType.getLength(irSet.type));
+            if (irStore.address instanceof IRMacro irMacro && "field_address".equals(irMacro.name)) {
+                BCImmediate1 typeLength = new BCImmediate1((byte) IRType.getLength(irStore.type));
                 if (irMacro.args.length == 1) {
                     if (this.localVarOffsets.containsKey(irMacro.args[0]))
                         addInstruction(new BCInstruction(ByteCode.STORE_LOCAL, typeLength, new BCImmediate8(this.localVarOffsets.get(irMacro.args[0])), value));
@@ -611,7 +614,7 @@ public final class ByteCodeGenerator extends Generator {
                     IRStructure structure = this.irModule.structures.get(irMacro.args[0]);
                     long length = 0;
                     long offset = -1;
-                    for (IRField field : structure.fields) {
+                    for (IRField field : structure.ffields) {
                         if (field.name.equals(irMacro.args[1])) {
                             offset = length;
                         }
@@ -623,9 +626,9 @@ public final class ByteCodeGenerator extends Generator {
                     addInstruction(new BCInstruction(ByteCode.STORE_FIELD, typeLength, object, new BCImmediate8(offset), value));
                 }
             } else {
-                this.visit(irSet.address, additional);
+                this.visit(irStore.address, additional);
                 BCRegister address = registerStack.pop();
-                addInstruction(new BCInstruction(switch ((int) IRType.getLength(irSet.type)) {
+                addInstruction(new BCInstruction(switch ((int) IRType.getLength(irStore.type)) {
                     case 1 -> ByteCode.STORE_1;
                     case 2 -> ByteCode.STORE_2;
                     case 4 -> ByteCode.STORE_4;
@@ -637,10 +640,10 @@ public final class ByteCodeGenerator extends Generator {
         }
 
         @Override
-        public Object visitSetVirtualRegister(IRSetVirtualRegister irSetVirtualRegister, Object additional) {
-            this.visit(irSetVirtualRegister.source, additional);
+        public Object visitSetRegister(IRSetRegister irSetRegister, Object additional) {
+            this.visit(irSetRegister.source, additional);
             BCRegister source = registerStack.pop();
-            this.visit(irSetVirtualRegister.target, additional);
+            this.visit(irSetRegister.ttarget, additional);
             BCRegister target = registerStack.pop();
             addInstruction(new BCInstruction(ByteCode.MOV, source, target));
             return null;
@@ -678,8 +681,8 @@ public final class ByteCodeGenerator extends Generator {
 
         @Override
         public Object visitReturn(IRReturn irReturn, Object additional) {
-            if (irReturn.value != null) {
-                this.visit(irReturn.value, additional);
+            if (irReturn.vvalue != null) {
+                this.visit(irReturn.vvalue, additional);
                 BCRegister value = registerStack.pop();
                 addInstruction(new BCInstruction(ByteCode.MOV, value, new BCRegister(ByteCode.RETURN_VALUE_REGISTER)));
             }
@@ -690,10 +693,10 @@ public final class ByteCodeGenerator extends Generator {
         @Override
         public Object visitInvoke(IRInvoke irInvoke, Object additional) {
             long argumentsSize = 0;
-            for (int i = 0; i < irInvoke.arguments.length; i++) {
-                this.visit(irInvoke.arguments[i], additional);
+            for (int i = 0; i < irInvoke.aarguments.length; i++) {
+                this.visit(irInvoke.aarguments[i], additional);
                 BCRegister argumentRegister = registerStack.pop();
-                long argumentSize = IRType.getLength(irInvoke.argumentTypes[i]);
+                long argumentSize = IRType.getLength(irInvoke.aargumentTypes[i]);
                 argumentsSize += argumentSize;
                 addInstruction(new BCInstruction(switch ((int) argumentSize) {
                     case 1 -> ByteCode.PUSH_1;
@@ -706,8 +709,8 @@ public final class ByteCodeGenerator extends Generator {
             this.visit(irInvoke.address, additional);
             BCRegister address = registerStack.pop();
             addInstruction(new BCInstruction(ByteCode.INVOKE, address));
-            if (irInvoke.target != null) {
-                this.visitVirtualRegister(irInvoke.target, additional);
+            if (irInvoke.ttarget != null) {
+                this.visitVirtualRegister(irInvoke.ttarget, additional);
                 BCRegister result = registerStack.pop();
                 addInstruction(new BCInstruction(ByteCode.MOV, new BCRegister(ByteCode.RETURN_VALUE_REGISTER), result));
             }
@@ -751,9 +754,9 @@ public final class ByteCodeGenerator extends Generator {
 
         @Override
         public Object visitTypeCast(IRTypeCast irTypeCast, Object additional) {
-            this.visit(irTypeCast.source, additional);
+            this.visit(irTypeCast.ssource, additional);
             BCRegister source = registerStack.pop();
-            this.visit(irTypeCast.target, additional);
+            this.visit(irTypeCast.ttarget, additional);
             BCRegister target = registerStack.pop();
             switch (irTypeCast.kind) {
                 case ZeroExtend, Truncate -> addInstruction(new BCInstruction(ByteCode.MOV, source, target));
@@ -823,11 +826,11 @@ public final class ByteCodeGenerator extends Generator {
 
         @Override
         public Object visitCompare(IRCompare irCompare, Object additional) {
-            this.visit(irCompare.operand1, additional);
+            this.visit(irCompare.ooperand1, additional);
             BCRegister operand1 = registerStack.pop();
-            this.visit(irCompare.operand2, additional);
+            this.visit(irCompare.ooperand2, additional);
             BCRegister operand2 = registerStack.pop();
-            this.visitVirtualRegister(irCompare.target, additional);
+            this.visitVirtualRegister(irCompare.ttarget, additional);
             BCRegister target = registerStack.pop();
             byte type = switch (irCompare.type) {
                 case IRIntegerType irIntegerType -> switch (irIntegerType.size) {
@@ -869,11 +872,11 @@ public final class ByteCodeGenerator extends Generator {
 
         @Override
         public Object visitStackAllocate(IRStackAllocate irStackAllocate, Object additional) {
-            this.visit(irStackAllocate.size, additional);
+            this.visit(irStackAllocate.ssize, additional);
             BCRegister size = registerStack.pop();
             addInstruction(new BCInstruction(ByteCode.SUB, new BCRegister(ByteCode.SP_REGISTER), size, new BCRegister(ByteCode.SP_REGISTER)));
 
-            this.visit(irStackAllocate.target, additional);
+            this.visit(irStackAllocate.ttarget, additional);
             BCRegister target = registerStack.pop();
             addInstruction(new BCInstruction(ByteCode.MOV, new BCRegister(ByteCode.SP_REGISTER), target));
             return null;
@@ -987,7 +990,7 @@ public final class ByteCodeGenerator extends Generator {
                     IRStructure structure = this.irModule.structures.get(irMacro.args[0]);
                     long length = 0;
                     long offset = -1;
-                    for (IRField field : structure.fields) {
+                    for (IRField field : structure.ffields) {
                         if (field.name.equals(irMacro.args[1])) {
                             offset = length;
                         }
@@ -1009,7 +1012,7 @@ public final class ByteCodeGenerator extends Generator {
                 IRStructure structure = this.irModule.structures.get(irMacro.args[0]);
                 long length = 0;
                 long offset = -1;
-                for (IRField field : structure.fields) {
+                for (IRField field : structure.ffields) {
                     if (field.name.equals(irMacro.args[1])) {
                         offset = length;
                     }

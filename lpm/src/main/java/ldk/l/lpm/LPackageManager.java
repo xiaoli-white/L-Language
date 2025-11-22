@@ -34,8 +34,8 @@ public class LPackageManager {
 
     public static void listPackages() {
         PackageManager packageManager = new PackageManager();
-        for (Map<String, Object> map : packageManager.listPackages().values()) {
-            System.out.printf("%s: %s\n", map.get("name"), map.get("version"));
+        for (LGPackage lgPackage : packageManager.listPackages().values()) {
+            System.out.printf("%s: %s\n", lgPackage.info().get("name"), lgPackage.info().get("version"));
         }
     }
 }

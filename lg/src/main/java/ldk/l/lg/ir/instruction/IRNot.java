@@ -4,7 +4,7 @@ import ldk.l.lg.ir.IRVisitor;
 import ldk.l.lg.ir.operand.IROperand;
 import ldk.l.lg.ir.operand.IRVirtualRegister;
 import ldk.l.lg.ir.type.IRType;
-
+@Deprecated
 public final class IRNot extends IRInstruction {
     public final boolean isAtomic;
     public final IRType type;

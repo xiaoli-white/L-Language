@@ -15,8 +15,8 @@ import ldk.l.lc.util.scope.ScopeDumper;
 import ldk.l.lg.LGenerator;
 import ldk.l.lg.ir.IRDumper;
 import ldk.l.lg.ir.IRModule;
-import ldk.l.lg.ir.base.IRControlFlowGraph;
-import ldk.l.lg.ir.base.IRFunction;
+import ldk.l.lg.ir.base.IRBasicBlock;
+import ldk.l.lg.ir.function.IRFunction;
 import ldk.l.lg.ir.base.IRGlobalDataSection;
 import ldk.l.lg.ir.instruction.IRInstruction;
 import ldk.l.lg.ir.structure.IRField;
@@ -117,7 +117,7 @@ public class LCompiler {
             if (verbose) {
                 for (IRStructure structure : irModule.structures.values()) {
                     System.out.println("structure " + structure.name);
-                    for (IRField field : structure.fields) {
+                    for (IRField field : structure.ffields) {
                         System.out.println("\t" + field.name + ", " + field.type);
                     }
                 }
@@ -134,19 +134,19 @@ public class LCompiler {
                     for (IRField field : function.fields) {
                         System.out.println("\t" + field.name + ", " + field.type);
                     }
-                    for (IRControlFlowGraph.BasicBlock basicBlock : function.controlFlowGraph.basicBlocks.values()) {
+                    for (IRBasicBlock basicBlock : function.controlFlowGraph.basicBlocks.values()) {
                         System.out.printf("\t#%s:\n", basicBlock.name);
                         for (IRInstruction instruction : basicBlock.instructions) {
                             System.out.println("\t\t" + instruction);
                         }
                     }
                     System.out.println("\toutEdges:");
-                    for (Map.Entry<IRControlFlowGraph.BasicBlock, List<IRControlFlowGraph.BasicBlock>> entry : function.controlFlowGraph.outEdges.entrySet()) {
+                    for (Map.Entry<IRBasicBlock, List<IRBasicBlock>> entry : function.controlFlowGraph.outEdges.entrySet()) {
                         System.out.printf("\t\t#%s=>\n", entry.getKey().name);
                         entry.getValue().forEach(basicBlock -> System.out.printf("\t\t\t#%s\n", basicBlock.name));
                     }
                     System.out.println("\tinEdges:");
-                    for (Map.Entry<IRControlFlowGraph.BasicBlock, List<IRControlFlowGraph.BasicBlock>> entry : function.controlFlowGraph.inEdges.entrySet()) {
+                    for (Map.Entry<IRBasicBlock, List<IRBasicBlock>> entry : function.controlFlowGraph.inEdges.entrySet()) {
                         System.out.printf("\t\t#%s<=\n", entry.getKey().name);
                         entry.getValue().forEach(basicBlock -> System.out.printf("\t\t\t#%s\n", basicBlock.name));
                     }

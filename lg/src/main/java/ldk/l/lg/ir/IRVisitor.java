@@ -1,14 +1,16 @@
 package ldk.l.lg.ir;
 
-import ldk.l.lg.ir.base.IRControlFlowGraph;
-import ldk.l.lg.ir.base.IRFunction;
-import ldk.l.lg.ir.base.IRGlobalDataSection;
-import ldk.l.lg.ir.base.IRNode;
+import ldk.l.lg.ir.base.*;
+import ldk.l.lg.ir.function.IRFunction;
+import ldk.l.lg.ir.function.IRLocalVariable;
 import ldk.l.lg.ir.operand.*;
 import ldk.l.lg.ir.instruction.*;
 import ldk.l.lg.ir.structure.IRField;
 import ldk.l.lg.ir.structure.IRStructure;
 import ldk.l.lg.ir.type.*;
+import ldk.l.lg.ir.value.constant.IRArrayConstant;
+import ldk.l.lg.ir.value.constant.IRIntegerConstant;
+import ldk.l.lg.ir.value.IRValue;
 
 public abstract class IRVisitor {
     public Object visit(IRNode irNode, Object additional) {
@@ -16,9 +18,10 @@ public abstract class IRVisitor {
     }
 
     public Object visitModule(IRModule irModule, Object additional) {
+//        this.visitConstantPool(irModule.constantPool, additional);
+//        this.visitGlobalDataSection(irModule.globalDataSection, additional);
+        for (IRGlobalVariable globalVariable : irModule.globals.values()) this.visit(globalVariable, additional);
         for (IRStructure irStructure : irModule.structures.values()) this.visitStructure(irStructure, additional);
-        this.visitConstantPool(irModule.constantPool, additional);
-        this.visitGlobalDataSection(irModule.globalDataSection, additional);
         for (IRFunction irFunction : irModule.functions.values()) this.visitFunction(irFunction, additional);
         return null;
     }
@@ -35,9 +38,14 @@ public abstract class IRVisitor {
 
     public Object visitFunction(IRFunction irFunction, Object additional) {
         this.visit(irFunction.returnType, additional);
-        for (IRField field : irFunction.fields) this.visitField(field, additional);
+        for (IRLocalVariable arg : irFunction.args) {
+            this.visit(arg,additional );
+        }
+        for (IRLocalVariable local : irFunction.locals) {
+            this.visit(local, additional);
+        }
         if (irFunction.controlFlowGraph != null) {
-            for (IRControlFlowGraph.BasicBlock block : irFunction.controlFlowGraph.basicBlocks.values()) {
+            for (IRBasicBlock block : irFunction.controlFlowGraph.basicBlocks.values()) {
                 for (IRInstruction instruction : block.instructions) this.visit(instruction, additional);
             }
         }
@@ -98,11 +106,21 @@ public abstract class IRVisitor {
     }
 
     public Object visitConditionalJump(IRConditionalJump irConditionalJump, Object additional) {
-        this.visit(irConditionalJump.type, additional);
         this.visit(irConditionalJump.operand1, additional);
         if (irConditionalJump.operand2 != null) {
             this.visit(irConditionalJump.operand2, additional);
         }
+        return null;
+    }
+    public Object visitBinaryOperates(IRBinaryOperates irBinaryOperates, Object additional) {
+        this.visit(irBinaryOperates.operand1, additional);
+        this.visit(irBinaryOperates.operand2, additional);
+        this.visit(irBinaryOperates.target, additional);
+        return null;
+    }
+    public Object visitUnaryOperates(IRUnaryOperates irUnaryOperates, Object additional) {
+        this.visit(irUnaryOperates.operand, additional);
+        this.visit(irUnaryOperates.target, additional);
         return null;
     }
 
@@ -155,40 +173,37 @@ public abstract class IRVisitor {
         return null;
     }
 
-    public Object visitGet(IRGet irGet, Object additional) {
-        this.visit(irGet.type, additional);
-        this.visit(irGet.address, additional);
-        this.visitVirtualRegister(irGet.target, additional);
+    public Object visitLoad(IRLoad irLoad, Object additional) {
+        this.visit(irLoad.ptr, additional);
+        this.visit(irLoad.target, additional);
         return null;
     }
 
-    public Object visitSet(IRSet irSet, Object additional) {
-        this.visit(irSet.type, additional);
-        this.visit(irSet.value, additional);
-        this.visit(irSet.address, additional);
+    public Object visitStore(IRStore irStore, Object additional) {
+        this.visit(irStore.ptr, additional);
+        this.visit(irStore.value, additional);
         return null;
     }
 
-    public Object visitSetVirtualRegister(IRSetVirtualRegister irSetVirtualRegister, Object additional) {
-        this.visit(irSetVirtualRegister.source, additional);
-        this.visitVirtualRegister(irSetVirtualRegister.target, additional);
+    public Object visitSetRegister(IRSetRegister irSetRegister, Object additional) {
+        this.visit(irSetRegister.value, additional);
+        this.visit(irSetRegister.target, additional);
         return null;
     }
 
     public Object visitInvoke(IRInvoke irInvoke, Object additional) {
-        this.visit(irInvoke.address, additional);
-        for (int i = 0; i < irInvoke.arguments.length; i++) {
-            this.visit(irInvoke.argumentTypes[i], additional);
-            this.visit(irInvoke.arguments[i], additional);
-        }
         this.visit(irInvoke.returnType, additional);
+        this.visit(irInvoke.func, additional);
+        for (IRValue argument : irInvoke.arguments) {
+            this.visit(argument, additional);
+        }
         if (irInvoke.target != null) {
-            this.visitVirtualRegister(irInvoke.target, additional);
+            this.visit(irInvoke.target, additional);
         }
         return null;
     }
 
-    public Object visitNoOperate(IRNoOperate irNoOperate, Object additional) {
+    public Object visitNop(IRNop irNop, Object additional) {
         return null;
     }
 
@@ -212,15 +227,14 @@ public abstract class IRVisitor {
 
     public Object visitStackAllocate(IRStackAllocate irStackAllocate, Object additional) {
         this.visit(irStackAllocate.size, additional);
-        this.visitVirtualRegister(irStackAllocate.target, additional);
+        this.visit(irStackAllocate.target, additional);
         return null;
     }
 
     public Object visitTypeCast(IRTypeCast irTypeCast, Object additional) {
-        this.visit(irTypeCast.originalType, additional);
         this.visit(irTypeCast.source, additional);
         this.visit(irTypeCast.targetType, additional);
-        this.visitVirtualRegister(irTypeCast.target, additional);
+        this.visit(irTypeCast.target, additional);
         return null;
     }
 
@@ -236,7 +250,7 @@ public abstract class IRVisitor {
         this.visit(irCompare.type, additional);
         this.visit(irCompare.operand1, additional);
         this.visit(irCompare.operand2, additional);
-        this.visitVirtualRegister(irCompare.target, additional);
+        this.visit(irCompare.target, additional);
         return null;
     }
 
@@ -268,6 +282,30 @@ public abstract class IRVisitor {
     }
 
     public Object visitInterfaceTable(IRInterfaceTable irInterfaceTable, Object additional) {
+        return null;
+    }
+    public Object visitIntegerConstant(IRIntegerConstant irIntegerConstant, Object additional) {
+        return null;
+    }
+    public Object visitArrayType(IRArrayType irArrayType, Object additional) {
+        this.visit(irArrayType.base, additional);
+        return null;
+    }
+    public Object visitStructureType(IRStructureType irStructureType, Object additional) {
+        return null;
+    }
+    public Object visitArrayConstant(IRArrayConstant irArrayConstant, Object additional) {
+        this.visit(irArrayConstant.type, additional);
+        for (ldk.l.lg.ir.value.constant.IRConstant value : irArrayConstant.values) {
+            this.visit(value, additional);
+        }
+        return null;
+    }
+    public Object visitGetElementPointer(IRGetElementPointer irGetElementPointer, Object additional) {
+        this.visit(irGetElementPointer.ptr, additional);
+        for (IRIntegerConstant index : irGetElementPointer.indices) {
+            this.visit(index, additional);
+        }
         return null;
     }
 }

@@ -1,12 +1,20 @@
 package ldk.l.lg.ir.instruction;
 
 import ldk.l.lg.ir.IRVisitor;
+import ldk.l.lg.ir.base.IRBasicBlock;
 
 public final class IRGoto extends IRInstruction {
-    public String target;
+    @Deprecated
+    public String ttarget;
+    public final IRBasicBlock target;
 
-    public IRGoto(String target) {
+    public IRGoto(IRBasicBlock target) {
         this.target = target;
+    }
+    @Deprecated
+    public IRGoto(String target) {
+        this.ttarget = target;
+        this.target = null;
     }
 
     @Override
@@ -16,6 +24,6 @@ public final class IRGoto extends IRInstruction {
 
     @Override
     public String toString() {
-        return "goto #" + target;
+        return "goto label " + target.name;
     }
 }

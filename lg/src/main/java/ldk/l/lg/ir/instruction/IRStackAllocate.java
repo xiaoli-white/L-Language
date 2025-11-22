@@ -3,14 +3,33 @@ package ldk.l.lg.ir.instruction;
 import ldk.l.lg.ir.IRVisitor;
 import ldk.l.lg.ir.operand.IROperand;
 import ldk.l.lg.ir.operand.IRVirtualRegister;
+import ldk.l.lg.ir.type.IRPointerType;
+import ldk.l.lg.ir.type.IRType;
+import ldk.l.lg.ir.value.IRRegister;
+import ldk.l.lg.ir.value.IRValue;
 
 public final class IRStackAllocate extends IRInstruction {
-    public final IROperand size;
-    public final IRVirtualRegister target;
+    @Deprecated
+    public final IROperand ssize;
+    @Deprecated
+    public final IRVirtualRegister ttarget;
+    public final IRValue size;
+    public final IRRegister target;
 
+@    Deprecated
     public IRStackAllocate(IROperand size, IRVirtualRegister target) {
+        this.ssize = size;
+        this.ttarget = target;
+        this.size = null;
+        this.target = null;
+    }
+    public IRStackAllocate(IRValue size, IRRegister target) {
+    this.ssize = null;
+    this.ttarget = null;
         this.size = size;
         this.target = target;
+        target.type = new IRPointerType(IRType.getVoidType());
+        target.def = this;
     }
 
     @Override
@@ -20,6 +39,6 @@ public final class IRStackAllocate extends IRInstruction {
 
     @Override
     public String toString() {
-        return target + " = stack_alloc " + size;
+        return "%"+target.name + " = stack_alloc " + size;
     }
 }

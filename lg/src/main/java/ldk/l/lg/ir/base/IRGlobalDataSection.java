@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+@Deprecated
 public final class IRGlobalDataSection extends IRNode {
     public final List<GlobalData> data;
 

@@ -3,6 +3,7 @@ package ldk.l.lg.ir.instruction;
 import ldk.l.lg.ir.IRVisitor;
 import ldk.l.lg.ir.operand.IROperand;
 
+@Deprecated
 public final class IRFree extends IRInstruction {
     public final IROperand ptr;
 

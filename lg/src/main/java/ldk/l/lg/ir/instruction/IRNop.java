@@ -2,14 +2,14 @@ package ldk.l.lg.ir.instruction;
 
 import ldk.l.lg.ir.IRVisitor;
 
-public final class IRNoOperate extends IRInstruction {
-    public IRNoOperate() {
+public final class IRNop extends IRInstruction {
+    public IRNop() {
 
     }
 
     @Override
     public Object accept(IRVisitor visitor, Object additional) {
-        return visitor.visitNoOperate(this, additional);
+        return visitor.visitNop(this, additional);
     }
 
     @Override

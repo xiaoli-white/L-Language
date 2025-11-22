@@ -13,8 +13,8 @@ import java.nio.file.Paths;
 import java.util.*;
 
 public final class PackageManager {
-    public Map<String, Map<String, Object>> listPackages() {
-        Map<String, Map<String, Object>> packages = new LinkedHashMap<>();
+    public Map<String, LGPackage> listPackages() {
+        Map<String, LGPackage> packages = new LinkedHashMap<>();
         for (File file : Objects.requireNonNull(new File(FileUtils.getUserDirectoryPath(), ".lpm/packages").listFiles())) {
             if (!file.isDirectory())
                 continue;
@@ -25,7 +25,8 @@ public final class PackageManager {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            packages.put((String) map.get("name"), map);
+            String name = (String) map.get("name");
+            packages.put(name, new LGPackage(name, Paths.get(file.getPath()).toAbsolutePath().toString(), map));
         }
         return packages;
     }

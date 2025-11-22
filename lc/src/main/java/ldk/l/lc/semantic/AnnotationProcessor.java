@@ -5,6 +5,7 @@ import ldk.l.lc.ast.LCAst;
 import ldk.l.lc.ast.base.LCAnnotation;
 import ldk.l.lc.ast.file.LCSourceFile;
 import ldk.l.lc.util.error.ErrorStream;
+import ldk.l.lpm.LGPackage;
 import ldk.l.lpm.PackageManager;
 import ldk.l.util.option.Options;
 
@@ -58,9 +59,11 @@ public final class AnnotationProcessor {
 
     private Map<String, List<AbstractAnnotationProcessor>> getAnnotationProcessors() {
         PackageManager packageManager = new PackageManager();
-        List<Map<String, Object>> annotationProcessors = packageManager.listPackages().values().stream().filter(map -> "lc-annotation-processor".equals(map.get("type"))).toList();
+        List<LGPackage> annotationProcessors = packageManager.listPackages().values().stream().filter(lgPackage -> "lc-annotation-processor".equals(lgPackage.info().get("type"))).toList();
         Map<String, List<AbstractAnnotationProcessor>> annotationProcessorsMap = new HashMap<>();
-        for (Map<String, Object> packageInfo : annotationProcessors) {
+        for (LGPackage lgPackage : annotationProcessors) {
+            lgPackage.load();
+            Map<?, ?> packageInfo = lgPackage.info();
             String jarFilePath = Paths.get(packageManager.getPackagePath((String) packageInfo.get("name")), (String) packageInfo.get("main-jar")).toString();
             URL jarUrl;
             try {

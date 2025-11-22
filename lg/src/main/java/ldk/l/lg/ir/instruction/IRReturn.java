@@ -2,15 +2,26 @@ package ldk.l.lg.ir.instruction;
 
 import ldk.l.lg.ir.IRVisitor;
 import ldk.l.lg.ir.operand.IROperand;
+import ldk.l.lg.ir.value.IRValue;
 
 public final class IRReturn extends IRInstruction {
-    public final IROperand value;
+    public final IRValue value;
+    @Deprecated
+    public final IROperand vvalue;
 
     public IRReturn() {
-        this(null);
+        this.vvalue = null;
+        this.value = null;
     }
 
+    @Deprecated
     public IRReturn(IROperand value) {
+        this.vvalue = value;
+        this.value = null;
+    }
+
+    public IRReturn(IRValue value) {
+        this.vvalue = null;
         this.value = value;
     }
 

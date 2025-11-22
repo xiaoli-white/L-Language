@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+@Deprecated
 public final class IRConstantPool extends IRNode {
     public final List<Entry> entries = new ArrayList<>();
 

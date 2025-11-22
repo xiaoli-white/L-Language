@@ -3,15 +3,14 @@ package com.xiaoli.llvmir_generator;
 import ldk.l.lg.Generator;
 import ldk.l.lg.ir.IRModule;
 import ldk.l.lg.ir.IRVisitor;
-import ldk.l.lg.ir.base.IRControlFlowGraph;
-import ldk.l.lg.ir.base.IRFunction;
-import ldk.l.lg.ir.base.IRGlobalDataSection;
-import ldk.l.lg.ir.base.IRNode;
+import ldk.l.lg.ir.base.*;
+import ldk.l.lg.ir.function.IRFunction;
 import ldk.l.lg.ir.instruction.*;
 import ldk.l.lg.ir.operand.IRConstant;
 import ldk.l.lg.ir.operand.IRMacro;
 import ldk.l.lg.ir.operand.IRPhi;
 import ldk.l.lg.ir.operand.IRVirtualRegister;
+import ldk.l.lg.ir.value.constant.IRIntegerConstant;
 import ldk.l.util.option.Options;
 
 public final class LLVMIRGenerator extends Generator {
@@ -29,10 +28,6 @@ public final class LLVMIRGenerator extends Generator {
         destroyLLVMBuilder(llvmBuilder);
         destroyLLVMModule(llvmModule);
         destroyLLVMContext(llvmContext);
-    }
-
-    static {
-        System.loadLibrary("libllvm_ir_generator");
     }
 
     private static native long createLLVMContext();
@@ -58,7 +53,7 @@ public final class LLVMIRGenerator extends Generator {
         private final long llvmBuilder;
         private final Options options;
         private IRControlFlowGraph currentCFG;
-        private IRControlFlowGraph.BasicBlock currentBasicBlock;
+        private IRBasicBlock currentBasicBlock;
         private long stack;
         private long currentFunction;
         private long basicBlockMap;
@@ -125,10 +120,10 @@ public final class LLVMIRGenerator extends Generator {
         public native Object visitDecrease(IRDecrease irDecrease, Object additional);
 
         @Override
-        public native Object visitSet(IRSet irSet, Object additional);
+        public native Object visitStore(IRStore irStore, Object additional);
 
         @Override
-        public native Object visitGet(IRGet irGet, Object additional);
+        public native Object visitLoad(IRLoad irLoad, Object additional);
 
         @Override
         public native Object visitInvoke(IRInvoke irInvoke, Object additional);
@@ -137,7 +132,7 @@ public final class LLVMIRGenerator extends Generator {
         public native Object visitStackAllocate(IRStackAllocate irStackAllocate, Object additional);
 
         @Override
-        public native Object visitSetVirtualRegister(IRSetVirtualRegister irSetVirtualRegister, Object additional);
+        public native Object visitSetRegister(IRSetRegister irSetRegister, Object additional);
 
         @Override
         public native Object visitAsm(IRAsm irAsm, Object additional);
@@ -146,7 +141,7 @@ public final class LLVMIRGenerator extends Generator {
         public native Object visitTypeCast(IRTypeCast irTypeCast, Object additional);
 
         @Override
-        public native Object visitNoOperate(IRNoOperate irNoOperate, Object additional);
+        public native Object visitNop(IRNop irNop, Object additional);
 
         @Override
         public native Object visitMalloc(IRMalloc irMalloc, Object additional);
@@ -171,5 +166,8 @@ public final class LLVMIRGenerator extends Generator {
 
         @Override
         public native Object visitMacro(IRMacro irMacro, Object additional);
+
+        @Override
+        public native Object visitIntegerConstant(IRIntegerConstant irIntegerConstant, Object additional);
     }
 }

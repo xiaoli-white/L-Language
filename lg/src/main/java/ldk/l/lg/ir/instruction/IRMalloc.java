@@ -4,6 +4,7 @@ import ldk.l.lg.ir.IRVisitor;
 import ldk.l.lg.ir.operand.IROperand;
 import ldk.l.lg.ir.operand.IRVirtualRegister;
 
+@Deprecated
 public final class IRMalloc extends IRInstruction {
     public final IROperand size;
     public final IRVirtualRegister target;

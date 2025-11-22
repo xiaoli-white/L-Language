@@ -4,6 +4,7 @@ import ldk.l.lg.ir.IRVisitor;
 import ldk.l.lg.ir.operand.IROperand;
 import ldk.l.lg.ir.type.IRType;
 
+@Deprecated
 public final class IRAsm extends IRInstruction {
     public final String code;
     public final IRType[] types;

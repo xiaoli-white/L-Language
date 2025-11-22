@@ -1,6 +1,7 @@
 package ldk.l.lg;
 
 import ldk.l.lg.ir.IRModule;
+import ldk.l.lpm.LGPackage;
 import ldk.l.lpm.PackageManager;
 import ldk.l.util.option.Options;
 import ldk.l.util.option.OptionsParser;
@@ -30,8 +31,11 @@ public class LGenerator {
     public static void generate(IRModule irModule, Options options) {
         String platform = options.get("platform", String.class);
         PackageManager packageManager = new PackageManager();
-        Map<String, Map<String, Object>> packages = packageManager.listPackages();
-        Map<String, Object> packageInfo = packages.values().stream().filter(map -> "lg-plugin".equals(map.get("type"))).filter(map -> ((List<?>) map.get("platforms")).contains(platform)).toList().getFirst();
+        Map<String, LGPackage> packages = packageManager.listPackages();
+        LGPackage _package = packages.values().stream().filter(lgPackage -> "lg-plugin".equals(lgPackage.info().get("type"))).filter(lgPackage -> ((List<?>) lgPackage.info().get("platforms")).contains(platform)).toList().getFirst();
+        _package.load();
+        Map<String, Object> packageInfo = _package.info();
+
         String jarFilePath = Paths.get(packageManager.getPackagePath((String) packageInfo.get("name")), (String) packageInfo.get("main-jar")).toString();
         URL jarUrl;
         try {
