@@ -1,7 +1,6 @@
 package ldk.l.lg.ir.instruction;
 
 import ldk.l.lg.ir.IRVisitor;
-import ldk.l.lg.ir.type.IRType;
 import ldk.l.lg.ir.value.IRRegister;
 import ldk.l.lg.ir.value.IRValue;
 

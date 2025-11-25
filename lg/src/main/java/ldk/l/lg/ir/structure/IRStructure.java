@@ -8,7 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public final class IRStructure extends IRNode {
-     public final List<String> attributes;
+    public final List<String> attributes;
     public final String name;
     @Deprecated
     public final IRField[] ffields;
@@ -21,10 +21,12 @@ public final class IRStructure extends IRNode {
         this.ffields = fields;
         this.fields = Arrays.asList(fields);
     }
+
     public IRStructure(String name, List<IRField> fields) {
         this(List.of(), name, fields);
     }
-    public IRStructure(List<String> attributes,String name, List<IRField> fields) {
+
+    public IRStructure(List<String> attributes, String name, List<IRField> fields) {
         this.ffields = null;
         this.attributes = attributes;
         this.name = name;

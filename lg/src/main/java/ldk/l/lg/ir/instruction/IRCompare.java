@@ -61,6 +61,6 @@ public final class IRCompare extends IRInstruction {
 
     @Override
     public String toString() {
-        return "%"+ target.name + " = cmp " + condition.text + " " + operand1 + ", " + operand2;
+        return "%"+ target.name + " = cmp " + condition.text + ", " + operand1 + ", " + operand2;
     }
 }

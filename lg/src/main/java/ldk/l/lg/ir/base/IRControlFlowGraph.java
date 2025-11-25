@@ -11,8 +11,8 @@ import java.util.*;
 public final class IRControlFlowGraph {
     public IRFunction function;
     public final Map<String, IRBasicBlock> basicBlocks = new LinkedHashMap<>();
-    public final Map<IRBasicBlock, List<IRBasicBlock>> outEdges = new TreeMap<>();
-    public final Map<IRBasicBlock, List<IRBasicBlock>> inEdges = new TreeMap<>();
+    public final Map<IRBasicBlock, List<IRBasicBlock>> predecessors = new TreeMap<>();
+    public final Map<IRBasicBlock, List<IRBasicBlock>> successors = new TreeMap<>();
 
     //    public final Map<String, Object>
 //    public IRControlFlowGraph(IRFunction function) {
@@ -22,17 +22,17 @@ public final class IRControlFlowGraph {
 
     public void addBasicBlock(IRBasicBlock basicBlock) {
         basicBlocks.put(basicBlock.name, basicBlock);
-        outEdges.put(basicBlock, new ArrayList<>());
-        inEdges.put(basicBlock, new ArrayList<>());
+        successors.put(basicBlock, new ArrayList<>());
+        predecessors.put(basicBlock, new ArrayList<>());
         basicBlock.cfg = this;
     }
 
     public void removeBasicBlock(IRBasicBlock basicBlock) {
         basicBlocks.remove(basicBlock.name);
-        List<IRBasicBlock> outs = outEdges.remove(basicBlock);
-        for (IRBasicBlock outBasicBlock : outs) inEdges.get(outBasicBlock).remove(basicBlock);
-        List<IRBasicBlock> ins = inEdges.remove(basicBlock);
-        for (IRBasicBlock inBasicBlock : ins) outEdges.get(inBasicBlock).remove(basicBlock);
+        List<IRBasicBlock> outs = successors.remove(basicBlock);
+        for (IRBasicBlock outBasicBlock : outs) predecessors.get(outBasicBlock).remove(basicBlock);
+        List<IRBasicBlock> ins = predecessors.remove(basicBlock);
+        for (IRBasicBlock inBasicBlock : ins) successors.get(inBasicBlock).remove(basicBlock);
     }
 
     public void buildEdges() {
@@ -43,21 +43,21 @@ public final class IRControlFlowGraph {
             if (last instanceof IRGoto irGoto) {
                 IRBasicBlock target = this.basicBlocks.get(irGoto.ttarget);
                 if (target == null) continue;
-                outEdges.get(basicBlock).add(target);
-                inEdges.get(target).add(basicBlock);
+                successors.get(basicBlock).add(target);
+                predecessors.get(target).add(basicBlock);
             } else if (last instanceof IRConditionalJump irConditionalJump) {
                 IRBasicBlock target = this.basicBlocks.get(irConditionalJump.ttarget);
                 if (target == null) continue;
                 IRBasicBlock next = basicBlocks[i + 1];
-                List<IRBasicBlock> outs = outEdges.get(basicBlock);
+                List<IRBasicBlock> outs = successors.get(basicBlock);
                 outs.add(target);
                 outs.add(next);
-                inEdges.get(target).add(basicBlock);
-                inEdges.get(next).add(basicBlock);
+                predecessors.get(target).add(basicBlock);
+                predecessors.get(next).add(basicBlock);
             } else if (!(last instanceof IRReturn)) {
                 IRBasicBlock next = basicBlocks[i + 1];
-                outEdges.get(basicBlock).add(next);
-                inEdges.get(next).add(basicBlock);
+                successors.get(basicBlock).add(next);
+                predecessors.get(next).add(basicBlock);
             }
         }
     }
@@ -65,10 +65,10 @@ public final class IRControlFlowGraph {
     public void add(IRControlFlowGraph irControlFlowGraph) {
         for (IRBasicBlock basicBlock : irControlFlowGraph.basicBlocks.values()) {
             this.basicBlocks.put(basicBlock.name, basicBlock);
-            if (this.outEdges.containsKey(basicBlock))
-                this.outEdges.put(basicBlock, new ArrayList<>(irControlFlowGraph.outEdges.get(basicBlock)));
-            if (this.inEdges.containsKey(basicBlock))
-                this.inEdges.put(basicBlock, new ArrayList<>(irControlFlowGraph.inEdges.get(basicBlock)));
+            if (this.successors.containsKey(basicBlock))
+                this.successors.put(basicBlock, new ArrayList<>(irControlFlowGraph.successors.get(basicBlock)));
+            if (this.predecessors.containsKey(basicBlock))
+                this.predecessors.put(basicBlock, new ArrayList<>(irControlFlowGraph.predecessors.get(basicBlock)));
         }
     }
 
@@ -76,8 +76,8 @@ public final class IRControlFlowGraph {
     public String toString() {
         return "IRControlFlowGraph{" +
                 "basicBlocks=" + basicBlocks +
-                ", outEdges=" + outEdges +
-                ", inEdges=" + inEdges +
+                ", outEdges=" + successors +
+                ", inEdges=" + predecessors +
                 '}';
     }
 

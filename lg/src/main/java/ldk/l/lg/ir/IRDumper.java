@@ -1,9 +1,12 @@
 package ldk.l.lg.ir;
 
 import ldk.l.lg.ir.base.IRBasicBlock;
+import ldk.l.lg.ir.base.IRGlobalVariable;
 import ldk.l.lg.ir.function.IRFunction;
 import ldk.l.lg.ir.function.IRLocalVariable;
 import ldk.l.lg.ir.instruction.*;
+import ldk.l.lg.ir.structure.IRField;
+import ldk.l.lg.ir.structure.IRStructure;
 
 import java.io.PrintStream;
 
@@ -16,6 +19,23 @@ public final class IRDumper extends IRVisitor {
 
     public IRDumper() {
         this(System.out);
+    }
+
+    @Override
+    public Object visitStructure(IRStructure irStructure, Object additional) {
+        out.println(additional + "structure " + irStructure.name+" {");
+        for (int i = 0; i < irStructure.fields.size(); i++) {
+            IRField field = irStructure.fields.get(i);
+            out.println(additional + "\t" + field.type + " " + field.name+(i < irStructure.fields.size()-1?",":""));
+        }
+        out.println(additional + "}");
+        return null;
+    }
+
+    @Override
+    public Object visitGlobalVariable(IRGlobalVariable globalVariable, Object additional) {
+        out.println(additional + "global " + globalVariable.toString());
+        return null;
     }
 
     @Override
@@ -35,93 +55,10 @@ public final class IRDumper extends IRVisitor {
         if (irFunction.controlFlowGraph != null) {
             for (IRBasicBlock block : irFunction.controlFlowGraph.basicBlocks.values()) {
                 out.println(prefix + "\t" + block.name + ":");
-                for (IRInstruction instruction : block.instructions) this.visit(instruction, prefix + "\t\t");
+                for (IRInstruction instruction : block.instructions) out.println(prefix + "\t\t" + instruction.toString());
             }
         }
         out.println(prefix + "}");
-        return null;
-    }
-
-    @Override
-    public Object visitNop(IRNop irNop, Object prefix) {
-        out.println(prefix + irNop.toString());
-        return null;
-    }
-
-    @Override
-    public Object visitReturn(IRReturn irReturn, Object prefix) {
-        out.println(prefix + irReturn.toString());
-        return null;
-    }
-
-    @Override
-    public Object visitGoto(IRGoto irGoto, Object prefix) {
-        out.println(prefix + irGoto.toString());
-        return null;
-    }
-
-    @Override
-    public Object visitConditionalJump(IRConditionalJump irConditionalJump, Object prefix) {
-        out.println(prefix + irConditionalJump.toString());
-        return null;
-    }
-
-    @Override
-    public Object visitCompare(IRCompare irCompare, Object additional) {
-        out.println(additional + irCompare.toString());
-        return null;
-    }
-
-    @Override
-    public Object visitStore(IRStore irStore, Object prefix) {
-        out.println(prefix + irStore.toString());
-        return null;
-    }
-    @Override
-    public Object visitLoad(IRLoad irLoad, Object prefix) {
-        out.println(prefix + irLoad.toString());
-        return null;
-    }
-
-    @Override
-    public Object visitBinaryOperates(IRBinaryOperates irBinaryOperates, Object additional) {
-        out.println(additional + irBinaryOperates.toString());
-        return null;
-    }
-
-    @Override
-    public Object visitUnaryOperates(IRUnaryOperates irUnaryOperates, Object additional) {
-        out.println(additional + irUnaryOperates.toString());
-        return null;
-    }
-
-    @Override
-    public Object visitStackAllocate(IRStackAllocate irStackAllocate, Object additional) {
-        out.println(additional + irStackAllocate.toString());
-        return null;
-    }
-
-    @Override
-    public Object visitSetRegister(IRSetRegister irSetRegister, Object additional) {
-        out.println(additional + irSetRegister.toString());
-        return null;
-    }
-
-    @Override
-    public Object visitTypeCast(IRTypeCast irTypeCast, Object additional) {
-        out.println(additional + irTypeCast.toString());
-        return null;
-    }
-
-    @Override
-    public Object visitInvoke(IRInvoke irInvoke, Object additional) {
-        out.println(additional + irInvoke.toString());
-        return null;
-    }
-
-    @Override
-    public Object visitGetElementPointer(IRGetElementPointer irGetElementPointer, Object additional) {
-        out.println(additional + irGetElementPointer.toString());
         return null;
     }
 }

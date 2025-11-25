@@ -40,8 +40,10 @@ public final class IRInvoke extends IRInstruction {
         this.func = func;
         this.arguments = arguments;
         this.target = target;
-        target.def = this;
-        target.type = returnType;
+        if (target!=null) {
+            target.def = this;
+            target.type = returnType;
+        }
         this.address = null;
         this.aargumentTypes = null;
         this.aarguments = null;

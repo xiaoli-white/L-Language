@@ -36,10 +36,16 @@ public abstract class IRVisitor {
         return entry.value;
     }
 
+    public Object visitGlobalVariable(IRGlobalVariable globalVariable, Object additional) {
+        this.visit(globalVariable.type, additional);
+        this.visit(globalVariable.initializer, additional);
+        return null;
+    }
+
     public Object visitFunction(IRFunction irFunction, Object additional) {
         this.visit(irFunction.returnType, additional);
         for (IRLocalVariable arg : irFunction.args) {
-            this.visit(arg,additional );
+            this.visit(arg, additional);
         }
         for (IRLocalVariable local : irFunction.locals) {
             this.visit(local, additional);
@@ -112,12 +118,14 @@ public abstract class IRVisitor {
         }
         return null;
     }
+
     public Object visitBinaryOperates(IRBinaryOperates irBinaryOperates, Object additional) {
         this.visit(irBinaryOperates.operand1, additional);
         this.visit(irBinaryOperates.operand2, additional);
         this.visit(irBinaryOperates.target, additional);
         return null;
     }
+
     public Object visitUnaryOperates(IRUnaryOperates irUnaryOperates, Object additional) {
         this.visit(irUnaryOperates.operand, additional);
         this.visit(irUnaryOperates.target, additional);
@@ -238,10 +246,9 @@ public abstract class IRVisitor {
         return null;
     }
 
-    public Object visitAsm(IRAsm irAsm, Object additional) {
-        for (int i = 0; i < irAsm.resources.length; i++) {
-            this.visit(irAsm.types[i], additional);
-            this.visit(irAsm.resources[i], additional);
+    public Object visitAssembly(IRAssembly irAssembly, Object additional) {
+        for (IRValue value : irAssembly.operands) {
+            this.visit(value, additional);
         }
         return null;
     }
@@ -284,16 +291,20 @@ public abstract class IRVisitor {
     public Object visitInterfaceTable(IRInterfaceTable irInterfaceTable, Object additional) {
         return null;
     }
+
     public Object visitIntegerConstant(IRIntegerConstant irIntegerConstant, Object additional) {
         return null;
     }
+
     public Object visitArrayType(IRArrayType irArrayType, Object additional) {
         this.visit(irArrayType.base, additional);
         return null;
     }
+
     public Object visitStructureType(IRStructureType irStructureType, Object additional) {
         return null;
     }
+
     public Object visitArrayConstant(IRArrayConstant irArrayConstant, Object additional) {
         this.visit(irArrayConstant.type, additional);
         for (ldk.l.lg.ir.value.constant.IRConstant value : irArrayConstant.values) {
@@ -301,6 +312,7 @@ public abstract class IRVisitor {
         }
         return null;
     }
+
     public Object visitGetElementPointer(IRGetElementPointer irGetElementPointer, Object additional) {
         this.visit(irGetElementPointer.ptr, additional);
         for (IRIntegerConstant index : irGetElementPointer.indices) {

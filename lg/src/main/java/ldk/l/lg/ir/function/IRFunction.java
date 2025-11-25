@@ -54,7 +54,7 @@ public final class IRFunction extends IRNode {
         this.args = args;
         this.locals = locals;
         this.controlFlowGraph = controlFlowGraph;
-        controlFlowGraph.function = this;
+        if (controlFlowGraph != null) controlFlowGraph.function = this;
     }
 
     @Override

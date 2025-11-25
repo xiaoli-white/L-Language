@@ -135,7 +135,7 @@ public final class LLVMIRGenerator extends Generator {
         public native Object visitSetRegister(IRSetRegister irSetRegister, Object additional);
 
         @Override
-        public native Object visitAsm(IRAsm irAsm, Object additional);
+        public native Object visitAssembly(IRAssembly irAssembly, Object additional);
 
         @Override
         public native Object visitTypeCast(IRTypeCast irTypeCast, Object additional);

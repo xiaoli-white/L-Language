@@ -15,7 +15,7 @@ public final class IRGlobalVariable extends IRNode{
     }
     @Override
     public Object accept(IRVisitor visitor, Object additional) {
-        return null;
+        return visitor.visitGlobalVariable(this, additional);
     }
 
     @Override

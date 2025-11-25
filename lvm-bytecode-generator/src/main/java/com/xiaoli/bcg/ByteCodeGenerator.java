@@ -809,15 +809,15 @@ public final class ByteCodeGenerator extends Generator {
         }
 
         @Override
-        public Object visitAsm(IRAsm irAsm, Object additional) {
+        public Object visitAssembly(IRAssembly irAssembly, Object additional) {
             Map<String, BCRegister> name2Register = new HashMap<>();
-            for (int i = 0; i < irAsm.resources.length; i++) {
-                this.visit(irAsm.resources[i], additional);
+            for (int i = 0; i < irAssembly.resources.length; i++) {
+                this.visit(irAssembly.resources[i], additional);
                 BCRegister register = registerStack.pop();
-                name2Register.put(irAsm.names[i], register);
+                name2Register.put(irAssembly.names[i], register);
             }
             Map<String, BCRegister> localVirtualRegister2Register = new HashMap<>();
-            String[] lines = irAsm.code.split("\n");
+            String[] lines = irAssembly.asm.split("\n");
             for (String line : lines) {
                 parseCode(line.strip(), name2Register, localVirtualRegister2Register);
             }

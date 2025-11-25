@@ -58,6 +58,9 @@ public final class IRTypeCast extends IRInstruction {
         Truncate("trunc"),
         IntToFloat("itof"),
         FloatToInt("ftoi"),
+        IntToPtr("itop"),
+        PtrToInt("ptoi"),
+        PtrToPtr("ptop"),
         FloatExtend("fext"),
         FloatTruncate("ftrunc");
         public final String name;

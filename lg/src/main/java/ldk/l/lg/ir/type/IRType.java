@@ -50,7 +50,7 @@ public abstract sealed class IRType extends IRNode permits IRArrayType, IRDouble
     }
 
     public static IRIntegerType getBooleanType() {
-        return new IRIntegerType(IRIntegerType.Size.OneBit, true);
+        return new IRIntegerType(IRIntegerType.Size.OneBit, false);
     }
 
     public static IRIntegerType getCharType() {

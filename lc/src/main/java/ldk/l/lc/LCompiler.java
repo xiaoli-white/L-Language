@@ -141,12 +141,12 @@ public class LCompiler {
                         }
                     }
                     System.out.println("\toutEdges:");
-                    for (Map.Entry<IRBasicBlock, List<IRBasicBlock>> entry : function.controlFlowGraph.outEdges.entrySet()) {
+                    for (Map.Entry<IRBasicBlock, List<IRBasicBlock>> entry : function.controlFlowGraph.successors.entrySet()) {
                         System.out.printf("\t\t#%s=>\n", entry.getKey().name);
                         entry.getValue().forEach(basicBlock -> System.out.printf("\t\t\t#%s\n", basicBlock.name));
                     }
                     System.out.println("\tinEdges:");
-                    for (Map.Entry<IRBasicBlock, List<IRBasicBlock>> entry : function.controlFlowGraph.inEdges.entrySet()) {
+                    for (Map.Entry<IRBasicBlock, List<IRBasicBlock>> entry : function.controlFlowGraph.predecessors.entrySet()) {
                         System.out.printf("\t\t#%s<=\n", entry.getKey().name);
                         entry.getValue().forEach(basicBlock -> System.out.printf("\t\t\t#%s\n", basicBlock.name));
                     }
