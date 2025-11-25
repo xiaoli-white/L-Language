@@ -421,7 +421,7 @@ public class IRBuilder {
     }
 
     public IRRegister createInvoke(IRFunction func, List<IRValue> arguments, String targetName) {
-        return createInvoke(func.returnType, new IRFunctionReference(func), arguments);
+        return createInvoke(func.returnType, new IRFunctionReference(func), arguments, targetName);
     }
 
     public IRRegister createInvoke(IRFunction func, List<IRValue> arguments) {
@@ -433,7 +433,7 @@ public class IRBuilder {
         if (returnType instanceof IRVoidType) {
             register = null;
         } else {
-            register = new IRRegister(allocateRegisterName());
+            register = new IRRegister(targetName);
         }
         insertPoint.instructions.add(new IRInvoke(returnType, func, arguments, register));
         return register;
