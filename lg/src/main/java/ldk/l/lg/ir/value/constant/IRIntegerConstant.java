@@ -5,8 +5,8 @@ import ldk.l.lg.ir.type.IRIntegerType;
 import ldk.l.lg.ir.type.IRType;
 
 public final class IRIntegerConstant extends IRConstant {
-    public final IRIntegerType type;
-    public final long value;
+    public IRIntegerType type;
+    public long value;
 
     public IRIntegerConstant(IRIntegerType type, long value) {
         this.type = type;

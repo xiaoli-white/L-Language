@@ -1049,24 +1049,25 @@ public final class ByteCodeGenerator extends Generator {
             return null;
         }
 
-        @Override
-        public Object visitPhi(IRPhi irPhi, Object additional) {
-            BCRegister temp = new BCRegister(this.virtualRegisterCount++);
-            for (int i = 0; i < irPhi.labels.length; i++) {
-                BCControlFlowGraph.BasicBlock bb = this.currentCFG.basicBlocks.get(this.irBasicBlock2BCBasicBlock.get(this.currentIRCFG.basicBlocks.get(irPhi.labels[i]).name));
-                this.visit(irPhi.operands[i], null);
-                BCRegister operand = registerStack.pop();
-                BCInstruction instruction = new BCInstruction(ByteCode.MOV, new BCRegister(operand.virtualRegister), new BCRegister(temp.virtualRegister));
-                instruction.allocatedRegisters.add(temp.virtualRegister);
-                if (ByteCode.isJump(bb.instructions.getLast().code))
-                    bb.instructions.add(bb.instructions.size() - 1, instruction);
-                else
-                    bb.instructions.add(instruction);
-            }
-            registerStack.push(temp);
-            return null;
-        }
-
+        /*
+                @Override
+                public Object visitPhi(IRPhi irPhi, Object additional) {
+                    BCRegister temp = new BCRegister(this.virtualRegisterCount++);
+                    for (int i = 0; i < irPhi.labels.length; i++) {
+                        BCControlFlowGraph.BasicBlock bb = this.currentCFG.basicBlocks.get(this.irBasicBlock2BCBasicBlock.get(this.currentIRCFG.basicBlocks.get(irPhi.labels[i]).name));
+                        this.visit(irPhi.operands[i], null);
+                        BCRegister operand = registerStack.pop();
+                        BCInstruction instruction = new BCInstruction(ByteCode.MOV, new BCRegister(operand.virtualRegister), new BCRegister(temp.virtualRegister));
+                        instruction.allocatedRegisters.add(temp.virtualRegister);
+                        if (ByteCode.isJump(bb.instructions.getLast().code))
+                            bb.instructions.add(bb.instructions.size() - 1, instruction);
+                        else
+                            bb.instructions.add(instruction);
+                    }
+                    registerStack.push(temp);
+                    return null;
+                }
+        */
         private void createPrologue(long currentFunctionLocalVarSize) {
             addInstruction(new BCInstruction(ByteCode.CREATE_FRAME, new BCImmediate8(currentFunctionLocalVarSize)));
         }

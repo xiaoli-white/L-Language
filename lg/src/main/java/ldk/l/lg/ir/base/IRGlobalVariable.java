@@ -5,9 +5,9 @@ import ldk.l.lg.ir.type.IRType;
 import ldk.l.lg.ir.value.constant.IRConstant;
 
 public final class IRGlobalVariable extends IRNode{
-    public final IRType type;
-    public final String name;
-    public final IRConstant initializer;
+    public IRType type;
+    public String name;
+    public IRConstant initializer;
     public IRGlobalVariable(String name, IRConstant initializer) {
         this.type = initializer.getType();
         this.name = name;

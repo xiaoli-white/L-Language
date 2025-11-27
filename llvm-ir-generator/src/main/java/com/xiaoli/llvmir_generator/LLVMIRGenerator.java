@@ -155,8 +155,8 @@ public final class LLVMIRGenerator extends Generator {
         @Override
         public native Object visitCompare(IRCompare irCompare, Object additional);
 
-        @Override
-        public native Object visitPhi(IRPhi irPhi, Object additional);
+//        @Override
+//        public native Object visitPhi(IRPhi irPhi, Object additional);
 
         @Override
         public native Object visitConstant(IRConstant irConstant, Object additional);

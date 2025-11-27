@@ -5,8 +5,8 @@ import ldk.l.lg.ir.IRVisitor;
 import java.util.Objects;
 
 public final class IRArrayType extends IRType{
-    public final IRType base;
-    public final long length;
+    public IRType base;
+    public long length;
     public IRArrayType(IRType base, long length) {
         this.base = base;
         this.length = length;

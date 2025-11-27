@@ -18,10 +18,10 @@ public final class IRInvoke extends IRInstruction {
     public final IROperand[] aarguments;
     @Deprecated
     public final IRVirtualRegister ttarget;
-    public final IRType returnType;
-    public final IRValue func;
-    public final List<IRValue> arguments;
-    public final IRRegister target;
+    public IRType returnType;
+    public IRValue func;
+    public List<IRValue> arguments;
+    public IRRegister target;
 
     @Deprecated
     public IRInvoke(IRType returnType, IROperand address, IRType[] argumentTypes, IROperand[] arguments, IRVirtualRegister target) {

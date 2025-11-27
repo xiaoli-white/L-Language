@@ -5,8 +5,8 @@ import ldk.l.lg.ir.type.IRPointerType;
 import ldk.l.lg.ir.type.IRType;
 
 public final class IRStringConstant extends IRConstant {
-    public final IRType type;
-    public final String value;
+    public IRType type;
+    public String value;
     public IRStringConstant(String value) {
         this.type = new IRPointerType(IRType.getCharType());
         this.value = value;

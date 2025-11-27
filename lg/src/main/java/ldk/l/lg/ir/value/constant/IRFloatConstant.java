@@ -4,7 +4,7 @@ import ldk.l.lg.ir.IRVisitor;
 import ldk.l.lg.ir.type.IRType;
 
 public final  class IRFloatConstant extends IRConstant{
-    public final float value;
+    public float value;
     public IRFloatConstant(float value) {
         this.value = value;
     }

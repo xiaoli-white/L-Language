@@ -5,8 +5,8 @@ import ldk.l.lg.ir.base.IRNode;
 import ldk.l.lg.ir.type.IRType;
 
 public final class IRLocalVariable extends IRNode {
-    public final IRType type;
-    public final String name;
+    public IRType type;
+    public String name;
     public IRLocalVariable(IRType type, String name) {
         this.type = type;
         this.name = name;

@@ -6,9 +6,9 @@ import ldk.l.lg.ir.value.IRRegister;
 import ldk.l.lg.ir.value.IRValue;
 
 public final class IRUnaryOperates extends IRInstruction{
-    public final Operator operator;
-    public final IRValue operand;
-    public final IRRegister target;
+    public Operator operator;
+    public IRValue operand;
+    public IRRegister target;
     public IRUnaryOperates(Operator operator, IRValue operand, IRRegister target) {
         this.operator = operator;
         this.operand = operand;

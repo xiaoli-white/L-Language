@@ -8,9 +8,9 @@ import ldk.l.lg.ir.value.IRValue;
 import java.util.List;
 
 public final class IRAssembly extends IRInstruction {
-    public final String asm;
-    public final String constraints;
-    public final List<IRValue> operands;
+    public String asm;
+    public String constraints;
+    public List<IRValue> operands;
     @Deprecated
     public final IRType[] types;
     @Deprecated

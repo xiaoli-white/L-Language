@@ -6,8 +6,8 @@ import ldk.l.lg.ir.type.IRType;
 
 public final class IRField extends IRNode {
     // public final String[] attributes;
-    public final IRType type;
-    public final String name;
+    public IRType type;
+    public String name;
 
     public IRField(IRType type, String name) {
         this.type = type;

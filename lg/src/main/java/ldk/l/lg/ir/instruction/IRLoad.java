@@ -13,8 +13,8 @@ public final class IRLoad extends IRInstruction {
     public final IROperand address;
     @Deprecated
     public final IRVirtualRegister ttarget;
-    public final IRValue ptr;
-    public final IRRegister target;
+    public IRValue ptr;
+    public IRRegister target;
 
     @Deprecated
     public IRLoad(IRType type, IROperand address, IRVirtualRegister target) {

@@ -6,8 +6,8 @@ import ldk.l.lg.ir.type.IRPointerType;
 import ldk.l.lg.ir.type.IRType;
 
 public final class IRGlobalVariableReference extends IRValue {
-    private final IRType type;
-    public final IRGlobalVariable variable;
+    public IRType type;
+    public IRGlobalVariable variable;
     public IRGlobalVariableReference(IRGlobalVariable variable) {
         this.variable = variable;
         this.type = new IRPointerType(variable.type);

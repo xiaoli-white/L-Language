@@ -7,8 +7,8 @@ import ldk.l.lg.ir.type.IRType;
 import java.util.List;
 
 public final class IRArrayConstant extends IRConstant{
-    public final IRArrayType type;
-    public final List<IRConstant> values;
+    public IRArrayType type;
+    public List<IRConstant> values;
     public IRArrayConstant(IRArrayType type, List<IRConstant> values) {
         this.type = type;
         this.values = values;

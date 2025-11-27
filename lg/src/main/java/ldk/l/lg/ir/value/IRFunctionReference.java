@@ -5,7 +5,7 @@ import ldk.l.lg.ir.function.IRFunction;
 import ldk.l.lg.ir.type.IRType;
 
 public final class IRFunctionReference extends IRValue {
-    private final IRFunction function;
+    public IRFunction function;
 
     public IRFunctionReference(IRFunction function) {
         this.function = function;

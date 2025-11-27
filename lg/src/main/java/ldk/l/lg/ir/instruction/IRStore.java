@@ -6,11 +6,11 @@ import ldk.l.lg.ir.type.IRType;
 import ldk.l.lg.ir.value.IRValue;
 
 public final class IRStore extends IRInstruction {
-    public final IRType type;
+    public IRType type;
     @Deprecated
     public final IROperand address;
-    public final IRValue ptr;
-    public final IRValue value;
+    public IRValue ptr;
+    public IRValue value;
     @Deprecated
     public final IROperand vvalue;
 

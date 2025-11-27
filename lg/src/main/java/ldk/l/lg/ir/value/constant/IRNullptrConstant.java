@@ -5,7 +5,7 @@ import ldk.l.lg.ir.type.IRPointerType;
 import ldk.l.lg.ir.type.IRType;
 
 public final class IRNullptrConstant extends IRConstant {
-    public final IRPointerType type;
+    public IRPointerType type;
 
     public IRNullptrConstant(IRPointerType type) {
         this.type = type;

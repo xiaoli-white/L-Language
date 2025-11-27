@@ -7,7 +7,7 @@ import ldk.l.lg.ir.type.IRType;
 public final class IRRegister extends IRValue {
     public IRInstruction def  = null;
     public IRType type = null;
-    public final String name;
+    public String name;
 
     public IRRegister(String name) {
         this.name = name;

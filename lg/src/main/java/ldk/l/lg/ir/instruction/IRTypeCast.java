@@ -8,16 +8,16 @@ import ldk.l.lg.ir.value.IRRegister;
 import ldk.l.lg.ir.value.IRValue;
 
 public final class IRTypeCast extends IRInstruction {
-    public final Kind kind;
+    public Kind kind;
     @Deprecated
     public final IRType originalType;
     @Deprecated
     public final IROperand ssource;
     @Deprecated
     public final IRVirtualRegister ttarget;
-    public final IRValue source;
-    public final IRType targetType;
-    public final IRRegister target;
+    public IRValue source;
+    public IRType targetType;
+    public IRRegister target;
 
     @Deprecated
     public IRTypeCast(Kind kind, IRType originalType, IROperand source, IRType targetType, IRVirtualRegister target) {

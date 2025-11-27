@@ -10,9 +10,11 @@ import ldk.l.lg.ir.type.IRVoidType;
 import ldk.l.lg.ir.value.IRFunctionReference;
 import ldk.l.lg.ir.value.IRRegister;
 import ldk.l.lg.ir.value.IRValue;
+import ldk.l.lg.ir.value.constant.IRConstant;
 import ldk.l.lg.ir.value.constant.IRIntegerConstant;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public class IRBuilder {
@@ -455,6 +457,20 @@ public class IRBuilder {
 
     public void createAsm(String asm, String constraints, List<IRValue> operands) {
         insertPoint.instructions.add(new IRAssembly(asm, constraints, operands));
+    }
+
+    public IRRegister createPhi(Map<IRBasicBlock, IRValue> values) {
+        return createPhi(values, allocateRegisterName());
+    }
+
+    public IRRegister createPhi(Map<IRBasicBlock, IRValue> values, String targetName) {
+        IRRegister register = new IRRegister(targetName);
+        insertPoint.instructions.add(new IRPhi(values, register));
+        return register;
+    }
+
+    public void createSwitch(IRValue value, IRBasicBlock defaultCase, Map<IRIntegerConstant, IRBasicBlock> cases) {
+        insertPoint.instructions.add(new IRSwitch(value, defaultCase, cases));
     }
 
     private String allocateRegisterName() {

@@ -3,6 +3,7 @@ package ldk.l.lg.ir;
 import ldk.l.lg.ir.base.*;
 import ldk.l.lg.ir.function.IRFunction;
 import ldk.l.lg.ir.function.IRLocalVariable;
+import ldk.l.lg.ir.instruction.IRPhi;
 import ldk.l.lg.ir.operand.*;
 import ldk.l.lg.ir.instruction.*;
 import ldk.l.lg.ir.structure.IRField;
@@ -11,6 +12,7 @@ import ldk.l.lg.ir.type.*;
 import ldk.l.lg.ir.value.constant.IRArrayConstant;
 import ldk.l.lg.ir.value.constant.IRIntegerConstant;
 import ldk.l.lg.ir.value.IRValue;
+import ldk.l.lg.ir.value.constant.IRStructureInitializer;
 
 public abstract class IRVisitor {
     public Object visit(IRNode irNode, Object additional) {
@@ -269,14 +271,6 @@ public abstract class IRVisitor {
         return null;
     }
 
-    public Object visitPhi(IRPhi irPhi, Object additional) {
-        this.visit(irPhi.type, additional);
-        for (IROperand operand : irPhi.operands) {
-            this.visit(operand, additional);
-        }
-        return null;
-    }
-
     public Object visitMacro(IRMacro irMacro, Object additional) {
         if (irMacro.typeIsInitial() && irMacro.type() != null) {
             this.visit(irMacro.type(), additional);
@@ -317,6 +311,30 @@ public abstract class IRVisitor {
         this.visit(irGetElementPointer.ptr, additional);
         for (IRIntegerConstant index : irGetElementPointer.indices) {
             this.visit(index, additional);
+        }
+        return null;
+    }
+
+    public Object visitPhi(IRPhi irPhi, Object additional) {
+        for (IRValue value : irPhi.values.values()) {
+            this.visit(value, additional);
+        }
+        this.visit(irPhi.target, additional);
+        return null;
+    }
+
+    public Object visitSwitch(IRSwitch irSwitch, Object additional) {
+        this.visit(irSwitch.value, additional);
+        for (IRIntegerConstant constant : irSwitch.cases.keySet()) {
+            this.visit(constant, additional);
+        }
+        return null;
+    }
+
+    public Object visitStructureInitializer(IRStructureInitializer irStructureInitializer, Object additional) {
+        this.visit(irStructureInitializer.type, additional);
+        for (IRValue value : irStructureInitializer.elements) {
+            this.visit(value, additional);
         }
         return null;
     }

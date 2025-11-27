@@ -5,7 +5,7 @@ import ldk.l.lg.ir.IRVisitor;
 import java.util.Objects;
 
 public final class IRPointerType extends IRType {
-    public final IRType base;
+    public IRType base;
 
     public IRPointerType(IRType base) {
         this.base = base;

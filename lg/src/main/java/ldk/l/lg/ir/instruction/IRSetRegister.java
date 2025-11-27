@@ -11,8 +11,8 @@ public final class IRSetRegister extends IRInstruction {
     public final IROperand source;
     @Deprecated
     public final IRVirtualRegister ttarget;
-    public final IRValue value;
-    public final IRRegister target;
+    public IRValue value;
+    public IRRegister target;
 
     @Deprecated
     public IRSetRegister(IROperand source, IRVirtualRegister target) {

@@ -5,10 +5,10 @@ import ldk.l.lg.ir.value.IRRegister;
 import ldk.l.lg.ir.value.IRValue;
 
 public final class IRBinaryOperates extends IRInstruction{
-    public final Operator operator;
-    public final IRValue operand1;
-    public final IRValue operand2;
-    public final IRRegister target;
+    public Operator operator;
+    public IRValue operand1;
+    public IRValue operand2;
+    public IRRegister target;
     public IRBinaryOperates(Operator  operator, IRValue operand1, IRValue operand2, IRRegister target) {
         this.operator = operator;
         this.operand1 = operand1;

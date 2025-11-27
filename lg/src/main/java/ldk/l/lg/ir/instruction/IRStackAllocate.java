@@ -13,8 +13,8 @@ public final class IRStackAllocate extends IRInstruction {
     public final IROperand ssize;
     @Deprecated
     public final IRVirtualRegister ttarget;
-    public final IRValue size;
-    public final IRRegister target;
+    public IRValue size;
+    public IRRegister target;
 
 @    Deprecated
     public IRStackAllocate(IROperand size, IRVirtualRegister target) {

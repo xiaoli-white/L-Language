@@ -10,11 +10,12 @@ import ldk.l.lg.ir.value.IRValue;
 public final class IRConditionalJump extends IRInstruction {
     @Deprecated
     public final boolean isAtomic;
-    public final IRType type;
-    public final IRCondition condition;
-    public final IRValue operand1;
-    public final IRValue operand2;
-    public final IRBasicBlock target;
+    @Deprecated
+    public IRType type;
+    public IRCondition condition;
+    public IRValue operand1;
+    public IRValue operand2;
+    public IRBasicBlock target;
     @Deprecated
     public final IROperand ooperand1;
     @Deprecated
@@ -31,7 +32,8 @@ public final class IRConditionalJump extends IRInstruction {
     public IRConditionalJump(IRType type, IRCondition condition, IROperand operand1, IROperand operand2, String target) {
         this(false, type, condition, operand1, operand2, target);
     }
-@Deprecated
+
+    @Deprecated
     public IRConditionalJump(boolean isAtomic, IRType type, IRCondition condition, IROperand operand1, IROperand operand2, String target) {
         this.isAtomic = isAtomic;
         this.type = type;
@@ -43,9 +45,11 @@ public final class IRConditionalJump extends IRInstruction {
         this.operand2 = null;
         this.target = null;
     }
+
     public IRConditionalJump(IRCondition condition, IRValue operand, IRBasicBlock target) {
-        this(condition, operand,null, target);
+        this(condition, operand, null, target);
     }
+
     public IRConditionalJump(IRCondition condition, IRValue operand1, IRValue operand2, IRBasicBlock target) {
         this.type = null;
         this.condition = condition;

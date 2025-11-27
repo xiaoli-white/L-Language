@@ -4,7 +4,7 @@ import ldk.l.lg.ir.IRVisitor;
 import ldk.l.lg.ir.type.IRType;
 
 public final class IRDoubleConstant extends IRConstant {
-    public final double value;
+    public double value;
 
     public IRDoubleConstant(double value) {
         this.value = value;

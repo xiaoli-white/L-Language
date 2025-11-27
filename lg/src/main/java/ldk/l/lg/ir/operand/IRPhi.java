@@ -16,7 +16,7 @@ public final class IRPhi extends IROperand {
 
     @Override
     public Object accept(IRVisitor visitor, Object additional) {
-        return visitor.visitPhi(this, additional);
+        return null;
     }
 
     @Override

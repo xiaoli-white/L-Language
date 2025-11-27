@@ -6,7 +6,7 @@ import ldk.l.lg.ir.structure.IRStructure;
 import java.util.Objects;
 
 public final class IRStructureType extends IRType {
-    public final IRStructure structure;
+    public IRStructure structure;
     public IRStructureType(IRStructure structure) {
         this.structure = structure;
     }

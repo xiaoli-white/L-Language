@@ -7,8 +7,8 @@ import java.util.List;
 
 public class IRBasicBlock implements Comparable<IRBasicBlock> {
     public IRControlFlowGraph cfg = null;
-    public final String name;
-    public final List<IRInstruction> instructions;
+    public String name;
+    public List<IRInstruction> instructions;
 
     public IRBasicBlock(String name) {
         this.name = name;

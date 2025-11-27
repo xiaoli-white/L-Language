@@ -11,17 +11,17 @@ import java.util.Arrays;
 import java.util.List;
 
 public final class IRFunction extends IRNode {
-    public final List<String> attributes;
-    public final IRType returnType;
-    public final String name;
-    public final List<IRLocalVariable> args;
-    public final List<IRLocalVariable> locals;
+    public List<String> attributes;
+    public IRType returnType;
+    public String name;
+    public List<IRLocalVariable> args;
+    public List<IRLocalVariable> locals;
     @Deprecated
     public final long argumentCount;
     @Deprecated
-    public final IRField[] fields;
-    public final IRControlFlowGraph controlFlowGraph;
-    public long registerCount = 0;
+    public IRField[] fields;
+    public IRControlFlowGraph controlFlowGraph;
+    public transient long registerCount = 0;
 
     @Deprecated
     public IRFunction(IRType returnType, String name, long argumentCount, IRField[] fields, IRControlFlowGraph controlFlowGraph) {

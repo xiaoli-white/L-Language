@@ -12,9 +12,9 @@ import ldk.l.lg.ir.value.constant.IRIntegerConstant;
 import java.util.List;
 
 public final class IRGetElementPointer extends IRInstruction {
-    public final IRValue ptr;
-    public final List<IRIntegerConstant> indices;
-    public final IRRegister target;
+    public IRValue ptr;
+    public List<IRIntegerConstant> indices;
+    public IRRegister target;
     public IRGetElementPointer(IRValue ptr, List<IRIntegerConstant> indices, IRRegister target) {
         this.ptr = ptr;
         this.indices = indices;

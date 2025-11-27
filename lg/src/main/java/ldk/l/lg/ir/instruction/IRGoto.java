@@ -6,7 +6,7 @@ import ldk.l.lg.ir.base.IRBasicBlock;
 public final class IRGoto extends IRInstruction {
     @Deprecated
     public String ttarget;
-    public final IRBasicBlock target;
+    public IRBasicBlock target;
 
     public IRGoto(IRBasicBlock target) {
         this.target = target;

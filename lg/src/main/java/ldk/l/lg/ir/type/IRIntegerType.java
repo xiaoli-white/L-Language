@@ -5,8 +5,8 @@ import ldk.l.lg.ir.IRVisitor;
 import java.util.Objects;
 
 public final class IRIntegerType extends IRType {
-    public final Size size;
-    public final boolean unsigned;
+    public Size size;
+    public boolean unsigned;
 
     public IRIntegerType(Size size, boolean unsigned) {
         this.size = size;

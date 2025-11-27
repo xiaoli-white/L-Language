@@ -5,7 +5,7 @@ import ldk.l.lg.ir.operand.IROperand;
 import ldk.l.lg.ir.value.IRValue;
 
 public final class IRReturn extends IRInstruction {
-    public final IRValue value;
+    public IRValue value;
     @Deprecated
     public final IROperand vvalue;
 

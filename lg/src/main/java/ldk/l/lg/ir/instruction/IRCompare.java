@@ -13,16 +13,16 @@ public final class IRCompare extends IRInstruction {
     public final boolean isAtomic;
     @Deprecated
     public final IRType type;
-    public final IRCondition condition;
+    public IRCondition condition;
     @Deprecated
     public final IROperand ooperand1;
     @Deprecated
     public final IROperand ooperand2;
     @Deprecated
     public final IRVirtualRegister ttarget;
-    public final IRValue operand1;
-    public final IRValue operand2;
-    public final IRRegister target;
+    public IRValue operand1;
+    public IRValue operand2;
+    public IRRegister target;
 
     @Deprecated
     public IRCompare(IRType type, IRCondition condition, IROperand operand1, IROperand operand2, IRVirtualRegister target) {
