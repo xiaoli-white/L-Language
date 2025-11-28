@@ -24,11 +24,11 @@ public class BuilderTest {
         IRGlobalVariable globalVariable = new IRGlobalVariable("glo", new IRIntegerConstant(IRType.getIntType(), 0));
         module.putGlobalVariable(globalVariable);
 
-        IRStructure structure = new IRStructure(List.of(), "struct", List.of(new IRField(IRType.getIntType(),"field"), new IRField(IRType.getLongType(), "field2")));
+        IRStructure structure = new IRStructure(List.of(), "struct", List.of(new IRField(IRType.getIntType(), "field"), new IRField(IRType.getLongType(), "field2")));
         module.putStructure(structure);
 
         IRFunction function = new IRFunction(IRType.getIntType(), "main", List.of(), List.of(), new IRControlFlowGraph());
-        IRFunction function2 = new IRFunction(IRType.getIntType(), "main2", List.of(new IRLocalVariable(IRType.getIntType(), "arg1"), new IRLocalVariable(IRType.getIntType(), "arg2")),List.of(new IRLocalVariable(IRType.getIntType(), "var1"), new IRLocalVariable(IRType.getFloatType(), "var2")), new IRControlFlowGraph());
+        IRFunction function2 = new IRFunction(IRType.getIntType(), "main2", List.of(new IRLocalVariable(IRType.getIntType(), "arg1"), new IRLocalVariable(IRType.getIntType(), "arg2")), List.of(new IRLocalVariable(IRType.getIntType(), "var1"), new IRLocalVariable(IRType.getFloatType(), "var2")), new IRControlFlowGraph());
         module.putFunction(function);
         module.putFunction(function2);
         IRBasicBlock block = new IRBasicBlock("entry");
@@ -43,7 +43,7 @@ public class BuilderTest {
         builder.createJumpIfEqual(new IRIntegerConstant(IRType.getIntType(), 1), new IRIntegerConstant(IRType.getIntType(), 1), block2);
         builder.createGoto(block2);
         builder.setInsertPoint(block2);
-        var ptr = builder.createStackAlloc(new IRIntegerConstant(IRType.getIntType(), 1));
+        var ptr = builder.createStackAlloc(IRType.getIntType());
         var val = builder.createLoad(ptr);
         var val2 = builder.createCmpEqual(val, new IRIntegerConstant(IRType.getIntType(), 0));
         builder.createStore(new IRIntegerConstant(IRType.getIntType(), 0), val);
@@ -59,7 +59,7 @@ public class BuilderTest {
         var val9 = builder.createDec(var5);
         var val10 = builder.createZeroExtend(val9, IRType.getByteType());
         var val11 = builder.createInvoke(function2, List.of());
-        var val12 = builder.createZeroExtend(new IRIntegerConstant(IRType.getIntType(), 0), new IRPointerType(new IRArrayType(IRType.getIntType(),10)));
+        var val12 = builder.createZeroExtend(new IRIntegerConstant(IRType.getIntType(), 0), new IRPointerType(new IRArrayType(IRType.getIntType(), 10)));
         var val13 = builder.createGetElementPointer(val12, List.of(new IRIntegerConstant(IRType.getIntType(), 0), new IRIntegerConstant(IRType.getIntType(), 1)));
         builder.createStore(val13, new IRIntegerConstant(IRType.getIntType(), 0));
         builder.createReturn(new IRIntegerConstant(IRType.getIntType(), 0));

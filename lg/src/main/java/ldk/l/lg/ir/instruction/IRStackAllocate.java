@@ -13,22 +13,25 @@ public final class IRStackAllocate extends IRInstruction {
     public final IROperand ssize;
     @Deprecated
     public final IRVirtualRegister ttarget;
+    public IRType type;
     public IRValue size;
     public IRRegister target;
 
-@    Deprecated
+    @Deprecated
     public IRStackAllocate(IROperand size, IRVirtualRegister target) {
         this.ssize = size;
         this.ttarget = target;
         this.size = null;
         this.target = null;
     }
-    public IRStackAllocate(IRValue size, IRRegister target) {
-    this.ssize = null;
-    this.ttarget = null;
+
+    public IRStackAllocate(IRType type, IRValue size, IRRegister target) {
+        this.ssize = null;
+        this.ttarget = null;
+        this.type = type;
         this.size = size;
         this.target = target;
-        target.type = new IRPointerType(IRType.getVoidType());
+        target.type = new IRPointerType(type);
         target.def = this;
     }
 
@@ -39,6 +42,6 @@ public final class IRStackAllocate extends IRInstruction {
 
     @Override
     public String toString() {
-        return "%"+target.name + " = stack_alloc " + size;
+        return "%" + target.name + " = stack_alloc " + type + (size != null ? ", " + size : "");
     }
 }

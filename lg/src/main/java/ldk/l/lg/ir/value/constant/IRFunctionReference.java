@@ -1,8 +1,9 @@
-package ldk.l.lg.ir.value;
+package ldk.l.lg.ir.value.constant;
 
 import ldk.l.lg.ir.IRVisitor;
 import ldk.l.lg.ir.function.IRFunction;
 import ldk.l.lg.ir.type.IRType;
+import ldk.l.lg.ir.value.IRValue;
 
 public final class IRFunctionReference extends IRValue {
     public IRFunction function;

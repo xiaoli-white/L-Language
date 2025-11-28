@@ -236,7 +236,10 @@ public abstract class IRVisitor {
     }
 
     public Object visitStackAllocate(IRStackAllocate irStackAllocate, Object additional) {
-        this.visit(irStackAllocate.size, additional);
+        this.visit(irStackAllocate.type, additional);
+        if (irStackAllocate.size != null) {
+            this.visit(irStackAllocate.size, additional);
+        }
         this.visit(irStackAllocate.target, additional);
         return null;
     }

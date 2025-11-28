@@ -7,10 +7,9 @@ import ldk.l.lg.ir.instruction.*;
 import ldk.l.lg.ir.type.IRPointerType;
 import ldk.l.lg.ir.type.IRType;
 import ldk.l.lg.ir.type.IRVoidType;
-import ldk.l.lg.ir.value.IRFunctionReference;
+import ldk.l.lg.ir.value.constant.IRFunctionReference;
 import ldk.l.lg.ir.value.IRRegister;
 import ldk.l.lg.ir.value.IRValue;
-import ldk.l.lg.ir.value.constant.IRConstant;
 import ldk.l.lg.ir.value.constant.IRIntegerConstant;
 
 import java.util.List;
@@ -256,14 +255,22 @@ public class IRBuilder {
         return createUShr(operand1, operand2, allocateRegisterName());
     }
 
-    public IRRegister createStackAlloc(IRValue size, String targetName) {
+    public IRRegister createStackAlloc(IRType type, IRValue size, String targetName) {
         IRRegister register = new IRRegister(targetName);
-        insertPoint.instructions.add(new IRStackAllocate(size, register));
+        insertPoint.instructions.add(new IRStackAllocate(type, size, register));
         return register;
     }
 
-    public IRRegister createStackAlloc(IRValue size) {
-        return createStackAlloc(size, allocateRegisterName());
+    public IRRegister createStackAlloc(IRType type, IRValue size) {
+        return createStackAlloc(type, size, allocateRegisterName());
+    }
+
+    public IRRegister createStackAlloc(IRType type, String targetName) {
+        return createStackAlloc(type, null, allocateRegisterName());
+    }
+
+    public IRRegister createStackAlloc(IRType type) {
+        return createStackAlloc(type, allocateRegisterName());
     }
 
     public IRRegister createSetRegister(IRValue value, String targetName) {

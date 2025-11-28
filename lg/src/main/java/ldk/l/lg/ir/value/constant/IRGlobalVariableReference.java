@@ -1,9 +1,10 @@
-package ldk.l.lg.ir.value;
+package ldk.l.lg.ir.value.constant;
 
 import ldk.l.lg.ir.IRVisitor;
 import ldk.l.lg.ir.base.IRGlobalVariable;
 import ldk.l.lg.ir.type.IRPointerType;
 import ldk.l.lg.ir.type.IRType;
+import ldk.l.lg.ir.value.IRValue;
 
 public final class IRGlobalVariableReference extends IRValue {
     public IRType type;

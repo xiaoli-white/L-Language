@@ -3,7 +3,6 @@ package ldk.l.lg.ir.instruction;
 import ldk.l.lg.ir.IRVisitor;
 import ldk.l.lg.ir.base.IRBasicBlock;
 import ldk.l.lg.ir.value.IRValue;
-import ldk.l.lg.ir.value.constant.IRConstant;
 import ldk.l.lg.ir.value.constant.IRIntegerConstant;
 
 import java.util.Map;
