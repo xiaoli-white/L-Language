@@ -12,6 +12,7 @@ import java.util.List;
 
 public final class IRFunction extends IRNode {
     public List<String> attributes;
+    public boolean isExtern;
     public IRType returnType;
     public String name;
     public List<IRLocalVariable> args;
@@ -54,7 +55,16 @@ public final class IRFunction extends IRNode {
         this.args = args;
         this.locals = locals;
         this.controlFlowGraph = controlFlowGraph;
-        if (controlFlowGraph != null) controlFlowGraph.function = this;
+        if (controlFlowGraph != null) {
+            controlFlowGraph.function = this;
+            isExtern = false;
+        } else {
+            isExtern = true;
+        }
+    }
+
+    public IRFunction(List<String> attributes, IRType returnType, String name, List<IRLocalVariable> args, List<IRLocalVariable> locals) {
+        this(attributes, returnType, name, args, locals, null);
     }
 
     @Override

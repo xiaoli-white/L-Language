@@ -49,20 +49,21 @@ public final class IRTypeCast extends IRInstruction {
 
     @Override
     public String toString() {
-        return "%"+target.name + " = " + kind.name + " "  + source + " to " + targetType;
+        return "%" + target.name + " = " + kind.name + " " + source + " to " + targetType;
     }
 
     public enum Kind {
         ZeroExtend("zext"),
         SignExtend("sext"),
         Truncate("trunc"),
-        IntToFloat("itof"),
-        FloatToInt("ftoi"),
-        IntToPtr("itop"),
-        PtrToInt("ptoi"),
-        PtrToPtr("ptop"),
+        IntToFloat("inttof"),
+        FloatToInt("ftoint"),
+        IntToPtr("inttoptr"),
+        PtrToInt("ptrtoint"),
+        PtrToPtr("ptrtoptr"),
         FloatExtend("fext"),
-        FloatTruncate("ftrunc");
+        FloatTruncate("ftrunc"),
+        BitCast("bitcast");
         public final String name;
 
         Kind(String name) {

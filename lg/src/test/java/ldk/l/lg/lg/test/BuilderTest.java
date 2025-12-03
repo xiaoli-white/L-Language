@@ -21,7 +21,7 @@ public class BuilderTest {
     public static void main(String[] args) {
         IRBuilder builder = new IRBuilder();
         IRModule module = new IRModule();
-        IRGlobalVariable globalVariable = new IRGlobalVariable("glo", new IRIntegerConstant(IRType.getIntType(), 0));
+        IRGlobalVariable globalVariable = new IRGlobalVariable(false, "glo", new IRIntegerConstant(IRType.getIntType(), 0));
         module.putGlobalVariable(globalVariable);
 
         IRStructure structure = new IRStructure(List.of(), "struct", List.of(new IRField(IRType.getIntType(), "field"), new IRField(IRType.getLongType(), "field2")));

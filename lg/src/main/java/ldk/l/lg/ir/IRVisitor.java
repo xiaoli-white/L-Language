@@ -49,10 +49,10 @@ public abstract class IRVisitor {
         for (IRLocalVariable arg : irFunction.args) {
             this.visit(arg, additional);
         }
-        for (IRLocalVariable local : irFunction.locals) {
-            this.visit(local, additional);
-        }
         if (irFunction.controlFlowGraph != null) {
+            for (IRLocalVariable local : irFunction.locals) {
+                this.visit(local, additional);
+            }
             for (IRBasicBlock block : irFunction.controlFlowGraph.basicBlocks.values()) {
                 for (IRInstruction instruction : block.instructions) this.visit(instruction, additional);
             }

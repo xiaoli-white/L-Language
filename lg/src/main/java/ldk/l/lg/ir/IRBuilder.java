@@ -429,6 +429,16 @@ public class IRBuilder {
         return createFloatTruncate(source, targetType, allocateRegisterName());
     }
 
+    public IRRegister createBitCast(IRValue source, IRType targetType, String targetName) {
+        IRRegister register = new IRRegister(targetName);
+        insertPoint.instructions.add(new IRTypeCast(IRTypeCast.Kind.BitCast, source, targetType, register));
+        return register;
+    }
+
+    public IRRegister createBitCast(IRValue source, IRType targetType) {
+        return createBitCast(source, targetType, allocateRegisterName());
+    }
+
     public IRRegister createInvoke(IRFunction func, List<IRValue> arguments, String targetName) {
         return createInvoke(func.returnType, new IRFunctionReference(func), arguments, targetName);
     }
