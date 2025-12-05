@@ -26,7 +26,7 @@ public final class IRPhi extends IRInstruction {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("%");
-        sb.append(target.name).append(" = phi ");
+        sb.append(target.name).append(" = phi");
         for (Map.Entry<IRBasicBlock, IRValue> entry : values.entrySet()) {
             sb.append(", [label ").append(entry.getKey().name).append(", ").append(entry.getValue()).append("]");
         }

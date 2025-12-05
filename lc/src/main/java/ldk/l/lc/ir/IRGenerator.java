@@ -4,6 +4,8 @@ import ldk.l.lc.ast.LCAst;
 import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.ast.base.LCExpressionStatement;
 import ldk.l.lc.ast.expression.LCBinary;
+import ldk.l.lc.ast.expression.LCIf;
+import ldk.l.lc.ast.expression.literal.LCBooleanLiteral;
 import ldk.l.lc.ast.expression.literal.LCIntegerLiteral;
 import ldk.l.lc.ast.file.LCSourceCodeFile;
 import ldk.l.lc.ast.statement.declaration.LCMethodDeclaration;
@@ -21,6 +23,7 @@ import ldk.l.lg.ir.operand.*;
 import ldk.l.lg.ir.instruction.*;
 import ldk.l.lg.ir.structure.IRField;
 import ldk.l.lg.ir.type.IRIntegerType;
+import ldk.l.lg.ir.type.IRType;
 import ldk.l.lg.ir.value.IRRegister;
 import ldk.l.lg.ir.value.IRValue;
 import ldk.l.lg.ir.value.constant.IRIntegerConstant;
@@ -35,6 +38,7 @@ public final class IRGenerator extends LCAstVisitor {
     private final Options options;
     private final ErrorStream errorStream;
     private IRBuilder builder;
+    private IRFunction currentFunction;
     private LCAst ast = null;
     private IRControlFlowGraph initCFG = null;
     private List<IRField> initFields = null;
@@ -70,6 +74,9 @@ public final class IRGenerator extends LCAstVisitor {
     private String generateBasicBlockName() {
         return "basicBlock_" + (basicBlockCount++);
     }
+    private String generateRegisterName() {
+        return String.valueOf(registerCount++);
+    }
 
     @Override
     public Object visitSourceCodeFile(LCSourceCodeFile lcSourceCodeFile, Object additional) {
@@ -90,6 +97,7 @@ public final class IRGenerator extends LCAstVisitor {
     @Override
     public Object visitMethodDeclaration(LCMethodDeclaration lcMethodDeclaration, Object additional) {
         IRFunction function = module.functions.get(lcMethodDeclaration.symbol.getFullName());
+        currentFunction = function;
         function.isExtern = false;
         function.locals = new ArrayList<>();
         function.controlFlowGraph = new IRControlFlowGraph();
@@ -106,13 +114,56 @@ public final class IRGenerator extends LCAstVisitor {
     }
 
     @Override
+    public Object visitIf(LCIf lcIf, Object additional) {
+        visit(lcIf.condition, additional);
+        IRValue cond = (IRValue) stack.pop();
+        var last = builder.getInsertPoint();
+        var trueBasicBlock = new IRBasicBlock(generateBasicBlockName());
+        currentFunction.addBasicBlock(trueBasicBlock);
+        builder.setInsertPoint(trueBasicBlock);
+        visit(lcIf.then, additional);
+        var thenEnd = builder.getInsertPoint();
+        var nextBasicBlock = new IRBasicBlock(generateBasicBlockName());
+        builder.setInsertPoint(last);
+        builder.createJumpIfFalse(cond, nextBasicBlock);
+        currentFunction.addBasicBlock(nextBasicBlock);
+        if (lcIf._else != null) {
+            boolean hasResult = (lcIf.then instanceof LCExpressionStatement) && (lcIf._else instanceof LCExpressionStatement);
+            IRValue trueResult;
+            if (hasResult) {
+                trueResult = (IRValue) stack.pop();
+            } else {
+                trueResult = null;
+            }
+            builder.setInsertPoint(nextBasicBlock);
+            visit(lcIf._else, additional);
+            var elseEnd = builder.getInsertPoint();
+            var endBasicBlock = new IRBasicBlock(generateBasicBlockName());
+            currentFunction.addBasicBlock(endBasicBlock);
+            builder.setInsertPoint(thenEnd);
+            builder.createGoto(endBasicBlock);
+            builder.setInsertPoint(endBasicBlock);
+            if (hasResult) {
+                IRValue falseResult = (IRValue) stack.pop();
+                Map<IRBasicBlock, IRValue> map = new LinkedHashMap<>();
+                map.put(thenEnd, trueResult);
+                map.put(elseEnd, falseResult);
+                stack.push(builder.createPhi(map, generateRegisterName()));
+            }
+        } else {
+            builder.setInsertPoint(nextBasicBlock);
+        }
+        return null;
+    }
+
+    @Override
     public Object visitBinary(LCBinary lcBinary, Object additional) {
         visit(lcBinary.expression1, additional);
         IRValue left = (IRValue) stack.pop();
         visit(lcBinary.expression2, additional);
         IRValue right = (IRValue) stack.pop();
         if (Token.isArithmeticOperator(lcBinary._operator)) {
-            IRRegister result = new IRRegister(String.valueOf(registerCount++));
+            IRRegister result = new IRRegister(generateRegisterName());
             IRBinaryOperates.Operator op = switch (lcBinary._operator) {
                 case Plus -> IRBinaryOperates.Operator.ADD;
                 case Minus -> IRBinaryOperates.Operator.SUB;
@@ -136,6 +187,12 @@ public final class IRGenerator extends LCAstVisitor {
     @Override
     public Object visitIntegerLiteral(LCIntegerLiteral lcIntegerLiteral, Object additional) {
         stack.push(new IRIntegerConstant((IRIntegerType) parseType(module, lcIntegerLiteral.theType), lcIntegerLiteral.value));
+        return null;
+    }
+
+    @Override
+    public Object visitBooleanLiteral(LCBooleanLiteral lcBooleanLiteral, Object additional) {
+        stack.push(new IRIntegerConstant(IRType.getBooleanType(), lcBooleanLiteral.value ? 1L : 0L));
         return null;
     }
     /*
