@@ -4,14 +4,18 @@ import ldk.l.lg.ir.IRVisitor;
 import ldk.l.lg.ir.type.IRType;
 import ldk.l.lg.ir.value.constant.IRConstant;
 
+import java.util.List;
+
 public final class IRGlobalVariable extends IRNode {
+    public List<String> attributes;
     public boolean isExtern;
     public boolean isConstant;
     public IRType type;
     public String name;
     public IRConstant initializer;
 
-    public IRGlobalVariable(boolean isConstant, String name, IRType type, IRConstant initializer) {
+    public IRGlobalVariable(List<String> attributes, boolean isConstant, String name, IRType type, IRConstant initializer) {
+        this.attributes = attributes;
         this.isConstant = isConstant;
         this.type = type;
         this.name = name;
@@ -19,11 +23,12 @@ public final class IRGlobalVariable extends IRNode {
         isExtern = false;
     }
 
-    public IRGlobalVariable(boolean isConstant, String name, IRConstant initializer) {
-        this(isConstant, name, initializer.getType(), initializer);
+    public IRGlobalVariable(List<String> attributes, boolean isConstant, String name, IRConstant initializer) {
+        this(attributes, isConstant, name, initializer.getType(), initializer);
     }
 
-    public IRGlobalVariable(boolean isConstant, String name, IRType type) {
+    public IRGlobalVariable(List<String> attributes, boolean isConstant, String name, IRType type) {
+        this.attributes = attributes;
         this.isConstant = isConstant;
         this.type = type;
         this.name = name;
@@ -38,6 +43,15 @@ public final class IRGlobalVariable extends IRNode {
 
     @Override
     public String toString() {
-        return (isExtern ? "extern " : "") + (isConstant ? "constant " : "") + "global " + name + (isExtern ? ": " + type : " = " + initializer);
+        StringBuilder sb = new StringBuilder();
+        for (String attribute : attributes) {
+            sb.append("__attribute__(\"").append(attribute).append("\") ");
+        }
+        if (isExtern) sb.append("extern ");
+        if (isConstant) sb.append("constant ");
+        sb.append("global ").append(name);
+        if (isExtern) sb.append(": ").append(type);
+        else sb.append(" = ").append(initializer);
+        return sb.toString();
     }
 }

@@ -21,14 +21,14 @@ public class BuilderTest {
     public static void main(String[] args) {
         IRBuilder builder = new IRBuilder();
         IRModule module = new IRModule();
-        IRGlobalVariable globalVariable = new IRGlobalVariable(false, "glo", new IRIntegerConstant(IRType.getIntType(), 0));
+        IRGlobalVariable globalVariable = new IRGlobalVariable(List.of(), false, "glo", new IRIntegerConstant(IRType.getIntType(), 0));
         module.putGlobalVariable(globalVariable);
 
         IRStructure structure = new IRStructure(List.of(), "struct", List.of(new IRField(IRType.getIntType(), "field"), new IRField(IRType.getLongType(), "field2")));
         module.putStructure(structure);
 
-        IRFunction function = new IRFunction(IRType.getIntType(), "main", List.of(), List.of(), new IRControlFlowGraph());
-        IRFunction function2 = new IRFunction(IRType.getIntType(), "main2", List.of(new IRLocalVariable(IRType.getIntType(), "arg1"), new IRLocalVariable(IRType.getIntType(), "arg2")), List.of(new IRLocalVariable(IRType.getIntType(), "var1"), new IRLocalVariable(IRType.getFloatType(), "var2")), new IRControlFlowGraph());
+        IRFunction function = new IRFunction(IRType.getIntType(), "main", List.of(), false, List.of(), new IRControlFlowGraph());
+        IRFunction function2 = new IRFunction(IRType.getIntType(), "main2", List.of(new IRLocalVariable(IRType.getIntType(), "arg1"), new IRLocalVariable(IRType.getIntType(), "arg2")), false, List.of(new IRLocalVariable(IRType.getIntType(), "var1"), new IRLocalVariable(IRType.getFloatType(), "var2")), new IRControlFlowGraph());
         module.putFunction(function);
         module.putFunction(function2);
         IRBasicBlock block = new IRBasicBlock("entry");

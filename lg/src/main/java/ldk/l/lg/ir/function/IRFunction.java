@@ -16,6 +16,7 @@ public final class IRFunction extends IRNode {
     public IRType returnType;
     public String name;
     public List<IRLocalVariable> args;
+    public boolean isVarArg;
     public List<IRLocalVariable> locals;
     @Deprecated
     public final long argumentCount;
@@ -42,17 +43,18 @@ public final class IRFunction extends IRNode {
         this.locals = null;
     }
 
-    public IRFunction(IRType returnType, String name, List<IRLocalVariable> args, List<IRLocalVariable> locals, IRControlFlowGraph controlFlowGraph) {
-        this(List.of(), returnType, name, args, locals, controlFlowGraph);
+    public IRFunction(IRType returnType, String name, List<IRLocalVariable> args, boolean isVarArg, List<IRLocalVariable> locals, IRControlFlowGraph controlFlowGraph) {
+        this(List.of(), returnType, name, args, isVarArg, locals, controlFlowGraph);
     }
 
-    public IRFunction(List<String> attributes, IRType returnType, String name, List<IRLocalVariable> args, List<IRLocalVariable> locals, IRControlFlowGraph controlFlowGraph) {
+    public IRFunction(List<String> attributes, IRType returnType, String name, List<IRLocalVariable> args, boolean isVarArg, List<IRLocalVariable> locals, IRControlFlowGraph controlFlowGraph) {
         this.argumentCount = 0;
         this.fields = null;
         this.attributes = attributes;
         this.returnType = returnType;
         this.name = name;
         this.args = args;
+        this.isVarArg = isVarArg;
         this.locals = locals;
         this.controlFlowGraph = controlFlowGraph;
         if (controlFlowGraph != null) {
@@ -63,8 +65,8 @@ public final class IRFunction extends IRNode {
         }
     }
 
-    public IRFunction(List<String> attributes, IRType returnType, String name, List<IRLocalVariable> args, List<IRLocalVariable> locals) {
-        this(attributes, returnType, name, args, locals, null);
+    public IRFunction(List<String> attributes, IRType returnType, String name, List<IRLocalVariable> args, boolean isVarArg) {
+        this(attributes, returnType, name, args, isVarArg, null, null);
     }
 
     @Override
