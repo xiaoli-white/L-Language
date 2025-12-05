@@ -1,43 +1,40 @@
 package ldk.l.lc.ir;
 
 import ldk.l.lc.ast.LCAst;
-import ldk.l.lc.ast.LCAstUtil;
 import ldk.l.lc.ast.LCAstVisitor;
-import ldk.l.lc.ast.base.*;
-import ldk.l.lc.ast.expression.*;
-import ldk.l.lc.ast.expression.literal.*;
-import ldk.l.lc.ast.expression.type.LCTypeReferenceExpression;
-import ldk.l.lc.ast.statement.*;
+import ldk.l.lc.ast.base.LCExpressionStatement;
+import ldk.l.lc.ast.expression.LCBinary;
+import ldk.l.lc.ast.expression.literal.LCIntegerLiteral;
+import ldk.l.lc.ast.file.LCSourceCodeFile;
 import ldk.l.lc.ast.statement.declaration.LCMethodDeclaration;
-import ldk.l.lc.ast.statement.declaration.LCVariableDeclaration;
-import ldk.l.lc.ast.statement.declaration.object.*;
 import ldk.l.lc.ast.statement.loops.*;
-import ldk.l.lc.semantic.types.*;
+import ldk.l.lc.semantic.types.SystemTypes;
 import ldk.l.lc.token.Token;
 import ldk.l.lc.token.Tokens;
 import ldk.l.lc.util.error.ErrorStream;
-import ldk.l.lc.util.scope.Scope;
-import ldk.l.lc.util.symbol.MethodKind;
-import ldk.l.lc.util.symbol.MethodSymbol;
-import ldk.l.lc.util.symbol.Symbol;
-import ldk.l.lc.util.symbol.VariableSymbol;
-import ldk.l.lc.util.symbol.object.*;
-import ldk.l.lg.ir.IRConstantPool;
+import ldk.l.lg.ir.IRBuilder;
+import ldk.l.lg.ir.IRDumper;
 import ldk.l.lg.ir.IRModule;
 import ldk.l.lg.ir.base.*;
+import ldk.l.lg.ir.function.IRFunction;
 import ldk.l.lg.ir.operand.*;
 import ldk.l.lg.ir.instruction.*;
 import ldk.l.lg.ir.structure.IRField;
-import ldk.l.lg.ir.structure.IRStructure;
-import ldk.l.lg.ir.type.*;
+import ldk.l.lg.ir.type.IRIntegerType;
+import ldk.l.lg.ir.value.IRRegister;
+import ldk.l.lg.ir.value.IRValue;
+import ldk.l.lg.ir.value.constant.IRIntegerConstant;
 import ldk.l.util.option.Options;
 
 import java.util.*;
 
+import static ldk.l.lc.ir.IRUtils.parseType;
+
 public final class IRGenerator extends LCAstVisitor {
-    private final IRModule module;
+    private IRModule module;
     private final Options options;
     private final ErrorStream errorStream;
+    private IRBuilder builder;
     private LCAst ast = null;
     private IRControlFlowGraph initCFG = null;
     private List<IRField> initFields = null;
@@ -60,13 +57,88 @@ public final class IRGenerator extends LCAstVisitor {
     private final Map<IRControlFlowGraph, Map<String, String>> label2LoopEnd = new HashMap<>();
     private final Map<IRControlFlowGraph, Map<LCAbstractLoop, String>> abstractLoop2VLabel = new HashMap<>();
     private Map<String, Stack<String>> variableName2FieldName = new HashMap<>();
+    private long basicBlockCount;
+    private long registerCount;
+    private Stack<Object> stack = new Stack<>();
 
     public IRGenerator(IRModule module, Options options, ErrorStream errorStream) {
         this.module = module;
         this.options = options;
         this.errorStream = errorStream;
     }
-/*
+
+    private String generateBasicBlockName() {
+        return "basicBlock_" + (basicBlockCount++);
+    }
+
+    @Override
+    public Object visitSourceCodeFile(LCSourceCodeFile lcSourceCodeFile, Object additional) {
+        module = new IRModule();
+        DefinitionCreator definitionCreator = new DefinitionCreator(module);
+        definitionCreator.visitSourceCodeFile(lcSourceCodeFile, additional);
+        System.out.println("module(before):");
+        IRDumper irDumper = new IRDumper();
+        irDumper.visitModule(module, "");
+        basicBlockCount = 0;
+        registerCount = 0;
+        super.visitSourceCodeFile(lcSourceCodeFile, additional);
+        System.out.println("module(after):");
+        irDumper.visitModule(module, "");
+        return null;
+    }
+
+    @Override
+    public Object visitMethodDeclaration(LCMethodDeclaration lcMethodDeclaration, Object additional) {
+        IRFunction function = module.functions.get(lcMethodDeclaration.symbol.getFullName());
+        function.isExtern = false;
+        function.locals = new ArrayList<>();
+        function.controlFlowGraph = new IRControlFlowGraph();
+        function.controlFlowGraph.function = function;
+        builder = new IRBuilder();
+        IRBasicBlock entryBasicBlock = new IRBasicBlock(generateBasicBlockName());
+        function.addBasicBlock(entryBasicBlock);
+        builder.setInsertPoint(entryBasicBlock);
+        visit(lcMethodDeclaration.body, additional);
+        if (!lcMethodDeclaration.returnType.equals(SystemTypes.VOID) && !lcMethodDeclaration.body.statements.isEmpty() && lcMethodDeclaration.body.statements.getLast() instanceof LCExpressionStatement) {
+            if (!stack.isEmpty()) builder.createReturn((IRValue) stack.pop());
+        }
+        return null;
+    }
+
+    @Override
+    public Object visitBinary(LCBinary lcBinary, Object additional) {
+        visit(lcBinary.expression1, additional);
+        IRValue left = (IRValue) stack.pop();
+        visit(lcBinary.expression2, additional);
+        IRValue right = (IRValue) stack.pop();
+        if (Token.isArithmeticOperator(lcBinary._operator)) {
+            IRRegister result = new IRRegister(String.valueOf(registerCount++));
+            IRBinaryOperates.Operator op = switch (lcBinary._operator) {
+                case Plus -> IRBinaryOperates.Operator.ADD;
+                case Minus -> IRBinaryOperates.Operator.SUB;
+                case Multiply -> IRBinaryOperates.Operator.MUL;
+                case Divide -> IRBinaryOperates.Operator.DIV;
+                case Modulus -> IRBinaryOperates.Operator.MOD;
+                case BitAnd -> IRBinaryOperates.Operator.AND;
+                case BitOr -> IRBinaryOperates.Operator.OR;
+                case BitXor -> IRBinaryOperates.Operator.XOR;
+                case LeftShiftArithmetic -> IRBinaryOperates.Operator.SHL;
+                case RightShiftArithmetic -> IRBinaryOperates.Operator.SHR;
+                case RightShiftLogical -> IRBinaryOperates.Operator.USHR;
+                default -> throw new IllegalArgumentException("unsupported operator: " + lcBinary._operator);
+            };
+            builder.getInsertPoint().instructions.add(new IRBinaryOperates(op, left, right, result));
+            stack.push(result);
+        }
+        return null;
+    }
+
+    @Override
+    public Object visitIntegerLiteral(LCIntegerLiteral lcIntegerLiteral, Object additional) {
+        stack.push(new IRIntegerConstant((IRIntegerType) parseType(module, lcIntegerLiteral.theType), lcIntegerLiteral.value));
+        return null;
+    }
+    /*
     private String allocateVirtualRegister() {
         return String.valueOf(registersCount++);
     }

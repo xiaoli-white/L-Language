@@ -50,7 +50,7 @@ public abstract sealed class LCObjectDeclaration extends LCDeclaration permits L
     }
 
     public String getPackageName() {
-        return LCAstUtil.getSourceFile(this) instanceof LCSourceCodeFile sourceCodeFile ? sourceCodeFile.packageName : null;
+        return (LCAstUtil.getSourceFile(this) instanceof LCSourceCodeFile sourceCodeFile && sourceCodeFile.packageName != null) ? sourceCodeFile.packageName : "";
     }
 
     public String getRealPackageName() {

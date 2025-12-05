@@ -75,7 +75,7 @@ public final class MethodSymbol extends Symbol {
     }
 
     public String getFullName() {
-        return (this.objectSymbol != null ? this.objectSymbol.getFullName() + "." : "") + this.getSimpleName();
+        return (this.objectSymbol != null && this.objectSymbol.getFullName() != null && !this.objectSymbol.getFullName().isEmpty() ? this.objectSymbol.getFullName() + "." : "") + this.getSimpleName();
     }
 
     public int getNumParams() {

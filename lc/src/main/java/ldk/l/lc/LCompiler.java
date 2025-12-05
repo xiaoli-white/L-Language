@@ -159,7 +159,7 @@ public class LCompiler {
             if (!errorStream.checkErrorNum(""))
                 return;
 
-            LGenerator.generate(irModule, options);
+//            LGenerator.generate(irModule, options);
 
             errorStream.dumpErrorsAndWarnings("");
         }

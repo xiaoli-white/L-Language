@@ -24,6 +24,6 @@ public abstract sealed class ObjectSymbol extends Symbol permits ClassSymbol, In
     public abstract List<MethodSymbol> getMethods();
 
     public String getFullName() {
-        return (this._package != null ? this._package + "." : "") + this.name;
+        return (this._package != null && !this._package.isEmpty() ? this._package + "." : "") + this.name;
     }
 }

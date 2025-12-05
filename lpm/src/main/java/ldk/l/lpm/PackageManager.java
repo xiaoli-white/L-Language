@@ -15,18 +15,21 @@ import java.util.*;
 public final class PackageManager {
     public Map<String, LGPackage> listPackages() {
         Map<String, LGPackage> packages = new LinkedHashMap<>();
-        for (File file : Objects.requireNonNull(new File(FileUtils.getUserDirectoryPath(), ".lpm/packages").listFiles())) {
-            if (!file.isDirectory())
-                continue;
-            Yaml yaml = new Yaml();
-            Map<String, Object> map;
-            try {
-                map = yaml.load(Files.readString(file.toPath().resolve("manifest.yaml")));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+        File[] files = new File(FileUtils.getUserDirectoryPath(), ".lpm/packages").listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (!file.isDirectory())
+                    continue;
+                Yaml yaml = new Yaml();
+                Map<String, Object> map;
+                try {
+                    map = yaml.load(Files.readString(file.toPath().resolve("manifest.yaml")));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                String name = (String) map.get("name");
+                packages.put(name, new LGPackage(name, Paths.get(file.getPath()).toAbsolutePath().toString(), map));
             }
-            String name = (String) map.get("name");
-            packages.put(name, new LGPackage(name, Paths.get(file.getPath()).toAbsolutePath().toString(), map));
         }
         return packages;
     }

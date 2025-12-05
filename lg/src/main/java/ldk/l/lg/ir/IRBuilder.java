@@ -22,6 +22,9 @@ public class IRBuilder {
     public void setInsertPoint(IRBasicBlock insertPoint) {
         this.insertPoint = insertPoint;
     }
+    public IRBasicBlock getInsertPoint() {
+        return insertPoint;
+    }
 
     public void createReturn() {
         createReturn(null);
