@@ -8,15 +8,16 @@ import ldk.l.lc.ast.base.LCStatement;
 import ldk.l.lc.ast.expression.LCBinary;
 import ldk.l.lc.ast.expression.LCIf;
 import ldk.l.lc.ast.expression.LCVariable;
-import ldk.l.lc.ast.expression.literal.LCBooleanLiteral;
-import ldk.l.lc.ast.expression.literal.LCIntegerLiteral;
+import ldk.l.lc.ast.expression.literal.*;
 import ldk.l.lc.ast.file.LCSourceCodeFile;
 import ldk.l.lc.ast.statement.LCReturn;
 import ldk.l.lc.ast.statement.declaration.LCMethodDeclaration;
 import ldk.l.lc.ast.statement.declaration.LCVariableDeclaration;
 import ldk.l.lc.ast.statement.loops.*;
+import ldk.l.lc.semantic.types.PointerType;
 import ldk.l.lc.semantic.types.SystemTypes;
 import ldk.l.lc.token.Token;
+import ldk.l.lc.token.Tokens;
 import ldk.l.lc.util.error.ErrorStream;
 import ldk.l.lc.util.scope.Scope;
 import ldk.l.lc.util.symbol.Symbol;
@@ -31,11 +32,15 @@ import ldk.l.lg.ir.operand.*;
 import ldk.l.lg.ir.instruction.*;
 import ldk.l.lg.ir.structure.IRField;
 import ldk.l.lg.ir.type.IRIntegerType;
+import ldk.l.lg.ir.type.IRPointerType;
 import ldk.l.lg.ir.type.IRType;
 import ldk.l.lg.ir.value.IRLocalVariableReference;
 import ldk.l.lg.ir.value.IRRegister;
 import ldk.l.lg.ir.value.IRValue;
+import ldk.l.lg.ir.value.constant.IRDoubleConstant;
+import ldk.l.lg.ir.value.constant.IRFloatConstant;
 import ldk.l.lg.ir.value.constant.IRIntegerConstant;
+import ldk.l.lg.ir.value.constant.IRNullptrConstant;
 import ldk.l.util.option.Options;
 
 import java.util.*;
@@ -339,29 +344,194 @@ public final class IRGenerator extends LCAstVisitor {
 
     @Override
     public Object visitBinary(LCBinary lcBinary, Object additional) {
-        visit(lcBinary.expression1, additional);
-        IRValue left = (IRValue) stack.pop();
-        visit(lcBinary.expression2, additional);
-        IRValue right = (IRValue) stack.pop();
-        if (Token.isArithmeticOperator(lcBinary._operator)) {
-            IRRegister result = new IRRegister(generateRegisterName());
-            IRBinaryOperates.Operator op = switch (lcBinary._operator) {
-                case Plus -> IRBinaryOperates.Operator.ADD;
-                case Minus -> IRBinaryOperates.Operator.SUB;
-                case Multiply -> IRBinaryOperates.Operator.MUL;
-                case Divide -> IRBinaryOperates.Operator.DIV;
-                case Modulus -> IRBinaryOperates.Operator.MOD;
-                case BitAnd -> IRBinaryOperates.Operator.AND;
-                case BitOr -> IRBinaryOperates.Operator.OR;
-                case BitXor -> IRBinaryOperates.Operator.XOR;
-                case LeftShiftArithmetic -> IRBinaryOperates.Operator.SHL;
-                case RightShiftArithmetic -> IRBinaryOperates.Operator.SHR;
-                case RightShiftLogical -> IRBinaryOperates.Operator.USHR;
-                default -> throw new IllegalArgumentException("unsupported operator: " + lcBinary._operator);
-            };
-            builder.getInsertPoint().instructions.add(new IRBinaryOperates(op, left, right, result));
+        if (lcBinary._operator == Tokens.Operator.Dot || lcBinary._operator == Tokens.Operator.MemberAccess) {
+//            this.visit(lcBinary.expression1, additional);
+//            Type type = lcBinary.expression1.theType;
+//            if (type instanceof NullableType nullableType) type = nullableType.base;
+//            if (lcBinary._operator == Tokens.Operator.MemberAccess) {
+//                type = ((PointerType) type).base;
+//                IROperand operand = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
+//                String tempRegister = allocateVirtualRegister();
+//                addInstruction(new IRLoad(parseType(type), operand, new IRVirtualRegister(tempRegister)));
+//                operandStack.push(new IRVirtualRegister(tempRegister));
+//            }
+//
+//            if (type instanceof ArrayType arrayType && lcBinary.expression2 instanceof LCVariable lcVariable && "length".equals(lcVariable.name)) {
+//                IROperand array = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
+//                arrayLength(array, arrayType.base);
+//            } else {
+//                if (lcBinary.expression2 instanceof LCMethodCall lcMethodCall && lcMethodCall.symbol.methodKind == MethodKind.Destructor && lcBinary.expression1 instanceof LCSuper lcSuper) {
+//                    IROperand operand = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
+//                    callMethod(lcMethodCall.symbol, List.of(operand), List.of(lcSuper.theType), true);
+//                } else {
+//                    this.visit(lcBinary.expression2, additional);
+//                }
+//            }
+        } else if (Token.isArithmeticOperator(lcBinary._operator)) {
+            visit(lcBinary.expression1, additional);
+            IRValue left = (IRValue) stack.pop();
+            visit(lcBinary.expression2, additional);
+            IRValue right = (IRValue) stack.pop();
+            if (lcBinary.methodSymbol != null) {
+//                callMethod(lcBinary.methodSymbol, List.of(operand1, operand2), List.of(lcBinary.expression1.theType, lcBinary.expression2.theType));
+            } else if (lcBinary._operator == Tokens.Operator.Plus) {
+                if (lcBinary.expression1.theType instanceof PointerType pointerType) {
+                    IRRegister tmp1 = builder.createBitCast(left, IRType.getUnsignedLongType(), generateRegisterName());
+                    IRRegister tmp2 = builder.createMul(right, new IRIntegerConstant((IRIntegerType) right.getType(), IRType.getLength(parseType(module, pointerType.base))), generateRegisterName());
+                    IRRegister result = builder.createAdd(tmp1, tmp2, generateRegisterName());
+                    stack.push(builder.createBitCast(result, left.getType(), generateRegisterName()));
+//                    IRType elementType = parseType(pointerType.base);
+//                    String tempRegister = allocateVirtualRegister();
+//                    int constantElementSizeIndex = this.module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), IRType.getLength(elementType)));
+//                    addInstruction(new IRCalculate(IRCalculate.Operator.MUL, IRType.getUnsignedLongType(), new IRConstant(constantElementSizeIndex), operand2, new IRVirtualRegister(tempRegister)));
+//                    addInstruction(new IRCalculate(IRCalculate.Operator.ADD, new IRPointerType(elementType), operand1, new IRVirtualRegister(tempRegister), new IRVirtualRegister(resultRegister)));
+                } else {
+                    stack.push(builder.createAdd(left, right, generateRegisterName()));
+                }
+            } else if (lcBinary._operator == Tokens.Operator.Minus) {
+                if (lcBinary.expression1.theType instanceof PointerType pointerType) {
+                    IRRegister tmp1 = builder.createBitCast(left, IRType.getUnsignedLongType(), generateRegisterName());
+                    IRRegister tmp2 = builder.createMul(right, new IRIntegerConstant((IRIntegerType) right.getType(), IRType.getLength(parseType(module, pointerType.base))), generateRegisterName());
+                    IRRegister result = builder.createSub(tmp1, tmp2, generateRegisterName());
+                    stack.push(builder.createBitCast(result, left.getType(), generateRegisterName()));
+                } else {
+                    stack.push(builder.createSub(left, right, generateRegisterName()));
+                }
+            } else {
+                IRRegister result = new IRRegister(generateRegisterName());
+                IRBinaryOperates.Operator op = switch (lcBinary._operator) {
+                    case Multiply -> IRBinaryOperates.Operator.MUL;
+                    case Divide -> IRBinaryOperates.Operator.DIV;
+                    case Modulus -> IRBinaryOperates.Operator.MOD;
+                    case BitAnd -> IRBinaryOperates.Operator.AND;
+                    case BitOr -> IRBinaryOperates.Operator.OR;
+                    case BitXor -> IRBinaryOperates.Operator.XOR;
+                    case LeftShiftArithmetic -> IRBinaryOperates.Operator.SHL;
+                    case RightShiftArithmetic -> IRBinaryOperates.Operator.SHR;
+                    case RightShiftLogical -> IRBinaryOperates.Operator.USHR;
+                    default -> throw new IllegalArgumentException("unsupported operator: " + lcBinary._operator);
+                };
+                builder.getInsertPoint().instructions.add(new IRBinaryOperates(op, left, right, result));
+                stack.push(result);
+            }
+        } else if (Token.isLogicalOperator(lcBinary._operator)) {
+            IRIntegerConstant constantTrue = new IRIntegerConstant(IRIntegerType.getBooleanType(), 1);
+            IRIntegerConstant constantFalse = new IRIntegerConstant(IRIntegerType.getBooleanType(), 0);
+            if (lcBinary._operator == Tokens.Operator.And) {
+                visit(lcBinary.expression1, additional);
+                IRValue left = (IRValue) stack.pop();
+                IRBasicBlock leftEndBlock = builder.getInsertPoint();
+                IRBasicBlock rightBeginBlock = createBasicBlock();
+                visit(lcBinary.expression2, additional);
+                IRValue right = (IRValue) stack.pop();
+                IRBasicBlock rightEndBlock = builder.getInsertPoint();
+                IRBasicBlock end = createBasicBlock();
+                builder.setInsertPoint(leftEndBlock);
+                builder.createJumpIfFalse(left, end);
+                builder.setInsertPoint(end);
+                Map<IRBasicBlock, IRValue> map = new LinkedHashMap<>();
+                map.put(leftEndBlock, left);
+                map.put(rightEndBlock, right);
+                stack.push(builder.createPhi(map, generateRegisterName()));
+            } else if (lcBinary._operator == Tokens.Operator.Or) {
+                visit(lcBinary.expression1, additional);
+                IRValue left = (IRValue) stack.pop();
+                IRBasicBlock leftEndBlock = builder.getInsertPoint();
+                IRBasicBlock rightBeginBlock = createBasicBlock();
+                visit(lcBinary.expression2, additional);
+                IRValue right = (IRValue) stack.pop();
+                IRBasicBlock rightEndBlock = builder.getInsertPoint();
+                IRBasicBlock end = createBasicBlock();
+                builder.setInsertPoint(leftEndBlock);
+                builder.createJumpIfTrue(left, end);
+                builder.setInsertPoint(end);
+                Map<IRBasicBlock, IRValue> map = new LinkedHashMap<>();
+                map.put(leftEndBlock, left);
+                map.put(rightEndBlock, right);
+                stack.push(builder.createPhi(map, generateRegisterName()));
+            }
+        } else if (Token.isRelationOperator(lcBinary._operator)) {
+            visit(lcBinary.expression1, additional);
+            IRValue left = (IRValue) stack.pop();
+            visit(lcBinary.expression2, additional);
+            IRValue right = (IRValue) stack.pop();
+            IRRegister resultRegister = new IRRegister(generateRegisterName());
+            builder.getInsertPoint().instructions.add(new IRCompare(parseRelationOperator(lcBinary._operator), left, right, resultRegister));
+            stack.push(resultRegister);
+        } else if (Token.isAssignOperator(lcBinary._operator)) {
+            visit(lcBinary.expression1, additional);
+            IRValue left = (IRValue) stack.pop();
+            visit(lcBinary.expression2, additional);
+            IRValue right = (IRValue) stack.pop();
+            IRValue result;
+            switch (lcBinary._operator) {
+                case Assign -> {
+                    result = right;
+//                    retain(operand2, lcBinary.expression2.theType);
+//                    String tempRegister = allocateVirtualRegister();
+//                    addInstruction(new IRLoad(operandType, operand1, new IRVirtualRegister(tempRegister)));
+//                    release(new IRVirtualRegister(tempRegister), lcBinary.expression1.theType);
+                }
+                case PlusAssign -> {
+                    IRValue leftVal = builder.createLoad(left, generateRegisterName());
+                    result = builder.createAdd(leftVal, right);
+                }
+                case MinusAssign -> {
+                    IRValue leftVal = builder.createLoad(left, generateRegisterName());
+                    result = builder.createSub(leftVal, right);
+                }
+                case MultiplyAssign -> {
+                    IRValue leftVal = builder.createLoad(left, generateRegisterName());
+                    result = builder.createMul(leftVal, right);
+                }
+                case DivideAssign -> {
+                    IRValue leftVal = builder.createLoad(left, generateRegisterName());
+                    result = builder.createDiv(leftVal, right);
+                }
+                case ModulusAssign -> {
+                    IRValue leftVal = builder.createLoad(left, generateRegisterName());
+                    result = builder.createMod(leftVal, right);
+                }
+                case LeftShiftArithmeticAssign -> {
+                    IRValue leftVal = builder.createLoad(left, generateRegisterName());
+                    result = builder.createShl(leftVal, right);
+                }
+                case RightShiftArithmeticAssign -> {
+                    IRValue leftVal = builder.createLoad(left, generateRegisterName());
+                    result = builder.createShr(leftVal, right);
+                }
+                case RightShiftLogicalAssign -> {
+                    IRValue leftVal = builder.createLoad(left, generateRegisterName());
+                    result = builder.createUShr(leftVal, right);
+                }
+                case BitAndAssign -> {
+                    IRValue leftVal = builder.createLoad(left, generateRegisterName());
+                    result = builder.createAnd(leftVal, right);
+                }
+                case BitOrAssign -> {
+                    IRValue leftVal = builder.createLoad(left, generateRegisterName());
+                    result = builder.createOr(leftVal, right);
+                }
+                case BitXorAssign -> {
+                    IRValue leftVal = builder.createLoad(left, generateRegisterName());
+                    result = builder.createXor(leftVal, right);
+                }
+                case null, default -> throw new RuntimeException("Unsupported operator: " + lcBinary._operator);
+            }
+            builder.createStore(left, result);
             stack.push(result);
         }
+        /*
+        } else
+            this.visit(lcBinary.expression1, additional);
+            IROperand operand1 = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
+
+            this.visit(lcBinary.expression2, additional);
+            IROperand operand2 = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
+
+
+
+         */
         return null;
     }
 
@@ -372,8 +542,36 @@ public final class IRGenerator extends LCAstVisitor {
     }
 
     @Override
+    public Object visitDecimalLiteral(LCDecimalLiteral lcDecimalLiteral, Object additional) {
+        if (lcDecimalLiteral.theType.equals(SystemTypes.FLOAT)) {
+            stack.push(new IRFloatConstant(lcDecimalLiteral.value.floatValue()));
+        } else {
+            stack.push(new IRDoubleConstant(lcDecimalLiteral.value));
+        }
+        return null;
+    }
+
+    @Override
     public Object visitBooleanLiteral(LCBooleanLiteral lcBooleanLiteral, Object additional) {
         stack.push(new IRIntegerConstant(IRType.getBooleanType(), lcBooleanLiteral.value ? 1L : 0L));
+        return null;
+    }
+
+    @Override
+    public Object visitNullLiteral(LCNullLiteral lcNullLiteral, Object additional) {
+        stack.push(new IRNullptrConstant((IRPointerType) parseType(module, lcNullLiteral.theType)));
+        return null;
+    }
+
+    @Override
+    public Object visitNullptrLiteral(LCNullptrLiteral lcNullptrLiteral, Object additional) {
+        stack.push(new IRNullptrConstant((IRPointerType) parseType(module, lcNullptrLiteral.theType)));
+        return null;
+    }
+
+    @Override
+    public Object visitCharLiteral(LCCharLiteral lcCharLiteral, Object additional) {
+        stack.push(new IRIntegerConstant(IRType.getCharType(), lcCharLiteral.value));
         return null;
     }
 
@@ -400,6 +598,31 @@ public final class IRGenerator extends LCAstVisitor {
 //                release(operand, variableSymbol.theType);
             }
         }
+    }
+
+    private IRCondition parseRelationOperator(Tokens.Operator _operator) {
+        return switch (_operator) {
+            case Equal -> IRCondition.Equal;
+            case NotEqual -> IRCondition.NotEqual;
+            case Greater -> IRCondition.Greater;
+            case GreaterEqual -> IRCondition.GreaterEqual;
+            case Less -> IRCondition.Less;
+            case LessEqual -> IRCondition.LessEqual;
+            default -> throw new RuntimeException("Invalid relation operator");
+        };
+    }
+
+    private IRCondition negatesCondition(IRCondition condition) {
+        return switch (condition) {
+            case Equal -> IRCondition.NotEqual;
+            case NotEqual -> IRCondition.Equal;
+            case Greater -> IRCondition.LessEqual;
+            case GreaterEqual -> IRCondition.Less;
+            case Less -> IRCondition.GreaterEqual;
+            case LessEqual -> IRCondition.Greater;
+            case IfTrue -> IRCondition.IfFalse;
+            case IfFalse -> IRCondition.IfTrue;
+        };
     }
     /*
     private String allocateVirtualRegister() {
@@ -2897,31 +3120,6 @@ public final class IRGenerator extends LCAstVisitor {
         } else {
             return IRTypeCast.Kind.Truncate;
         }
-    }
-
-    private IRCondition parseRelationOperator(Tokens.Operator _operator) {
-        return switch (_operator) {
-            case Equal -> IRCondition.Equal;
-            case NotEqual -> IRCondition.NotEqual;
-            case Greater -> IRCondition.Greater;
-            case GreaterEqual -> IRCondition.GreaterEqual;
-            case Less -> IRCondition.Less;
-            case LessEqual -> IRCondition.LessEqual;
-            default -> throw new RuntimeException("Invalid relation operator");
-        };
-    }
-
-    private IRCondition negatesCondition(IRCondition condition) {
-        return switch (condition) {
-            case Equal -> IRCondition.NotEqual;
-            case NotEqual -> IRCondition.Equal;
-            case Greater -> IRCondition.LessEqual;
-            case GreaterEqual -> IRCondition.Less;
-            case Less -> IRCondition.GreaterEqual;
-            case LessEqual -> IRCondition.Greater;
-            case IfTrue -> IRCondition.IfFalse;
-            case IfFalse -> IRCondition.IfTrue;
-        };
     }
 
     private IRCalculate.Operator parseArithmeticOperator(Tokens.Operator _operator) {

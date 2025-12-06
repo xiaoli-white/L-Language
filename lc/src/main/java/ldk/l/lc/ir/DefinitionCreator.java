@@ -52,7 +52,7 @@ public final class DefinitionCreator extends LCAstVisitor {
     public Object visitMethodDeclaration(LCMethodDeclaration lcMethodDeclaration, Object additional) {
         List<IRLocalVariable> args = new ArrayList<>();
         if (!LCFlags.hasStatic(lcMethodDeclaration.modifier.flags)) {
-            args.add(new IRLocalVariable(new IRPointerType(parseType(module, lcMethodDeclaration.symbol.objectSymbol.theType)), "<this_ptr>"));
+            args.add(new IRLocalVariable(parseType(module, lcMethodDeclaration.symbol.objectSymbol.theType), "<this_ptr>"));
         }
         for (LCVariableDeclaration variableDeclaration : lcMethodDeclaration.parameterList.parameters) {
             args.add(new IRLocalVariable(parseType(module, variableDeclaration.theType), variableDeclaration.name + "_0"));

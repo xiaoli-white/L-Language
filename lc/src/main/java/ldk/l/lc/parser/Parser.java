@@ -3482,7 +3482,7 @@ public final class Parser {
             return new LCBooleanLiteral(Boolean.parseBoolean(t.text()), t.position());
         } else if (t.kind() == TokenKind.CharLiteral) {
             this.tokenIndex++;
-            return new LCCharLiteral(t.text().charAt(0), t.position());
+            return new LCCharLiteral(t.text().codePointAt(1), t.position());
         } else {
             this.tokenIndex++;
             return new LCStringLiteral(t.text(), t.position());
