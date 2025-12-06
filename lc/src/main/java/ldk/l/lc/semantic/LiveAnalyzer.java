@@ -1,6 +1,7 @@
 package ldk.l.lc.semantic;
 
 import ldk.l.lc.ast.LCAstVisitor;
+import ldk.l.lc.ast.base.LCAstNode;
 import ldk.l.lc.ast.base.LCBlock;
 import ldk.l.lc.ast.base.LCExpressionStatement;
 import ldk.l.lc.ast.base.LCStatement;
@@ -18,6 +19,13 @@ public class LiveAnalyzer extends LCAstVisitor {
 
     public LiveAnalyzer(ErrorStream errorStream) {
         this.errorStream = errorStream;
+    }
+
+    @Override
+    public Object visit(LCAstNode node, Object additional) {
+        Object ret = super.visit(node, additional);
+        if (ret instanceof Boolean booleanValue) return booleanValue;
+        return true;
     }
 
     public Object visitMethodDeclaration(LCMethodDeclaration lcMethodDeclaration, Object additional) {

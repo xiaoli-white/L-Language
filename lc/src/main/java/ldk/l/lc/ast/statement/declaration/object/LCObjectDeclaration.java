@@ -35,7 +35,7 @@ public abstract sealed class LCObjectDeclaration extends LCDeclaration permits L
 
     public String getFullName() {
         String packageName = this.getPackageName();
-        return packageName != null ? packageName + "." + this.getRealName() : this.getRealName();
+        return packageName != null && !packageName.isEmpty() ? packageName + "." + this.getRealName() : this.getRealName();
     }
 
     public String getRealName() {
