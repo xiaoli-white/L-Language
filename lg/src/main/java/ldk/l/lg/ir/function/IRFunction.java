@@ -8,9 +8,12 @@ import ldk.l.lg.ir.structure.IRField;
 import ldk.l.lg.ir.type.IRType;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public final class IRFunction extends IRNode {
+    private final Map<String, IRLocalVariable> name2LocalVariable = new HashMap<>();
     public List<String> attributes;
     public boolean isExtern;
     public IRType returnType;
@@ -57,9 +60,11 @@ public final class IRFunction extends IRNode {
         this.isVarArg = isVarArg;
         this.locals = locals;
         this.controlFlowGraph = controlFlowGraph;
+        for (IRLocalVariable arg : args) name2LocalVariable.put(arg.name, arg);
         if (controlFlowGraph != null) {
             controlFlowGraph.function = this;
             isExtern = false;
+            for (IRLocalVariable local : locals) name2LocalVariable.put(local.name, local);
         } else {
             isExtern = true;
         }
@@ -89,5 +94,19 @@ public final class IRFunction extends IRNode {
 
     public void addBasicBlock(IRBasicBlock basicBlock) {
         controlFlowGraph.addBasicBlock(basicBlock);
+    }
+
+    public IRLocalVariable getLocalVariable(String name) {
+        return name2LocalVariable.get(name);
+    }
+
+    public void addArg(IRLocalVariable arg) {
+        name2LocalVariable.put(arg.name, arg);
+        args.add(arg);
+    }
+
+    public void addLocal(IRLocalVariable local) {
+        name2LocalVariable.put(local.name, local);
+        locals.add(local);
     }
 }

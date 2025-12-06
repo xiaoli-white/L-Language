@@ -4,7 +4,7 @@ import ldk.l.lc.token.CharStream;
 
 import java.util.ArrayList;
 
-public abstract sealed class Type permits ArrayType,MethodPointerType,NamedType,NullableType,PointerType,ReferenceType {
+public abstract sealed class Type permits ArrayType, MethodPointerType, NamedType, NullableType, PointerType, ReferenceType {
     public TypeKind kind;
 
     public Type(TypeKind kind) {

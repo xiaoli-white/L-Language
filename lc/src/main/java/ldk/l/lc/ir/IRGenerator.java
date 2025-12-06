@@ -2,28 +2,37 @@ package ldk.l.lc.ir;
 
 import ldk.l.lc.ast.LCAst;
 import ldk.l.lc.ast.LCAstVisitor;
+import ldk.l.lc.ast.base.LCBlock;
 import ldk.l.lc.ast.base.LCExpressionStatement;
+import ldk.l.lc.ast.base.LCStatement;
 import ldk.l.lc.ast.expression.LCBinary;
 import ldk.l.lc.ast.expression.LCIf;
+import ldk.l.lc.ast.expression.LCVariable;
 import ldk.l.lc.ast.expression.literal.LCBooleanLiteral;
 import ldk.l.lc.ast.expression.literal.LCIntegerLiteral;
 import ldk.l.lc.ast.file.LCSourceCodeFile;
+import ldk.l.lc.ast.statement.LCReturn;
 import ldk.l.lc.ast.statement.declaration.LCMethodDeclaration;
+import ldk.l.lc.ast.statement.declaration.LCVariableDeclaration;
 import ldk.l.lc.ast.statement.loops.*;
 import ldk.l.lc.semantic.types.SystemTypes;
 import ldk.l.lc.token.Token;
-import ldk.l.lc.token.Tokens;
 import ldk.l.lc.util.error.ErrorStream;
+import ldk.l.lc.util.scope.Scope;
+import ldk.l.lc.util.symbol.Symbol;
+import ldk.l.lc.util.symbol.VariableSymbol;
 import ldk.l.lg.ir.IRBuilder;
 import ldk.l.lg.ir.IRDumper;
 import ldk.l.lg.ir.IRModule;
 import ldk.l.lg.ir.base.*;
 import ldk.l.lg.ir.function.IRFunction;
+import ldk.l.lg.ir.function.IRLocalVariable;
 import ldk.l.lg.ir.operand.*;
 import ldk.l.lg.ir.instruction.*;
 import ldk.l.lg.ir.structure.IRField;
 import ldk.l.lg.ir.type.IRIntegerType;
 import ldk.l.lg.ir.type.IRType;
+import ldk.l.lg.ir.value.IRLocalVariableReference;
 import ldk.l.lg.ir.value.IRRegister;
 import ldk.l.lg.ir.value.IRValue;
 import ldk.l.lg.ir.value.constant.IRIntegerConstant;
@@ -39,28 +48,49 @@ public final class IRGenerator extends LCAstVisitor {
     private final ErrorStream errorStream;
     private IRBuilder builder;
     private IRFunction currentFunction;
+    @Deprecated
     private LCAst ast = null;
+    @Deprecated
     private IRControlFlowGraph initCFG = null;
+    @Deprecated
     private List<IRField> initFields = null;
+    @Deprecated
     private Map<String, Stack<String>> initVariableName2FieldName = null;
+    @Deprecated
     private Map<String, Long> initCountOfSameNameVariables = null;
+    @Deprecated
     private boolean inInit = false;
+    @Deprecated
     private IRControlFlowGraph staticInitCFG = null;
+    @Deprecated
     private List<IRField> staticInitFields = null;
+    @Deprecated
     private Map<String, Stack<String>> staticInitVariableName2FieldName = null;
+    @Deprecated
     private Map<String, Long> staticInitCountOfSameNameVariables = null;
+    @Deprecated
     private boolean inStaticInit = false;
+    @Deprecated
     private final Stack<IROperand> operandStack = new Stack<>();
+    @Deprecated
     private IRControlFlowGraph currentCFG = null;
+    @Deprecated
     private long registersCount = 0;
+    @Deprecated
     private final List<IRInvoke> stringConstantInitInvocations = new ArrayList<>();
+    @Deprecated
     private final List<IRInvoke> objectStaticInitInvocations = new ArrayList<>();
+    @Deprecated
     private final Map<String, String> stringConstant2GlobalDataName = new HashMap<>();
+    @Deprecated
     public final Map<IRControlFlowGraph, Map<String, String>> label2BasicBlock = new HashMap<>();
+    @Deprecated
     private final Map<IRControlFlowGraph, Map<String, String>> label2LoopBegin = new HashMap<>();
+    @Deprecated
     private final Map<IRControlFlowGraph, Map<String, String>> label2LoopEnd = new HashMap<>();
+    @Deprecated
     private final Map<IRControlFlowGraph, Map<LCAbstractLoop, String>> abstractLoop2VLabel = new HashMap<>();
-    private Map<String, Stack<String>> variableName2FieldName = new HashMap<>();
+    private Map<String, Stack<String>> variableName2LocalName = new HashMap<>();
     private long basicBlockCount;
     private long registerCount;
     private Stack<Object> stack = new Stack<>();
@@ -74,8 +104,16 @@ public final class IRGenerator extends LCAstVisitor {
     private String generateBasicBlockName() {
         return "basicBlock_" + (basicBlockCount++);
     }
+
     private String generateRegisterName() {
         return String.valueOf(registerCount++);
+    }
+
+    private IRBasicBlock createBasicBlock() {
+        IRBasicBlock basicBlock = new IRBasicBlock(generateBasicBlockName());
+        currentFunction.addBasicBlock(basicBlock);
+        builder.setInsertPoint(basicBlock);
+        return basicBlock;
     }
 
     @Override
@@ -102,14 +140,157 @@ public final class IRGenerator extends LCAstVisitor {
         function.locals = new ArrayList<>();
         function.controlFlowGraph = new IRControlFlowGraph();
         function.controlFlowGraph.function = function;
+
+        for (var arg : lcMethodDeclaration.parameterList.parameters) {
+            Stack<String> stack = new Stack<>();
+            stack.push(arg.name + "_0");
+            variableName2LocalName.put(arg.name, stack);
+        }
         builder = new IRBuilder();
-        IRBasicBlock entryBasicBlock = new IRBasicBlock(generateBasicBlockName());
-        function.addBasicBlock(entryBasicBlock);
-        builder.setInsertPoint(entryBasicBlock);
+        IRBasicBlock entryBasicBlock = createBasicBlock();
         visit(lcMethodDeclaration.body, additional);
         if (!lcMethodDeclaration.returnType.equals(SystemTypes.VOID) && !lcMethodDeclaration.body.statements.isEmpty() && lcMethodDeclaration.body.statements.getLast() instanceof LCExpressionStatement) {
             if (!stack.isEmpty()) builder.createReturn((IRValue) stack.pop());
         }
+        variableName2LocalName.clear();
+        return null;
+    }
+
+    @Override
+    public Object visitBlock(LCBlock lcBlock, Object additional) {
+        for (LCStatement x : lcBlock.statements) {
+            this.visit(x, additional);
+        }
+        if (this.getEnclosingMethodDeclaration(lcBlock) != null || this.getEnclosingInit(lcBlock) != null) {
+            releaseScope(lcBlock.scope);
+            List<Symbol> symbols = lcBlock.scope.name2symbol.values().stream().toList();
+            for (int i = symbols.size() - 1; i >= 0; i--) {
+                if (symbols.get(i) instanceof VariableSymbol variableSymbol)
+                    variableName2LocalName.get(variableSymbol.name).pop();
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public Object visitReturn(LCReturn lcReturn, Object additional) {
+        if (lcReturn.returnedValue != null) {
+            this.visit(lcReturn.returnedValue, additional);
+            builder.createReturn((IRValue) stack.pop());
+        } else {
+            builder.createReturn();
+        }
+        return null;
+    }
+
+    @Override
+    public Object visitVariableDeclaration(LCVariableDeclaration lcVariableDeclaration, Object additional) {
+        if (getEnclosingMethodDeclaration(lcVariableDeclaration) != null) {
+            String localName = lcVariableDeclaration.name + "_";
+            if (variableName2LocalName.containsKey(lcVariableDeclaration.name)) {
+                localName += variableName2LocalName.get(lcVariableDeclaration.name).size();
+            } else {
+                localName += "0";
+                Stack<String> stack = new Stack<>();
+                stack.push(localName);
+                variableName2LocalName.put(lcVariableDeclaration.name, stack);
+            }
+            IRLocalVariable localVariable = new IRLocalVariable(parseType(module, lcVariableDeclaration.theType), localName);
+            currentFunction.addLocal(localVariable);
+            variableName2LocalName.get(lcVariableDeclaration.name).push(localName);
+            if (lcVariableDeclaration.init != null) {
+                visit(lcVariableDeclaration.init, additional);
+                builder.createStore(new IRLocalVariableReference(localVariable), (IRValue) stack.pop());
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public Object visitLoop(LCLoop lcLoop, Object additional) {
+        IRBasicBlock loopBeginBasicBlock = createBasicBlock();
+        visit(lcLoop.body, additional);
+        builder.createGoto(loopBeginBasicBlock);
+        IRBasicBlock loopEndBasicBlock = createBasicBlock();
+        return null;
+    }
+
+    @Override
+    public Object visitFor(LCFor lcFor, Object additional) {
+        if (lcFor.init != null) {
+            this.visit(lcFor.init, additional);
+        }
+        IRBasicBlock condition = createBasicBlock();
+        IRBasicBlock conditionEndBasicBlock;
+        IRValue result;
+        if (lcFor.condition != null) {
+            this.visit(lcFor.condition, additional);
+            result = (IRValue) stack.pop();
+            conditionEndBasicBlock = builder.getInsertPoint();
+            IRBasicBlock bb = createBasicBlock();
+        } else {
+            conditionEndBasicBlock = null;
+            result = null;
+        }
+
+        this.visit(lcFor.body, additional);
+
+        if (lcFor.increment != null) {
+            this.visit(lcFor.increment, additional);
+        }
+        builder.createGoto(condition);
+
+        IRBasicBlock end = createBasicBlock();
+
+        if (conditionEndBasicBlock != null) {
+            builder.setInsertPoint(conditionEndBasicBlock);
+            builder.createJumpIfFalse(result, end);
+        }
+
+        builder.setInsertPoint(end);
+        List<Symbol> symbols = lcFor.scope.name2symbol.values().stream().toList();
+        for (int i = symbols.size() - 1; i >= 0; i--) {
+            if (symbols.get(i) instanceof VariableSymbol variableSymbol)
+                variableName2LocalName.get(variableSymbol.name).pop();
+        }
+
+//        if (irConditionalJump != null) {
+//            irConditionalJump.target = end.name;
+//        }
+//        for (var label : lcFor.labels) {
+//            this.label2LoopBegin.get(currentCFG).put(label, condition.name);
+//            this.label2LoopEnd.get(currentCFG).put(label, end.name);
+//        }
+//        this.label2LoopBegin.get(currentCFG).put(vLabel, condition.name);
+//        this.label2LoopEnd.get(currentCFG).put(vLabel, end.name);
+        return null;
+    }
+
+    @Override
+    public Object visitWhile(LCWhile lcWhile, Object additional) {
+        IRBasicBlock condition = createBasicBlock();
+        visit(lcWhile.condition, additional);
+        IRValue result = (IRValue) stack.pop();
+        IRBasicBlock conditionEndBasicBlock = builder.getInsertPoint();
+
+        IRBasicBlock bb = createBasicBlock();
+        visit(lcWhile.body, additional);
+        builder.createGoto(condition);
+
+        IRBasicBlock end = createBasicBlock();
+        builder.setInsertPoint(conditionEndBasicBlock);
+        builder.createJumpIfFalse(result, end);
+        builder.setInsertPoint(end);
+        return null;
+    }
+
+    @Override
+    public Object visitDoWhile(LCDoWhile lcDoWhile, Object additional) {
+        IRBasicBlock bodyBegin = createBasicBlock();
+        visit(lcDoWhile.body, additional);
+        visit(lcDoWhile.condition, additional);
+        builder.createJumpIfTrue((IRValue) stack.pop(), bodyBegin);
+        IRBasicBlock end = createBasicBlock();
         return null;
     }
 
@@ -194,6 +375,31 @@ public final class IRGenerator extends LCAstVisitor {
     public Object visitBooleanLiteral(LCBooleanLiteral lcBooleanLiteral, Object additional) {
         stack.push(new IRIntegerConstant(IRType.getBooleanType(), lcBooleanLiteral.value ? 1L : 0L));
         return null;
+    }
+
+    @Override
+    public Object visitVariable(LCVariable lcVariable, Object additional) {
+        IRLocalVariable local = currentFunction.getLocalVariable(variableName2LocalName.get(lcVariable.name).peek());
+        IRLocalVariableReference ref = new IRLocalVariableReference(local);
+        if (lcVariable.isLeftValue) {
+            stack.push(ref);
+        } else {
+            stack.push(builder.createLoad(ref, generateRegisterName()));
+        }
+        return null;
+    }
+
+    private void releaseScope(Scope scope) {
+        for (Symbol symbol : scope.name2symbol.values()) {
+            if (symbol instanceof VariableSymbol variableSymbol) {
+                // TODO
+//                if (!SystemTypes.isReference(variableSymbol.theType)) continue;
+//                boolean ret = getVariable(variableSymbol, false);
+//                if (!ret) continue;
+//                IROperand operand = operandStack.pop();
+//                release(operand, variableSymbol.theType);
+            }
+        }
     }
     /*
     private String allocateVirtualRegister() {

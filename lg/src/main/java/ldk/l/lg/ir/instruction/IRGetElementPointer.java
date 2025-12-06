@@ -39,8 +39,8 @@ public final class IRGetElementPointer extends IRInstruction {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("%");
-        sb.append(target.name).append(" = getelementptr ").append(ptr);
+        StringBuilder sb = new StringBuilder("%\"");
+        sb.append(target.name).append("\" = getelementptr ").append(ptr);
         for (IRIntegerConstant index : indices) {
             sb.append(", ").append(index);
         }

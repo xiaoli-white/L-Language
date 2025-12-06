@@ -26,9 +26,9 @@ public final class IRSwitch extends IRInstruction {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("switch ").append(value).append(", label ").append(defaultCase.name);
+        sb.append("switch ").append(value).append(", label \"").append(defaultCase.name).append("\"");
         for (Map.Entry<IRIntegerConstant, IRBasicBlock> entry : cases.entrySet()) {
-            sb.append(", [").append(entry.getKey()).append(", label ").append(entry.getValue().name).append("]");
+            sb.append(", [").append(entry.getKey()).append(", label \"").append(entry.getValue().name).append("\"]");
         }
         return sb.toString();
     }

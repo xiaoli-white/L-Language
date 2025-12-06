@@ -27,11 +27,11 @@ public final class IRDumper extends IRVisitor {
         for (String attribute : irStructure.attributes) {
             sb.append("__attribute__(\"").append(attribute).append("\") ");
         }
-        sb.append("structure ").append(irStructure.name).append(" {");
+        sb.append("structure \"").append(irStructure.name).append("\" {");
         out.println(sb);
         for (int i = 0; i < irStructure.fields.size(); i++) {
             IRField field = irStructure.fields.get(i);
-            out.println(prefix + "\t" + field.type + " " + field.name + (i < irStructure.fields.size() - 1 ? "," : ""));
+            out.println(prefix + "\t" + field.type + " \"" + field.name + (i < irStructure.fields.size() - 1 ? "\"," : "\""));
         }
         out.println(prefix + "}");
         return null;
@@ -39,7 +39,7 @@ public final class IRDumper extends IRVisitor {
 
     @Override
     public Object visitGlobalVariable(IRGlobalVariable globalVariable, Object prefix) {
-        out.println(prefix + "global " + globalVariable.toString());
+        out.println(prefix + globalVariable.toString());
         return null;
     }
 
@@ -50,7 +50,7 @@ public final class IRDumper extends IRVisitor {
             sb.append("__attribute__(\"").append(attribute).append("\") ");
         }
         if (irFunction.isExtern) sb.append("extern ");
-        sb.append("function ").append(irFunction.returnType).append(" ").append(irFunction.name).append("(");
+        sb.append("function ").append(irFunction.returnType).append(" \"").append(irFunction.name).append("\"(");
         for (int i = 0; i < irFunction.args.size(); i++) {
             sb.append(irFunction.args.get(i).toString());
             if (irFunction.isVarArg || (i != irFunction.args.size() - 1)) sb.append(", ");

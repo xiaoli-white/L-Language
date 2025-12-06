@@ -42,6 +42,6 @@ public final class IRStackAllocate extends IRInstruction {
 
     @Override
     public String toString() {
-        return "%" + target.name + " = stack_alloc " + type + (size != null ? ", " + size : "");
+        return "%\"" + target.name + "\" = stack_alloc " + type + (size != null ? ", " + size : "");
     }
 }

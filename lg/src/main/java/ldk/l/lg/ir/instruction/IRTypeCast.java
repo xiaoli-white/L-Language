@@ -49,7 +49,7 @@ public final class IRTypeCast extends IRInstruction {
 
     @Override
     public String toString() {
-        return "%" + target.name + " = " + kind.name + " " + source + " to " + targetType;
+        return "%\"" + target.name + "\" = " + kind.name + " " + source + " to " + targetType;
     }
 
     public enum Kind {

@@ -37,6 +37,6 @@ public final class IRSetRegister extends IRInstruction {
 
     @Override
     public String toString() {
-        return "%"+target.name + " = " + value;
+        return "%\""+target.name + "\" = " + value;
     }
 }

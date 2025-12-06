@@ -24,6 +24,6 @@ public final class IRGoto extends IRInstruction {
 
     @Override
     public String toString() {
-        return "goto label " + target.name;
+        return "goto label \"" + target.name+"\"";
     }
 }

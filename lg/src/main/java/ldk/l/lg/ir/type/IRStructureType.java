@@ -7,9 +7,11 @@ import java.util.Objects;
 
 public final class IRStructureType extends IRType {
     public IRStructure structure;
+
     public IRStructureType(IRStructure structure) {
         this.structure = structure;
     }
+
     @Override
     public Object accept(IRVisitor visitor, Object additional) {
         return visitor.visitStructureType(this, additional);
@@ -17,7 +19,7 @@ public final class IRStructureType extends IRType {
 
     @Override
     public String toString() {
-        return "structure "+structure.name;
+        return "structure \"" + structure.name + "\"";
     }
 
     @Override

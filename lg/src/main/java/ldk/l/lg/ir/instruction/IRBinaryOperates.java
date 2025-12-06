@@ -4,12 +4,13 @@ import ldk.l.lg.ir.IRVisitor;
 import ldk.l.lg.ir.value.IRRegister;
 import ldk.l.lg.ir.value.IRValue;
 
-public final class IRBinaryOperates extends IRInstruction{
+public final class IRBinaryOperates extends IRInstruction {
     public Operator operator;
     public IRValue operand1;
     public IRValue operand2;
     public IRRegister target;
-    public IRBinaryOperates(Operator  operator, IRValue operand1, IRValue operand2, IRRegister target) {
+
+    public IRBinaryOperates(Operator operator, IRValue operand1, IRValue operand2, IRRegister target) {
         this.operator = operator;
         this.operand1 = operand1;
         this.operand2 = operand2;
@@ -25,7 +26,7 @@ public final class IRBinaryOperates extends IRInstruction{
 
     @Override
     public String toString() {
-        return "%"+ target.name + " = " + operator.text + " "  + operand1 + ", " + operand2;
+        return "%\"" + target.name + "\" = " + operator.text + " " + operand1 + ", " + operand2;
     }
 
     public enum Operator {

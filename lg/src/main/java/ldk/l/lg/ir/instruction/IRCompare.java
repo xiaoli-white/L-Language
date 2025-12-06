@@ -28,7 +28,8 @@ public final class IRCompare extends IRInstruction {
     public IRCompare(IRType type, IRCondition condition, IROperand operand1, IROperand operand2, IRVirtualRegister target) {
         this(false, type, condition, operand1, operand2, target);
     }
-@Deprecated
+
+    @Deprecated
     public IRCompare(boolean isAtomic, IRType type, IRCondition condition, IROperand operand1, IROperand operand2, IRVirtualRegister target) {
         this.isAtomic = isAtomic;
         this.type = type;
@@ -40,6 +41,7 @@ public final class IRCompare extends IRInstruction {
         this.operand2 = null;
         this.target = null;
     }
+
     public IRCompare(IRCondition condition, IRValue operand1, IRValue operand2, IRRegister target) {
         this.type = null;
         this.isAtomic = false;
@@ -61,6 +63,6 @@ public final class IRCompare extends IRInstruction {
 
     @Override
     public String toString() {
-        return "%"+ target.name + " = cmp " + condition.text + ", " + operand1 + ", " + operand2;
+        return "%\"" + target.name + "\" = cmp " + condition.text + ", " + operand1 + ", " + operand2;
     }
 }

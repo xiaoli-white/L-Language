@@ -20,7 +20,7 @@ public final class IRRegister extends IRValue {
 
     @Override
     public String toString() {
-        return type + " %" + name;
+        return type + " %\"" + name+"\"";
     }
 
     @Override

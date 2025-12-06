@@ -70,6 +70,6 @@ public final class IRConditionalJump extends IRInstruction {
 
     @Override
     public String toString() {
-        return "conditional_jump " + condition.text + ", " + operand1 + (operand2 != null ? ", " + operand2 : "") + ", label " + target.name;
+        return "conditional_jump " + condition.text + ", " + operand1 + (operand2 != null ? ", " + operand2 : "") + ", label \"" + target.name + "\"";
     }
 }

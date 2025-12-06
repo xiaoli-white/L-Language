@@ -20,7 +20,7 @@ public final class IRGlobalVariableReference extends IRValue {
 
     @Override
     public String toString() {
-        return "globalref "+variable.name;
+        return "globalref \""+variable.name+"\"";
     }
 
     @Override

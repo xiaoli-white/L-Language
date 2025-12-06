@@ -21,9 +21,6 @@ public final class IRField extends IRNode {
 
     @Override
     public String toString() {
-        return "IRField{" +
-                "name='" + name + '\'' +
-                ", type=" + type +
-                '}';
+        return type + " \"" + name + "\"";
     }
 }

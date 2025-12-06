@@ -58,7 +58,7 @@ public final class IRInvoke extends IRInstruction {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        if (target != null) builder.append("%").append(target.name).append(" = ");
+        if (target != null) builder.append("%\"").append(target.name).append("\" = ");
         builder.append("invoke ").append(returnType).append(" ").append(func).append("(");
         for (int i = 0; i < arguments.size(); i++) {
             builder.append(arguments.get(i));

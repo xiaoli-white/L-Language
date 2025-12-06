@@ -49,7 +49,7 @@ public final class IRGlobalVariable extends IRNode {
         }
         if (isExtern) sb.append("extern ");
         if (isConstant) sb.append("constant ");
-        sb.append("global ").append(name);
+        sb.append("global \"").append(name).append("\"");
         if (isExtern) sb.append(": ").append(type);
         else sb.append(" = ").append(initializer);
         return sb.toString();

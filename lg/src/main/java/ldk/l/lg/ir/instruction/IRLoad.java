@@ -39,6 +39,6 @@ public final class IRLoad extends IRInstruction {
 
     @Override
     public String toString() {
-        return "%"+target.name + " = load " + ptr;
+        return "%\""+target.name + "\" = load " + ptr;
     }
 }
