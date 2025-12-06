@@ -7,6 +7,7 @@ import ldk.l.lc.ast.base.LCExpressionStatement;
 import ldk.l.lc.ast.base.LCStatement;
 import ldk.l.lc.ast.expression.LCBinary;
 import ldk.l.lc.ast.expression.LCIf;
+import ldk.l.lc.ast.expression.LCUnary;
 import ldk.l.lc.ast.expression.LCVariable;
 import ldk.l.lc.ast.expression.literal.*;
 import ldk.l.lc.ast.file.LCSourceCodeFile;
@@ -415,8 +416,6 @@ public final class IRGenerator extends LCAstVisitor {
                 stack.push(result);
             }
         } else if (Token.isLogicalOperator(lcBinary._operator)) {
-            IRIntegerConstant constantTrue = new IRIntegerConstant(IRIntegerType.getBooleanType(), 1);
-            IRIntegerConstant constantFalse = new IRIntegerConstant(IRIntegerType.getBooleanType(), 0);
             if (lcBinary._operator == Tokens.Operator.And) {
                 visit(lcBinary.expression1, additional);
                 IRValue left = (IRValue) stack.pop();
@@ -521,17 +520,57 @@ public final class IRGenerator extends LCAstVisitor {
             builder.createStore(left, result);
             stack.push(result);
         }
-        /*
-        } else
-            this.visit(lcBinary.expression1, additional);
-            IROperand operand1 = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
+        return null;
+    }
 
-            this.visit(lcBinary.expression2, additional);
-            IROperand operand2 = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
+    @Override
+    public Object visitUnary(LCUnary lcUnary, Object additional) {
+        this.visit(lcUnary.expression, additional);
+        IRValue value = (IRValue) stack.pop();
 
-
-
-         */
+        if (lcUnary.methodSymbol != null) {
+//            IRType type = parseType(lcUnary.expression.theType);
+            IRValue val;
+            if (lcUnary._operator == Tokens.Operator.Inc || lcUnary._operator == Tokens.Operator.Dec) {
+                val = builder.createLoad(value, generateRegisterName());
+            } else {
+                val = value;
+            }
+//            callMethod(lcUnary.methodSymbol, List.of(irOperand), List.of(lcUnary.expression.theType));
+            if (SystemTypes.VOID.equals(lcUnary.methodSymbol.returnType)) {
+                IRValue result = (IRValue) stack.pop();
+                if (lcUnary._operator == Tokens.Operator.Inc || lcUnary._operator == Tokens.Operator.Dec) {
+                    builder.createStore(value, result);
+                    stack.push(lcUnary.isPrefix ? result : val);
+                } else {
+                    stack.push(val);
+                }
+            }
+        } else if (lcUnary.isPrefix) {
+            if (lcUnary._operator == Tokens.Operator.Plus) {
+                stack.push(value);
+            } else {
+                if (lcUnary._operator == Tokens.Operator.Inc) {
+                    stack.push(builder.createInc(value, generateRegisterName()));
+                } else if (lcUnary._operator == Tokens.Operator.Dec) {
+                    stack.push(builder.createDec(value, generateRegisterName()));
+                } else if (lcUnary._operator == Tokens.Operator.Minus) {
+                    stack.push(builder.createNeg(value, generateRegisterName()));
+                } else if (lcUnary._operator == Tokens.Operator.BitNot) {
+                    stack.push(builder.createNot(value, generateRegisterName()));
+                }
+            }
+        } else {
+            var tmp = builder.createLoad(value, generateRegisterName());
+            if (lcUnary._operator == Tokens.Operator.Inc) {
+                builder.createInc(value, generateRegisterName());
+            } else if (lcUnary._operator == Tokens.Operator.Dec) {
+                builder.createDec(value, generateRegisterName());
+            } else {
+                throw new IllegalArgumentException("Unknown unary operator: " + lcUnary._operator);
+            }
+            stack.push(tmp);
+        }
         return null;
     }
 
