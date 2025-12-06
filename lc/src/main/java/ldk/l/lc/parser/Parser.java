@@ -48,7 +48,7 @@ public final class Parser {
         String filename = file.getName();
         String fileNameWithoutExtension = filename.substring(0, filename.length() - 2);
         LCBlock body = this.parseBaseStatements(fileNameWithoutExtension);
-        LCSourceCodeFile sourceCodeFile = new LCSourceCodeFile(packageName, file.getPath(), body, body.position, body.isErrorNode);
+        LCSourceCodeFile sourceCodeFile = new LCSourceCodeFile(packageName, file.getAbsolutePath(), body, body.position, body.isErrorNode);
         this.ast.addSourceFile(sourceCodeFile);
 
         if (this.ast.mainObjectDeclaration == null)
@@ -3492,7 +3492,7 @@ public final class Parser {
             return new LCBooleanLiteral(Boolean.parseBoolean(t.text()), t.position());
         } else if (t.kind() == TokenKind.CharLiteral) {
             this.tokenIndex++;
-            return new LCCharLiteral(t.text().codePointAt(1), t.position());
+            return new LCCharLiteral(t.text().codePointAt(0), t.position());
         } else {
             this.tokenIndex++;
             return new LCStringLiteral(t.text(), t.position());

@@ -55,13 +55,21 @@ public final class ImportProcessor extends LCAstVisitor {
         for (LCSourceFile lcSourceFile : this.ast.sourceFiles) {
             if (lcSourceFile instanceof LCSourceCodeFile lcSourceCodeFile) {
                 for (LCSourceCodeFile sourceCodeFile : importCache.get("l.lang"))
-                    if (!sourceCodeFile.equals(lcSourceCodeFile))
-                        lcSourceCodeFile.proxies.put(sourceCodeFile.filepath, new LCSourceFileProxy(sourceCodeFile, false));
-                for (LCSourceCodeFile sourceCodeFile : importCache.get(lcSourceCodeFile.packageName))
-                    if (!sourceCodeFile.equals(lcSourceCodeFile))
-                        lcSourceCodeFile.proxies.put(sourceCodeFile.filepath, new LCSourceFileProxy(sourceCodeFile, false));
-
+                    if (!sourceCodeFile.equals(lcSourceCodeFile) && !lcSourceCodeFile.containsProxy(lcSourceCodeFile.filepath))
+                        lcSourceCodeFile.putProxy(new LCSourceFileProxy(sourceCodeFile, false));
+                for (LCSourceCodeFile sourceCodeFile : importCache.get(lcSourceCodeFile.packageName)) {
+                    if (!sourceCodeFile.equals(lcSourceCodeFile) && !lcSourceCodeFile.containsProxy(lcSourceCodeFile.filepath))
+                        lcSourceCodeFile.putProxy(new LCSourceFileProxy(sourceCodeFile, false));
+                }
                 this.visit(lcSourceCodeFile, additional);
+            }
+        }
+        for (LCSourceFile lcSourceFile : this.ast.sourceFiles) {
+            if (lcSourceFile instanceof LCSourceCodeFile lcSourceCodeFile) {
+                List<LCSourceFileProxy> proxies = lcSourceCodeFile.proxies.values().stream().toList();
+                for (LCSourceFileProxy proxy : proxies) {
+                    visit(proxy, additional);
+                }
             }
         }
         return null;
@@ -74,13 +82,30 @@ public final class ImportProcessor extends LCAstVisitor {
             case Normal -> {
                 if (lcImport.getName().equals("*")) {
                     for (LCSourceCodeFile sourceCodeFile : importCache.get(lcImport.getPackageName())) {
-                        if (!sourceCodeFile.equals(source))
-                            source.proxies.put(sourceCodeFile.filepath, new LCSourceFileProxy(sourceCodeFile, false));
+                        if (!sourceCodeFile.equals(source) && !source.containsProxy(sourceCodeFile.filepath))
+                            source.putProxy(new LCSourceFileProxy(sourceCodeFile, false));
                     }
                 } else {
                     for (LCSourceCodeFile sourceCodeFile : importCache.get(lcImport.getPackageName())) {
-                        if (!sourceCodeFile.equals(source) && sourceCodeFile.getObjectDeclaration(lcImport.name) != null)
-                            source.proxies.put(sourceCodeFile.filepath, new LCSourceFileProxy(sourceCodeFile, false));
+                        if (!sourceCodeFile.equals(source) && sourceCodeFile.getObjectDeclaration(lcImport.name) != null && !source.containsProxy(sourceCodeFile.filepath))
+                            source.putProxy(new LCSourceFileProxy(sourceCodeFile, false));
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public Object visitSourceFileProxy(LCSourceFileProxy lcSourceFileProxy, Object additional) {
+        LCSourceCodeFile lcSourceCodeFile = getEnclosingSourceCodeFile(lcSourceFileProxy);
+        if (lcSourceFileProxy.sourceFile instanceof LCSourceCodeFile source) {
+            for (LCSourceFileProxy proxy : source.proxies.values()) {
+                if (proxy.sourceFile instanceof LCSourceCodeFile sourceCodeFile) {
+                    if (!sourceCodeFile.equals(lcSourceCodeFile) && !lcSourceCodeFile.containsProxy(sourceCodeFile.filepath)) {
+                        LCSourceFileProxy p = new LCSourceFileProxy(sourceCodeFile, false);
+                        lcSourceCodeFile.putProxy(p);
+                        visit(p, additional);
                     }
                 }
             }

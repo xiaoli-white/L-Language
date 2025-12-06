@@ -88,4 +88,13 @@ public final class LCSourceCodeFile extends LCSourceFile {
         }
         return lcImports.toArray(new LCImport[0]);
     }
+
+    public boolean containsProxy(String filepath) {
+        return this.proxies.containsKey(filepath);
+    }
+
+    public void putProxy(LCSourceFileProxy proxy) {
+        this.proxies.put(proxy.sourceFile.filepath, proxy);
+        proxy.parentNode = this;
+    }
 }
