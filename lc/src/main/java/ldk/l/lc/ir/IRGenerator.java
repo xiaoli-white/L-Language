@@ -4,23 +4,21 @@ import ldk.l.lc.ast.LCAst;
 import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.ast.base.LCBlock;
 import ldk.l.lc.ast.base.LCExpressionStatement;
+import ldk.l.lc.ast.base.LCFlags;
 import ldk.l.lc.ast.base.LCStatement;
-import ldk.l.lc.ast.expression.LCBinary;
-import ldk.l.lc.ast.expression.LCIf;
-import ldk.l.lc.ast.expression.LCUnary;
-import ldk.l.lc.ast.expression.LCVariable;
+import ldk.l.lc.ast.expression.*;
 import ldk.l.lc.ast.expression.literal.*;
 import ldk.l.lc.ast.file.LCSourceCodeFile;
 import ldk.l.lc.ast.statement.LCReturn;
 import ldk.l.lc.ast.statement.declaration.LCMethodDeclaration;
 import ldk.l.lc.ast.statement.declaration.LCVariableDeclaration;
 import ldk.l.lc.ast.statement.loops.*;
-import ldk.l.lc.semantic.types.PointerType;
-import ldk.l.lc.semantic.types.SystemTypes;
+import ldk.l.lc.semantic.types.*;
 import ldk.l.lc.token.Token;
 import ldk.l.lc.token.Tokens;
 import ldk.l.lc.util.error.ErrorStream;
 import ldk.l.lc.util.scope.Scope;
+import ldk.l.lc.util.symbol.MethodKind;
 import ldk.l.lc.util.symbol.Symbol;
 import ldk.l.lc.util.symbol.VariableSymbol;
 import ldk.l.lg.ir.IRBuilder;
@@ -38,10 +36,7 @@ import ldk.l.lg.ir.type.IRType;
 import ldk.l.lg.ir.value.IRLocalVariableReference;
 import ldk.l.lg.ir.value.IRRegister;
 import ldk.l.lg.ir.value.IRValue;
-import ldk.l.lg.ir.value.constant.IRDoubleConstant;
-import ldk.l.lg.ir.value.constant.IRFloatConstant;
-import ldk.l.lg.ir.value.constant.IRIntegerConstant;
-import ldk.l.lg.ir.value.constant.IRNullptrConstant;
+import ldk.l.lg.ir.value.constant.*;
 import ldk.l.util.option.Options;
 
 import java.util.*;
@@ -346,28 +341,26 @@ public final class IRGenerator extends LCAstVisitor {
     @Override
     public Object visitBinary(LCBinary lcBinary, Object additional) {
         if (lcBinary._operator == Tokens.Operator.Dot || lcBinary._operator == Tokens.Operator.MemberAccess) {
-//            this.visit(lcBinary.expression1, additional);
-//            Type type = lcBinary.expression1.theType;
-//            if (type instanceof NullableType nullableType) type = nullableType.base;
-//            if (lcBinary._operator == Tokens.Operator.MemberAccess) {
-//                type = ((PointerType) type).base;
-//                IROperand operand = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
-//                String tempRegister = allocateVirtualRegister();
-//                addInstruction(new IRLoad(parseType(type), operand, new IRVirtualRegister(tempRegister)));
-//                operandStack.push(new IRVirtualRegister(tempRegister));
-//            }
-//
-//            if (type instanceof ArrayType arrayType && lcBinary.expression2 instanceof LCVariable lcVariable && "length".equals(lcVariable.name)) {
+            this.visit(lcBinary.expression1, additional);
+            Type type = lcBinary.expression1.theType;
+            if (type instanceof NullableType nullableType) type = nullableType.base;
+            if (lcBinary._operator == Tokens.Operator.MemberAccess) {
+                type = ((PointerType) type).base;
+                IRValue value = (IRValue) stack.pop();
+                stack.push(builder.createLoad(value, generateRegisterName()));
+            }
+
+            if (type instanceof ArrayType arrayType && lcBinary.expression2 instanceof LCVariable lcVariable && "length".equals(lcVariable.name)) {
 //                IROperand array = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
 //                arrayLength(array, arrayType.base);
-//            } else {
-//                if (lcBinary.expression2 instanceof LCMethodCall lcMethodCall && lcMethodCall.symbol.methodKind == MethodKind.Destructor && lcBinary.expression1 instanceof LCSuper lcSuper) {
-//                    IROperand operand = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
+            } else {
+                if (lcBinary.expression2 instanceof LCMethodCall lcMethodCall && lcMethodCall.symbol.methodKind == MethodKind.Destructor && lcBinary.expression1 instanceof LCSuper lcSuper) {
+                    IRValue operand = (IRValue) stack.pop();
 //                    callMethod(lcMethodCall.symbol, List.of(operand), List.of(lcSuper.theType), true);
-//                } else {
-//                    this.visit(lcBinary.expression2, additional);
-//                }
-//            }
+                } else {
+                    this.visit(lcBinary.expression2, additional);
+                }
+            }
         } else if (Token.isArithmeticOperator(lcBinary._operator)) {
             visit(lcBinary.expression1, additional);
             IRValue left = (IRValue) stack.pop();
@@ -624,6 +617,39 @@ public final class IRGenerator extends LCAstVisitor {
             stack.push(builder.createLoad(ref, generateRegisterName()));
         }
         return null;
+    }
+
+    @Override
+    public Object visitMethodCall(LCMethodCall lcMethodCall, Object additional) {
+        List<IRValue> arguments = new ArrayList<>();
+        IRValue func;
+        if (lcMethodCall.symbol != null) {
+            IRFunction function = module.functions.get(lcMethodCall.symbol.getFullName());
+            if (!LCFlags.hasStatic(lcMethodCall.symbol.flags)) {
+                // TODO pass the object instance
+            }
+            for (int i = lcMethodCall.arguments.size() - 1; i >= 0; i--) {
+                visit(lcMethodCall.arguments.get(i), additional);
+                IRValue argument = (IRValue) stack.pop();
+                arguments.add(argument);
+            }
+            func = new IRFunctionReference(function);
+        } else {
+            visit(lcMethodCall.expression, additional);
+            func = (IRValue) stack.pop();
+            for (int i = lcMethodCall.arguments.size() - 1; i >= 0; i--) {
+                visit(lcMethodCall.arguments.get(i), additional);
+                IRValue argument = (IRValue) stack.pop();
+                arguments.add(argument);
+            }
+        }
+        IRRegister result = callFunction(parseType(module, lcMethodCall.theType), func, arguments);
+        if (result != null) stack.push(result);
+        return null;
+    }
+
+    private IRRegister callFunction(IRType returnType, IRValue func, List<IRValue> arguments) {
+        return builder.createInvoke(returnType, func, arguments, IRType.getVoidType().equals(returnType) ? null : generateRegisterName());
     }
 
     private void releaseScope(Scope scope) {
