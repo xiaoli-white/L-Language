@@ -24,7 +24,7 @@ public final class SemanticAnalyzer {
     public final AnnotationCollector annotationCollector;
     public final AnnotationProcessor annotationProcessor;
 
-    public SemanticAnalyzer(CharStream charStream, LCAst ast, ErrorStream errorStream, Options options) {
+    public SemanticAnalyzer(LCAst ast, ErrorStream errorStream, Options options) {
         this.ast = ast;
         this.ast.mainMethod = null;
 
@@ -36,7 +36,7 @@ public final class SemanticAnalyzer {
         this.enter = new Enter(errorStream);
         this.objectSymbolResolver = new ObjectSymbolResolver(errorStream);
         this.referenceResolver = new ReferenceResolver(this, errorStream);
-        this.typeChecker = new TypeChecker(charStream, this, errorStream, options);
+        this.typeChecker = new TypeChecker(this, errorStream, options);
         this.modifierChecker = new ModifierChecker(errorStream);
         this.closureAnalyzer = new ClosureAnalyzer(errorStream, options);
         this.assignAnalyzer = new AssignAnalyzer(errorStream);

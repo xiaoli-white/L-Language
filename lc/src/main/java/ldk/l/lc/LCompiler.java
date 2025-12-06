@@ -38,9 +38,10 @@ public class LCompiler {
     }
 
     public static void parse(Options options) {
-        String sourceFile = options.args().getFirst();
         boolean verbose = options.get("verbose", Boolean.class);
-        if (sourceFile != null) {
+        LCAst ast = new LCAst();
+        ErrorStream errorStream = new ErrorStream(Language.zh_cn, "", new String[0]);
+        for (String sourceFile : options.args()) {
             if (!sourceFile.endsWith(".l")) {
                 // TODO dump error
                 return;
@@ -52,8 +53,6 @@ public class LCompiler {
                 System.err.println("lc: read source file '" + sourceFile + "' failed");
                 return;
             }
-            ErrorStream errorStream = new ErrorStream(Language.zh_cn, sourceFile, fileLines.split("\n"));
-
 
             CharStream charStream = new CharStream(fileLines);
             Scanner scanner = new Scanner(charStream, errorStream);
@@ -68,101 +67,98 @@ public class LCompiler {
             if (!errorStream.checkErrorNum(""))
                 return;
 
-
             if (verbose)
                 System.out.println("语法分析中...");
-            LCAst ast = new LCAst();
             Parser parser = new Parser(ast, options, tokens, errorStream);
             parser.parseAST(new File(sourceFile));
+        }
+        if (verbose)
+            System.out.println("处理ImportStatement...");
+        ImportProcessor importProcessor = new ImportProcessor(options, errorStream);
+        importProcessor.visitAst(ast, null);
 
-            if (verbose)
-                System.out.println("处理ImportStatement...");
-            ImportProcessor importProcessor = new ImportProcessor(options, errorStream);
-            importProcessor.visitAst(ast, null);
+        LCAstDumper astDumper = new LCAstDumper();
+        if (verbose) {
+            astDumper.visitAst(ast, "");
+        }
+        if (!errorStream.checkErrorNum(""))
+            return;
 
-            LCAstDumper astDumper = new LCAstDumper();
-            if (verbose) {
-                astDumper.visitAst(ast, "");
-            }
-            if (!errorStream.checkErrorNum(""))
-                return;
-
-            if (verbose)
-                System.out.println("语法检查...");
-            SyntaxChecker syntaxChecker = new SyntaxChecker(errorStream);
-            syntaxChecker.visitAst(ast, null);
-            if (!errorStream.checkErrorNum(""))
-                return;
-
-
-            if (verbose)
-                System.out.println("语义分析中...");
-            SemanticAnalyzer semanticAnalyzer = new SemanticAnalyzer(charStream, ast, errorStream, options);
-            semanticAnalyzer.execute();
-            ScopeDumper scopeDumper = new ScopeDumper();
-            if (verbose) {
-                astDumper.visitAst(ast, "");
-                scopeDumper.visitAst(ast, "");
-            }
-            if (!errorStream.checkErrorNum(""))
-                return;
+        if (verbose)
+            System.out.println("语法检查...");
+        SyntaxChecker syntaxChecker = new SyntaxChecker(errorStream);
+        syntaxChecker.visitAst(ast, null);
+        if (!errorStream.checkErrorNum(""))
+            return;
 
 
-            if (verbose)
-                System.out.println("IR生成中...");
-            IRModule irModule = new IRModule();
-            IRGenerator irGenerator = new IRGenerator(irModule, options, errorStream);
-            irGenerator.visitAst(ast, null);
+        if (verbose)
+            System.out.println("语义分析中...");
+        SemanticAnalyzer semanticAnalyzer = new SemanticAnalyzer(ast, errorStream, options);
+        semanticAnalyzer.execute();
+        ScopeDumper scopeDumper = new ScopeDumper();
+        if (verbose) {
+            astDumper.visitAst(ast, "");
+            scopeDumper.visitAst(ast, "");
+        }
+        if (!errorStream.checkErrorNum(""))
+            return;
 
-            if (verbose) {
-                for (IRStructure structure : irModule.structures.values()) {
-                    System.out.println("structure " + structure.name);
-                    for (IRField field : structure.ffields) {
-                        System.out.println("\t" + field.name + ", " + field.type);
-                    }
-                }
-                System.out.println("constant pool:");
-                for (int i = 0; i < irModule.constantPool.entries.size(); i++) {
-                    System.out.println("\t" + i + " => " + irModule.constantPool.entries.get(i));
-                }
-                System.out.println("Global data section:");
-                for (IRGlobalDataSection.GlobalData globalData : irModule.globalDataSection.data) {
-                    System.out.println("\t" + globalData);
-                }
-                for (IRFunction function : irModule.functions.values()) {
-                    System.out.println("function " + function.returnType + " " + function.name + ", arguments count: " + function.argumentCount);
-                    for (IRField field : function.fields) {
-                        System.out.println("\t" + field.name + ", " + field.type);
-                    }
-                    for (IRBasicBlock basicBlock : function.controlFlowGraph.basicBlocks.values()) {
-                        System.out.printf("\t#%s:\n", basicBlock.name);
-                        for (IRInstruction instruction : basicBlock.instructions) {
-                            System.out.println("\t\t" + instruction);
-                        }
-                    }
-                    System.out.println("\toutEdges:");
-                    for (Map.Entry<IRBasicBlock, List<IRBasicBlock>> entry : function.controlFlowGraph.successors.entrySet()) {
-                        System.out.printf("\t\t#%s=>\n", entry.getKey().name);
-                        entry.getValue().forEach(basicBlock -> System.out.printf("\t\t\t#%s\n", basicBlock.name));
-                    }
-                    System.out.println("\tinEdges:");
-                    for (Map.Entry<IRBasicBlock, List<IRBasicBlock>> entry : function.controlFlowGraph.predecessors.entrySet()) {
-                        System.out.printf("\t\t#%s<=\n", entry.getKey().name);
-                        entry.getValue().forEach(basicBlock -> System.out.printf("\t\t\t#%s\n", basicBlock.name));
-                    }
+
+        if (verbose)
+            System.out.println("IR生成中...");
+        IRModule irModule = new IRModule();
+        IRGenerator irGenerator = new IRGenerator(irModule, options, errorStream);
+        irGenerator.visitAst(ast, null);
+
+        if (verbose) {
+            for (IRStructure structure : irModule.structures.values()) {
+                System.out.println("structure " + structure.name);
+                for (IRField field : structure.ffields) {
+                    System.out.println("\t" + field.name + ", " + field.type);
                 }
             }
+            System.out.println("constant pool:");
+            for (int i = 0; i < irModule.constantPool.entries.size(); i++) {
+                System.out.println("\t" + i + " => " + irModule.constantPool.entries.get(i));
+            }
+            System.out.println("Global data section:");
+            for (IRGlobalDataSection.GlobalData globalData : irModule.globalDataSection.data) {
+                System.out.println("\t" + globalData);
+            }
+            for (IRFunction function : irModule.functions.values()) {
+                System.out.println("function " + function.returnType + " " + function.name + ", arguments count: " + function.argumentCount);
+                for (IRField field : function.fields) {
+                    System.out.println("\t" + field.name + ", " + field.type);
+                }
+                for (IRBasicBlock basicBlock : function.controlFlowGraph.basicBlocks.values()) {
+                    System.out.printf("\t#%s:\n", basicBlock.name);
+                    for (IRInstruction instruction : basicBlock.instructions) {
+                        System.out.println("\t\t" + instruction);
+                    }
+                }
+                System.out.println("\toutEdges:");
+                for (Map.Entry<IRBasicBlock, List<IRBasicBlock>> entry : function.controlFlowGraph.successors.entrySet()) {
+                    System.out.printf("\t\t#%s=>\n", entry.getKey().name);
+                    entry.getValue().forEach(basicBlock -> System.out.printf("\t\t\t#%s\n", basicBlock.name));
+                }
+                System.out.println("\tinEdges:");
+                for (Map.Entry<IRBasicBlock, List<IRBasicBlock>> entry : function.controlFlowGraph.predecessors.entrySet()) {
+                    System.out.printf("\t\t#%s<=\n", entry.getKey().name);
+                    entry.getValue().forEach(basicBlock -> System.out.printf("\t\t\t#%s\n", basicBlock.name));
+                }
+            }
+        }
 
-            IRDumper irDumper = new IRDumper();
-            if (verbose)
-                irDumper.visitModule(irModule, "");
-            if (!errorStream.checkErrorNum(""))
-                return;
+        IRDumper irDumper = new IRDumper();
+        if (verbose)
+            irDumper.visitModule(irModule, "");
+        if (!errorStream.checkErrorNum(""))
+            return;
 
 //            LGenerator.generate(irModule, options);
 
-            errorStream.dumpErrorsAndWarnings("");
-        }
+        errorStream.dumpErrorsAndWarnings("");
     }
 
     public static OptionsParser getOptionsParser() {

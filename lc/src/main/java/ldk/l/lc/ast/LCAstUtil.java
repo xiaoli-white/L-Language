@@ -93,7 +93,7 @@ public class LCAstUtil {
             }
         }
         if (sourceFile instanceof LCSourceCodeFile lcSourceCodeFile) {
-            for (LCSourceFileProxy lcSourceFileProxy : lcSourceCodeFile.proxies) {
+            for (LCSourceFileProxy lcSourceFileProxy : lcSourceCodeFile.proxies.values()) {
                 LCObjectDeclaration[] objectDeclarations = lcSourceFileProxy.sourceFile.getObjectDeclarations();
                 for (LCObjectDeclaration objectDeclaration : objectDeclarations) {
                     if (objectDeclaration.getRealName().equals(name)) return objectDeclaration;
@@ -111,7 +111,7 @@ public class LCAstUtil {
             if (objectDeclaration.getFullName().equals(fullName)) return objectDeclaration;
         }
         if (sourceFile instanceof LCSourceCodeFile lcSourceCodeFile) {
-            for (LCSourceFileProxy lcSourceFileProxy : lcSourceCodeFile.proxies) {
+            for (LCSourceFileProxy lcSourceFileProxy : lcSourceCodeFile.proxies.values()) {
                 LCObjectDeclaration[] objectDeclarations = lcSourceFileProxy.sourceFile.getObjectDeclarations();
                 for (LCObjectDeclaration objectDeclaration : objectDeclarations) {
                     if (objectDeclaration.getFullName().equals(fullName)) return objectDeclaration;

@@ -35,6 +35,7 @@ public final class Parser {
     private int tokenIndex = 0;
     private final ErrorStream errorStream;
     private final Stack<List<LCClassDeclaration>> anonymousClassDeclarationsStack = new Stack<>();
+    private String packageName;
 
     public Parser(LCAst ast, Options options, Token[] tokens, ErrorStream errorStream) {
         this.ast = ast;
@@ -43,15 +44,17 @@ public final class Parser {
         this.errorStream = errorStream;
     }
 
-    public void parseAST(File file) {
+    public LCSourceCodeFile parseAST(File file) {
         String filename = file.getName();
         String fileNameWithoutExtension = filename.substring(0, filename.length() - 2);
         LCBlock body = this.parseBaseStatements(fileNameWithoutExtension);
-        LCSourceCodeFile sourceCodeFile = new LCSourceCodeFile(file.getPath(), body, body.position, body.isErrorNode);
+        LCSourceCodeFile sourceCodeFile = new LCSourceCodeFile(packageName, file.getPath(), body, body.position, body.isErrorNode);
         this.ast.addSourceFile(sourceCodeFile);
 
         if (this.ast.mainObjectDeclaration == null)
             this.ast.mainObjectDeclaration = sourceCodeFile.getObjectDeclarationByName(fileNameWithoutExtension);
+
+        return sourceCodeFile;
     }
 
     private LCBlock parseBaseStatements(String fileNameWithoutExtension) {
@@ -87,8 +90,11 @@ public final class Parser {
             Position endPosition = this.getPos();
             Position position = new Position(beginPosition.beginPos(), endPosition.endPos(), beginPosition.beginLine(), endPosition.endLine(), beginPosition.beginCol(), endPosition.endCol());
             statements.add(new LCPackage(packageName.toString(), position, false));
+            this.packageName = packageName.toString();
 
             t = peek();
+        } else {
+            this.packageName = "";
         }
         while (t.code() == Tokens.Keyword.Import || t.code() == Tokens.Keyword.Typedef || t.code() == Tokens.Keyword.Include || t.code() == Tokens.Separator.SemiColon) {
             switch (t.code()) {
@@ -234,6 +240,10 @@ public final class Parser {
                 }
 
                 t = this.peek();
+            }
+            if (t.code() == Tokens.Operator.Multiply) {
+                stringBuilder.append("*");
+                this.tokenIndex++;
             }
             name = stringBuilder.toString();
         } else {

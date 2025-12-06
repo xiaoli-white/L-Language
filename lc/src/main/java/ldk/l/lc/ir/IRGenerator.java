@@ -9,9 +9,12 @@ import ldk.l.lc.ast.base.LCStatement;
 import ldk.l.lc.ast.expression.*;
 import ldk.l.lc.ast.expression.literal.*;
 import ldk.l.lc.ast.file.LCSourceCodeFile;
+import ldk.l.lc.ast.file.LCSourceFileProxy;
+import ldk.l.lc.ast.statement.LCInit;
 import ldk.l.lc.ast.statement.LCReturn;
 import ldk.l.lc.ast.statement.declaration.LCMethodDeclaration;
 import ldk.l.lc.ast.statement.declaration.LCVariableDeclaration;
+import ldk.l.lc.ast.statement.declaration.object.LCClassDeclaration;
 import ldk.l.lc.ast.statement.loops.*;
 import ldk.l.lc.semantic.types.*;
 import ldk.l.lc.token.Token;
@@ -19,8 +22,10 @@ import ldk.l.lc.token.Tokens;
 import ldk.l.lc.util.error.ErrorStream;
 import ldk.l.lc.util.scope.Scope;
 import ldk.l.lc.util.symbol.MethodKind;
+import ldk.l.lc.util.symbol.MethodSymbol;
 import ldk.l.lc.util.symbol.Symbol;
 import ldk.l.lc.util.symbol.VariableSymbol;
+import ldk.l.lc.util.symbol.object.ClassSymbol;
 import ldk.l.lg.ir.IRBuilder;
 import ldk.l.lg.ir.IRDumper;
 import ldk.l.lg.ir.IRModule;
@@ -30,13 +35,13 @@ import ldk.l.lg.ir.function.IRLocalVariable;
 import ldk.l.lg.ir.operand.*;
 import ldk.l.lg.ir.instruction.*;
 import ldk.l.lg.ir.structure.IRField;
-import ldk.l.lg.ir.type.IRIntegerType;
-import ldk.l.lg.ir.type.IRPointerType;
-import ldk.l.lg.ir.type.IRType;
+import ldk.l.lg.ir.structure.IRStructure;
+import ldk.l.lg.ir.type.*;
 import ldk.l.lg.ir.value.IRLocalVariableReference;
 import ldk.l.lg.ir.value.IRRegister;
 import ldk.l.lg.ir.value.IRValue;
 import ldk.l.lg.ir.value.constant.*;
+import ldk.l.lg.ir.value.constant.IRConstant;
 import ldk.l.util.option.Options;
 
 import java.util.*;
@@ -120,8 +125,16 @@ public final class IRGenerator extends LCAstVisitor {
     @Override
     public Object visitSourceCodeFile(LCSourceCodeFile lcSourceCodeFile, Object additional) {
         module = new IRModule();
+        StructureDefinitionCreator structureDefinitionCreator = new StructureDefinitionCreator(module);
+        structureDefinitionCreator.visitSourceCodeFile(lcSourceCodeFile, additional);
+        for (LCSourceFileProxy proxy : lcSourceCodeFile.proxies.values())
+            structureDefinitionCreator.visitSourceFileProxy(proxy, additional);
+
         DefinitionCreator definitionCreator = new DefinitionCreator(module);
         definitionCreator.visitSourceCodeFile(lcSourceCodeFile, additional);
+        for (LCSourceFileProxy proxy : lcSourceCodeFile.proxies.values())
+            definitionCreator.visitSourceFileProxy(proxy, additional);
+
         System.out.println("module(before):");
         IRDumper irDumper = new IRDumper();
         irDumper.visitModule(module, "");
@@ -131,6 +144,19 @@ public final class IRGenerator extends LCAstVisitor {
         System.out.println("module(after):");
         irDumper.visitModule(module, "");
         return null;
+    }
+
+    @Override
+    public Object visitClassDeclaration(LCClassDeclaration lcClassDeclaration, Object additional) {
+        Map<String, String> virtualMethods = getVirtualMethods(lcClassDeclaration.symbol);
+        IRStructure clazzStructure = module.structures.get("l.lang.Class");
+        IRGlobalVariable vtable = new IRGlobalVariable(List.of(), false, "<vtable " + lcClassDeclaration.getFullName() + ">", new IRArrayConstant(new IRArrayType(new IRPointerType(IRType.getVoidType()), virtualMethods.size()), virtualMethods.values().stream().map(name -> (IRConstant) new IRFunctionReference(module.functions.get(name))).toList()));
+        module.putGlobalVariable(vtable);
+        IRGlobalVariable classInstance = module.globals.get("<class_instance " + lcClassDeclaration.getFullName() + ">");
+        classInstance.isExtern = false;
+        // TODO initialize itable
+        classInstance.setInitializer(new IRStructureInitializer(new IRStructureType(clazzStructure), List.of(new IRGlobalVariableReference(module.globals.get("<class_instance l.lang.Class>")), new IRIntegerConstant(IRType.getUnsignedLongType(), 1), new IRGlobalVariableReference(vtable), new IRIntegerConstant(IRType.getLongType(), 0), new IRNullptrConstant(new IRPointerType(new IRPointerType(new IRPointerType(IRType.getVoidType())))), new IRNullptrConstant(new IRPointerType(new IRStructureType(clazzStructure))))));
+        return super.visitClassDeclaration(lcClassDeclaration, additional);
     }
 
     @Override
@@ -354,9 +380,15 @@ public final class IRGenerator extends LCAstVisitor {
 //                IROperand array = operandStack.isEmpty() ? new IRConstant(-1) : operandStack.pop();
 //                arrayLength(array, arrayType.base);
             } else {
-                if (lcBinary.expression2 instanceof LCMethodCall lcMethodCall && lcMethodCall.symbol.methodKind == MethodKind.Destructor && lcBinary.expression1 instanceof LCSuper lcSuper) {
-                    IRValue operand = (IRValue) stack.pop();
-//                    callMethod(lcMethodCall.symbol, List.of(operand), List.of(lcSuper.theType), true);
+                if (lcBinary.expression2 instanceof LCMethodCall lcMethodCall) {
+                    if (lcMethodCall.symbol != null && lcMethodCall.symbol.methodKind == MethodKind.Destructor && lcBinary.expression1 instanceof LCSuper lcSuper) {
+                        IRValue operand = (IRValue) stack.pop();
+                        callFunction(parseType(module, lcMethodCall.symbol.returnType), new IRFunctionReference(module.functions.get(lcMethodCall.symbol.getFullName())), List.of(operand));
+                    } else {
+                        callMethod(lcMethodCall, false);
+                    }
+                } else if (lcBinary.expression2 instanceof LCVariable lcVariable) {
+                    getVariable(lcVariable.symbol, lcVariable.isLeftValue, false);
                 } else {
                     this.visit(lcBinary.expression2, additional);
                 }
@@ -609,47 +641,99 @@ public final class IRGenerator extends LCAstVisitor {
 
     @Override
     public Object visitVariable(LCVariable lcVariable, Object additional) {
-        IRLocalVariable local = currentFunction.getLocalVariable(variableName2LocalName.get(lcVariable.name).peek());
-        IRLocalVariableReference ref = new IRLocalVariableReference(local);
-        if (lcVariable.isLeftValue) {
-            stack.push(ref);
-        } else {
-            stack.push(builder.createLoad(ref, generateRegisterName()));
-        }
+        getVariable(lcVariable.symbol, lcVariable.isLeftValue, true);
+        return null;
+    }
+
+    @Override
+    public Object visitThis(LCThis lcThis, Object additional) {
+        getThisPtr();
+        return null;
+    }
+
+    @Override
+    public Object visitSuper(LCSuper lcSuper, Object additional) {
+        getThisPtr();
         return null;
     }
 
     @Override
     public Object visitMethodCall(LCMethodCall lcMethodCall, Object additional) {
+        callMethod(lcMethodCall, true);
+        return null;
+    }
+
+    private void callMethod(LCMethodCall lcMethodCall, boolean needThisPtr) {
         List<IRValue> arguments = new ArrayList<>();
         IRValue func;
         if (lcMethodCall.symbol != null) {
             IRFunction function = module.functions.get(lcMethodCall.symbol.getFullName());
             if (!LCFlags.hasStatic(lcMethodCall.symbol.flags)) {
-                // TODO pass the object instance
+                if (needThisPtr) getThisPtr();
+                IRValue thisPtr = (IRValue) stack.pop();
+                arguments.add(thisPtr);
             }
-            for (int i = lcMethodCall.arguments.size() - 1; i >= 0; i--) {
-                visit(lcMethodCall.arguments.get(i), additional);
+            for (int i = 0; i < lcMethodCall.arguments.size(); ++i) {
+                visit(lcMethodCall.arguments.get(i), null);
                 IRValue argument = (IRValue) stack.pop();
                 arguments.add(argument);
             }
             func = new IRFunctionReference(function);
         } else {
-            visit(lcMethodCall.expression, additional);
+            visit(lcMethodCall.expression, null);
             func = (IRValue) stack.pop();
-            for (int i = lcMethodCall.arguments.size() - 1; i >= 0; i--) {
-                visit(lcMethodCall.arguments.get(i), additional);
+            for (int i = 0; i < lcMethodCall.arguments.size(); ++i) {
+                visit(lcMethodCall.arguments.get(i), null);
                 IRValue argument = (IRValue) stack.pop();
                 arguments.add(argument);
             }
         }
         IRRegister result = callFunction(parseType(module, lcMethodCall.theType), func, arguments);
         if (result != null) stack.push(result);
-        return null;
     }
 
     private IRRegister callFunction(IRType returnType, IRValue func, List<IRValue> arguments) {
         return builder.createInvoke(returnType, func, arguments, IRType.getVoidType().equals(returnType) ? null : generateRegisterName());
+    }
+
+    public void getVariable(VariableSymbol symbol, boolean isLeftValue, boolean needThisPtr) {
+        LCMethodDeclaration methodDeclaration = this.getEnclosingMethodDeclaration(symbol.declaration);
+        LCInit init = this.getEnclosingInit(symbol.declaration);
+        if (methodDeclaration != null || init != null) {
+            Stack<String> stack = this.variableName2LocalName.get(symbol.name);
+            if (stack.isEmpty()) return;
+            IRValue val = new IRLocalVariableReference(currentFunction.getLocalVariable(stack.peek()));
+            if (isLeftValue) {
+                this.stack.push(val);
+            } else {
+                this.stack.push(builder.createLoad(val, generateRegisterName()));
+            }
+        } else {
+            if (LCFlags.hasStatic(symbol.flags)) {
+//                IRMacro address = new IRMacro("global_data_address", new String[]{symbol.objectSymbol.getFullName() + "." + symbol.name});
+//                if (isLeftValue) {
+//                    operandStack.push(address);
+//                } else {
+//                    String register = allocateVirtualRegister();
+//                    addInstruction(new IRLoad(type, address, new IRVirtualRegister(register)));
+//                    operandStack.push(new IRVirtualRegister(register));
+//                }
+            } else {
+                if (needThisPtr) this.getThisPtr();
+                IRValue op = (IRValue) stack.pop();
+                IRStructure structure = module.structures.get(symbol.objectSymbol.getFullName());
+                IRValue addr = builder.createGetElementPointer(op, List.of(new IRIntegerConstant(IRType.getUnsignedLongType(), 0L), new IRIntegerConstant(IRType.getUnsignedLongType(), structure.getFieldIndex(symbol.name))), generateRegisterName());
+                if (isLeftValue) {
+                    stack.push(addr);
+                } else {
+                    stack.push(builder.createLoad(addr, generateRegisterName()));
+                }
+            }
+        }
+    }
+
+    private void getThisPtr() {
+        stack.push(builder.createLoad(new IRLocalVariableReference(currentFunction.getLocalVariable("<this_ptr>")), generateRegisterName()));
     }
 
     private void releaseScope(Scope scope) {
@@ -663,6 +747,23 @@ public final class IRGenerator extends LCAstVisitor {
 //                release(operand, variableSymbol.theType);
             }
         }
+    }
+
+    private Map<String, String> getVirtualMethods(ClassSymbol classSymbol) {
+        Map<String, String> result;
+        if (classSymbol.extended == null) {
+            result = new LinkedHashMap<>();
+        } else {
+            result = getVirtualMethods(classSymbol.extended);
+        }
+        for (MethodSymbol methodSymbol : classSymbol.methods) {
+            if (LCFlags.hasStatic(methodSymbol.flags)) continue;
+            result.put(methodSymbol.getSimpleName(), LCFlags.hasAbstract(methodSymbol.flags) ? "" : methodSymbol.getFullName());
+        }
+        if (classSymbol.destructor != null) {
+            result.put(classSymbol.destructor.getSimpleName(), classSymbol.destructor.getFullName());
+        }
+        return result;
     }
 
     private IRCondition parseRelationOperator(Tokens.Operator _operator) {
@@ -2744,57 +2845,6 @@ public final class IRGenerator extends LCAstVisitor {
         this.getThisInstance();
         IROperand thisInstance = operandStack.pop();
         addInstruction(new IRStore(new IRPointerType(IRType.getVoidType()), thisInstance, new IRMacro("global_data_address", new String[]{"<class_instance " + objectName + ">"})));
-    }
-
-    private void getThisInstance() {
-        IRMacro address = new IRMacro("field_address", new String[]{"<this_instance>"});
-        String result = allocateVirtualRegister();
-        addInstruction(new IRLoad(new IRPointerType(IRType.getVoidType()), address, new IRVirtualRegister(result)));
-        operandStack.push(new IRVirtualRegister(result));
-    }
-
-    private boolean getVariable(VariableSymbol symbol, boolean isLeftValue) {
-        LCMethodDeclaration methodDeclaration = this.getEnclosingMethodDeclaration(symbol.declaration);
-        LCInit init = this.getEnclosingInit(symbol.declaration);
-        if (methodDeclaration != null || init != null) {
-            Stack<String> stack = this.variableName2FieldName.get(symbol.name);
-            if (stack.isEmpty()) return false;
-            IRMacro address = new IRMacro("field_address", new String[]{stack.peek()});
-            IRType type = parseType(symbol.theType);
-            if (isLeftValue) {
-                operandStack.push(address);
-            } else {
-                String register = allocateVirtualRegister();
-                addInstruction(new IRLoad(type, address, new IRVirtualRegister(register)));
-                operandStack.push(new IRVirtualRegister(register));
-            }
-        } else {
-            IRType type = parseType(symbol.theType);
-            if (LCFlags.hasStatic(symbol.flags)) {
-                IRMacro address = new IRMacro("global_data_address", new String[]{symbol.objectSymbol.getFullName() + "." + symbol.name});
-                if (isLeftValue) {
-                    operandStack.push(address);
-                } else {
-                    String register = allocateVirtualRegister();
-                    addInstruction(new IRLoad(type, address, new IRVirtualRegister(register)));
-                    operandStack.push(new IRVirtualRegister(register));
-                }
-            } else {
-                if (operandStack.isEmpty()) this.getThisInstance();
-                IROperand op = operandStack.pop();
-                if (isLeftValue) {
-                    IRMacro offset = new IRMacro("structure_field_offset", new String[]{symbol.objectSymbol.getFullName(), symbol.name});
-                    String address = allocateVirtualRegister();
-                    addInstruction(new IRCalculate(IRCalculate.Operator.ADD, new IRPointerType(IRType.getVoidType()), op, offset, new IRVirtualRegister(address)));
-                    operandStack.push(new IRVirtualRegister(address));
-                } else {
-                    String register = allocateVirtualRegister();
-                    addInstruction(new IRLoad(type, new IRMacro("field_address", new String[]{symbol.objectSymbol.getFullName(), symbol.name}, new IROperand[]{op}), new IRVirtualRegister(register)));
-                    operandStack.push(new IRVirtualRegister(register));
-                }
-            }
-        }
-        return true;
     }
 
     private void callMethod(MethodSymbol methodSymbol, List<IROperand> arguments, List<Type> types) {

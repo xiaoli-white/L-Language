@@ -24,7 +24,7 @@ public final class IRGlobalVariable extends IRNode {
     }
 
     public IRGlobalVariable(List<String> attributes, boolean isConstant, String name, IRConstant initializer) {
-        this(attributes, isConstant, name, initializer.getType(), initializer);
+        this(attributes, isConstant, name, initializer == null ? null : initializer.getType(), initializer);
     }
 
     public IRGlobalVariable(List<String> attributes, boolean isConstant, String name, IRType type) {
@@ -53,5 +53,10 @@ public final class IRGlobalVariable extends IRNode {
         if (isExtern) sb.append(": ").append(type);
         else sb.append(" = ").append(initializer);
         return sb.toString();
+    }
+
+    public void setInitializer(IRConstant initializer) {
+        this.initializer = initializer;
+        type = initializer.getType();
     }
 }

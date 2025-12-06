@@ -49,7 +49,14 @@ public final class IRStructure extends IRNode {
 
     public long getLength() {
         long length = 0;
-        for (IRField field : this.ffields) length += IRType.getLength(field.type);
+        for (IRField field : this.fields) length += IRType.getLength(field.type);
         return length;
+    }
+
+    public long getFieldIndex(String fieldName) {
+        for (int i = 0; i < this.fields.size(); i++) {
+            if (this.fields.get(i).name.equals(fieldName)) return i;
+        }
+        return -1;
     }
 }

@@ -9,18 +9,18 @@ import ldk.l.lc.ast.statement.LCImport;
 import ldk.l.lc.util.Position;
 import ldk.l.lc.util.scope.Scope;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public final class LCSourceCodeFile extends LCSourceFile {
-    public String packageName = null;
+    public String packageName;
     public Scope scope = null;
     public LCBlock body;
-    public List<LCSourceFileProxy> proxies = new ArrayList<>();
+    public Map<String, LCSourceFileProxy> proxies = new HashMap<>();
 
 
-    public LCSourceCodeFile(String filename, LCBlock body, Position pos, boolean isErrorNode) {
+    public LCSourceCodeFile(String packageName, String filename, LCBlock body, Position pos, boolean isErrorNode) {
         super(filename, pos, isErrorNode);
+        this.packageName = packageName;
         this.body = body;
         this.body.parentNode = this;
     }
@@ -40,6 +40,17 @@ public final class LCSourceCodeFile extends LCSourceFile {
                 ", isErrorNode=" + isErrorNode +
                 ", position=" + position +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof LCSourceCodeFile that)) return false;
+        return Objects.equals(filepath, that.filepath);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(filepath);
     }
 
     @Override

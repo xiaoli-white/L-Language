@@ -2,12 +2,10 @@ package ldk.l.lg.ir.value.constant;
 
 import ldk.l.lg.ir.IRVisitor;
 import ldk.l.lg.ir.function.IRFunction;
-import ldk.l.lg.ir.function.IRLocalVariable;
 import ldk.l.lg.ir.type.IRFunctionReferenceType;
 import ldk.l.lg.ir.type.IRType;
-import ldk.l.lg.ir.value.IRValue;
 
-public final class IRFunctionReference extends IRValue {
+public final class IRFunctionReference extends IRConstant {
     public IRFunction function;
 
     public IRFunctionReference(IRFunction function) {

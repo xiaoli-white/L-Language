@@ -36,7 +36,6 @@ import ldk.l.util.option.Options;
 import java.util.*;
 
 public final class TypeChecker extends LCAstVisitor {
-    private final CharStream charStream;
     private final SemanticAnalyzer semanticAnalyzer;
     private final ErrorStream errorStream;
     private final Options options;
@@ -44,8 +43,7 @@ public final class TypeChecker extends LCAstVisitor {
     private final Stack<HashMap<LCExpression, ConstValue>> expressionValueRanges = new Stack<>();
     private boolean inIfCondition = false;
 
-    public TypeChecker(CharStream charStream, SemanticAnalyzer semanticAnalyzer, ErrorStream errorStream, Options options) {
-        this.charStream = charStream;
+    public TypeChecker(SemanticAnalyzer semanticAnalyzer, ErrorStream errorStream, Options options) {
         this.semanticAnalyzer = semanticAnalyzer;
         this.errorStream = errorStream;
         this.options = options;
@@ -126,10 +124,10 @@ public final class TypeChecker extends LCAstVisitor {
     }
 
     private void dumpRange() {
-        for (Map.Entry<LCExpression, Type> entry : this.expressionTypeRanges.peek().entrySet()) {
-            System.out.println(entry.getKey().position);
-            System.out.println("'" + this.charStream.getStringByPosition(entry.getKey().position) + "' -> " + entry.getValue());
-        }
+//        for (Map.Entry<LCExpression, Type> entry : this.expressionTypeRanges.peek().entrySet()) {
+//            System.out.println(entry.getKey().position);
+//            System.out.println("'" + this.charStream.getStringByPosition(entry.getKey().position) + "' -> " + entry.getValue());
+//        }
     }
 
     @Override

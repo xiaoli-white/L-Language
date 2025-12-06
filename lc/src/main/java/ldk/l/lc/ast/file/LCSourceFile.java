@@ -11,6 +11,13 @@ public abstract class LCSourceFile extends LCAstNode {
         super(pos, isErrorNode);
         this.filepath = filepath;
     }
+
+    @Override
+    public abstract boolean equals(Object obj);
+
+    @Override
+    public abstract int hashCode();
+
     public abstract LCObjectDeclaration[] getObjectDeclarations();
 
     public abstract LCObjectDeclaration getObjectDeclaration(String fullName);

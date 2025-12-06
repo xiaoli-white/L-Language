@@ -3,6 +3,7 @@ package ldk.l.lc.ir;
 import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.ast.base.LCFlags;
 import ldk.l.lc.ast.file.LCSourceCodeFile;
+import ldk.l.lc.ast.file.LCSourceFileProxy;
 import ldk.l.lc.ast.statement.declaration.LCMethodDeclaration;
 import ldk.l.lc.ast.statement.declaration.LCVariableDeclaration;
 import ldk.l.lc.ast.statement.declaration.object.LCClassDeclaration;
@@ -10,12 +11,15 @@ import ldk.l.lc.semantic.types.SystemTypes;
 import ldk.l.lc.semantic.types.Type;
 import ldk.l.lc.util.symbol.VariableSymbol;
 import ldk.l.lg.ir.IRModule;
+import ldk.l.lg.ir.base.IRGlobalVariable;
 import ldk.l.lg.ir.function.IRFunction;
 import ldk.l.lg.ir.function.IRLocalVariable;
 import ldk.l.lg.ir.structure.IRField;
 import ldk.l.lg.ir.structure.IRStructure;
 import ldk.l.lg.ir.type.IRPointerType;
+import ldk.l.lg.ir.type.IRStructureType;
 import ldk.l.lg.ir.type.IRType;
+import ldk.l.lg.ir.value.constant.IRConstant;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,9 +34,12 @@ public final class DefinitionCreator extends LCAstVisitor {
     }
 
     @Override
+    public Object visitSourceFileProxy(LCSourceFileProxy lcSourceFileProxy, Object additional) {
+        return super.visitSourceFileProxy(lcSourceFileProxy, additional);
+    }
+
+    @Override
     public Object visitSourceCodeFile(LCSourceCodeFile lcSourceCodeFile, Object additional) {
-        StructureDefinitionCreator structureDefinitionCreator = new StructureDefinitionCreator(module);
-        structureDefinitionCreator.visitSourceCodeFile(lcSourceCodeFile, additional);
         super.visitSourceCodeFile(lcSourceCodeFile, additional);
         return null;
     }
@@ -42,8 +49,10 @@ public final class DefinitionCreator extends LCAstVisitor {
         IRStructure structure = module.structures.get(lcClassDeclaration.getFullName());
         structure.fields.add(new IRField(new IRPointerType(IRType.getVoidType()), "<class_ptr>"));
         structure.fields.add(new IRField(IRType.getUnsignedLongType(), "<ref_count>"));
-        for (VariableSymbol variableSymbol : lcClassDeclaration.symbol.getAllProperties())
+        for (VariableSymbol variableSymbol : lcClassDeclaration.symbol.getAllProperties()) {
             structure.fields.add(new IRField(parseType(module, variableSymbol.theType), variableSymbol.name));
+        }
+        module.putGlobalVariable(new IRGlobalVariable(List.of(), false, "<class_instance " + lcClassDeclaration.getFullName() + ">", new IRStructureType(module.structures.get("l.lang.Class"))));
         visit(lcClassDeclaration.body, additional);
         return null;
     }

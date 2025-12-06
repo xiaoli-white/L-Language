@@ -992,7 +992,7 @@ public final class LCAstDumper extends LCAstVisitor {
         this.visitBlock(lcSourceCodeFile.body, prefix + "\t\t");
         if (!lcSourceCodeFile.proxies.isEmpty()) {
             System.out.println(prefix + "\tproxies:");
-            for (LCSourceFileProxy proxy : lcSourceCodeFile.proxies) {
+            for (LCSourceFileProxy proxy : lcSourceCodeFile.proxies.values()) {
                 this.visitSourceFileProxy(proxy, prefix + "\t\t");
             }
         }

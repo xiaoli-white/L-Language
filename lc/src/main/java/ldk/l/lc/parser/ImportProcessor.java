@@ -19,12 +19,13 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
+import java.util.*;
 
 public final class ImportProcessor extends LCAstVisitor {
     private final Options options;
     private final ErrorStream errorStream;
     private LCAst ast = null;
+    private final Map<String, List<LCSourceCodeFile>> importCache = new HashMap<>();
 
     public ImportProcessor(Options options, ErrorStream errorStream) {
         this.options = options;
@@ -38,87 +39,53 @@ public final class ImportProcessor extends LCAstVisitor {
         if (this.ast.sourceFiles.isEmpty())
             return null;
 
-        this.visitImport(new LCImport(LCImport.LCImportKind.Normal, "l.lang.*", Position.origin, false), additional);
-        Path firstFilepathParent = Paths.get(this.ast.sourceFiles.getFirst().filepath).getParent();
-//        this.visitImportStatement(new LCImport(Paths.get(this.options.rootpath).relativize(firstFilepathParent != null ? firstFilepathParent : Paths.get("")).getParent().toString(), "*", Position.origin, false), additional);
-
-        LCSourceFile[] lcSourceFiles = this.ast.sourceFiles.toArray(new LCSourceFile[0]);
-        int lastLength = 0;
-        do {
-            for (int i = lastLength; i < lcSourceFiles.length; i++) {
-                if (lcSourceFiles[i] instanceof LCSourceCodeFile lcSourceCodeFile) {
-                    for (LCImport lcImport : lcSourceCodeFile.getImportStatements()) {
-                        this.visitImport(lcImport, additional);
-                    }
-                }
-            }
-            lastLength = lcSourceFiles.length;
-            lcSourceFiles = this.ast.sourceFiles.toArray(new LCSourceFile[0]);
-        } while (lcSourceFiles.length > lastLength);
-
-        for (LCSourceFile lcSourceFile : this.ast.sourceFiles) {
+        for (LCSourceFile lcSourceFile : ast.sourceFiles) {
             if (lcSourceFile instanceof LCSourceCodeFile lcSourceCodeFile) {
-                ArrayList<LCSourceFileProxy> proxies = new ArrayList<>();
-                for (LCImport lcImport : lcSourceCodeFile.getImportStatements()) {
-                    proxies.addAll(this.visitImport(lcImport, additional));
-                }
-                for (LCSourceFile source : this.ast.getSourceFileByParent(this.options.get("rootpath",String.class) + "/l/lang")) {
-                    LCSourceFileProxy proxy = new LCSourceFileProxy(source, false);
-                    if (!source.equals(lcSourceCodeFile) && !proxies.contains(proxy))
-                        proxies.add(proxy);
-                }
-                for (LCSourceFile source : this.ast.getSourceFileByParent(new File(lcSourceCodeFile.filepath).getParent())) {
-                    LCSourceFileProxy proxy = new LCSourceFileProxy(source, false);
-                    if (!source.equals(lcSourceCodeFile) && !proxies.contains(proxy))
-                        proxies.add(proxy);
-                }
-                lcSourceCodeFile.proxies.addAll(proxies);
+                if (!importCache.containsKey(lcSourceCodeFile.packageName))
+                    importCache.put(lcSourceCodeFile.packageName, new ArrayList<>());
+                importCache.get(lcSourceCodeFile.packageName).add(lcSourceCodeFile);
             }
         }
 
+        File stdDir = new File(this.options.get("rootpath", String.class) + "/l/lang");
+        for (File f : Objects.requireNonNull(stdDir.listFiles())) {
+            if (f.isFile() && f.getName().endsWith(".l")) this.parseFile(f);
+        }
+
+        for (LCSourceFile lcSourceFile : this.ast.sourceFiles) {
+            if (lcSourceFile instanceof LCSourceCodeFile lcSourceCodeFile) {
+                for (LCSourceCodeFile sourceCodeFile : importCache.get("l.lang"))
+                    if (!sourceCodeFile.equals(lcSourceCodeFile))
+                        lcSourceCodeFile.proxies.put(sourceCodeFile.filepath, new LCSourceFileProxy(sourceCodeFile, false));
+                for (LCSourceCodeFile sourceCodeFile : importCache.get(lcSourceCodeFile.packageName))
+                    if (!sourceCodeFile.equals(lcSourceCodeFile))
+                        lcSourceCodeFile.proxies.put(sourceCodeFile.filepath, new LCSourceFileProxy(sourceCodeFile, false));
+
+                this.visit(lcSourceCodeFile, additional);
+            }
+        }
         return null;
     }
 
     @Override
-    public ArrayList<LCSourceFileProxy> visitImport(LCImport lcImport, Object additional) {
-        ArrayList<LCSourceFileProxy> proxies = new ArrayList<>();
+    public Object visitImport(LCImport lcImport, Object additional) {
+        LCSourceCodeFile source = getEnclosingSourceCodeFile(lcImport);
         switch (lcImport.kind) {
             case Normal -> {
                 if (lcImport.getName().equals("*")) {
-                    String path = this.options.get("rootpath",String.class) + "/" + lcImport.getPackageName().replaceAll("\\.", "/");
-                    File f = new File(path);
-                    if (f.isDirectory()) {
-                        File[] files = f.listFiles();
-                        if (files != null) {
-                            for (File file : files) {
-                                if (file.isFile()) {
-                                    String filepath = file.getPath();
-                                    if (!this.ast.containsSourceFile(filepath)) {
-                                        if (filepath.endsWith(".l")) {
-                                            if (!this.ast.containsSourceFile(filepath)) {
-                                                this.parseFile(file);
-                                            }
-                                            proxies.add(new LCSourceFileProxy(this.ast.getSourceFile(filepath), false));
-                                        }
-                                    }
-                                }
-                            }
-                        } else {
-                            // TODO dump error
-                        }
-                    } else {
-                        // TODO dump error
+                    for (LCSourceCodeFile sourceCodeFile : importCache.get(lcImport.getPackageName())) {
+                        if (!sourceCodeFile.equals(source))
+                            source.proxies.put(sourceCodeFile.filepath, new LCSourceFileProxy(sourceCodeFile, false));
                     }
                 } else {
-                    File f = new File(this.options.get("rootpath",String.class) + "/" + lcImport.name.replaceAll("\\.", "/") + ".l");
-                    if (!this.ast.containsSourceFile(f.getPath())) {
-                        this.parseFile(f);
+                    for (LCSourceCodeFile sourceCodeFile : importCache.get(lcImport.getPackageName())) {
+                        if (!sourceCodeFile.equals(source) && sourceCodeFile.getObjectDeclaration(lcImport.name) != null)
+                            source.proxies.put(sourceCodeFile.filepath, new LCSourceFileProxy(sourceCodeFile, false));
                     }
-                    proxies.add(new LCSourceFileProxy(this.ast.getSourceFile(f.getPath()), false));
                 }
             }
         }
-        return proxies;
+        return null;
     }
 
     private void parseFile(File file) {
@@ -135,8 +102,10 @@ public final class ImportProcessor extends LCAstVisitor {
         Scanner scanner = new Scanner(charStream, fileErrorStream);
         Token[] tokens = scanner.scan();
         Parser parser = new Parser(this.ast, this.options, tokens, fileErrorStream);
-        parser.parseAST(file);
+        LCSourceCodeFile lcSourceCodeFile = parser.parseAST(file);
 
-        this.visitImport(new LCImport(LCImport.LCImportKind.Normal, file.getParent() + ".*", Position.origin, false), null);
+        if (!importCache.containsKey(lcSourceCodeFile.packageName))
+            importCache.put(lcSourceCodeFile.packageName, new ArrayList<>());
+        importCache.get(lcSourceCodeFile.packageName).add(lcSourceCodeFile);
     }
 }

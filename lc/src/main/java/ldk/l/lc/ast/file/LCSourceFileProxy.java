@@ -4,6 +4,8 @@ import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.ast.base.LCExpression;
 import ldk.l.lc.util.Position;
 
+import java.util.Objects;
+
 public final class LCSourceFileProxy extends LCExpression {
     public LCSourceFile sourceFile;
 
@@ -28,5 +30,16 @@ public final class LCSourceFileProxy extends LCExpression {
                 ", position=" + position +
                 ", isErrorNode=" + isErrorNode +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof LCSourceFileProxy proxy)) return false;
+        return Objects.equals(sourceFile, proxy.sourceFile);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(sourceFile);
     }
 }

@@ -1,9 +1,6 @@
 package ldk.l.lc.ir;
 
-import ldk.l.lc.semantic.types.NamedType;
-import ldk.l.lc.semantic.types.PointerType;
-import ldk.l.lc.semantic.types.SystemTypes;
-import ldk.l.lc.semantic.types.Type;
+import ldk.l.lc.semantic.types.*;
 import ldk.l.lg.ir.IRModule;
 import ldk.l.lg.ir.type.IRPointerType;
 import ldk.l.lg.ir.type.IRStructureType;
@@ -41,6 +38,8 @@ public final class IRUtils {
             return new IRPointerType(new IRStructureType(module.structures.get(namedType.name)));
         if (type instanceof PointerType pointerType)
             return new IRPointerType(parseType(module, pointerType.base));
+        if (type instanceof NullableType nullableType)
+            return parseType(module, nullableType.base);
         return null;
     }
 }
