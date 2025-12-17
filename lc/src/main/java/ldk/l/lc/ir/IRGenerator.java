@@ -112,7 +112,7 @@ public final class IRGenerator extends LCAstVisitor {
     }
 
     private String generateRegisterName() {
-        return String.valueOf(registerCount++);
+        return String.valueOf(currentFunction.registerCount++);
     }
 
     private IRBasicBlock createBasicBlock() {
@@ -160,10 +160,6 @@ public final class IRGenerator extends LCAstVisitor {
         }
         IRGlobalVariable vtable = new IRGlobalVariable(List.of(), false, "<vtable " + lcClassDeclaration.getFullName() + ">", new IRArrayConstant(new IRArrayType(new IRPointerType(IRType.getVoidType()), virtualMethods.size()), vtableElements));
         module.putGlobalVariable(vtable);
-        IRGlobalVariable classInstance = module.globals.get("<class_instance " + lcClassDeclaration.getFullName() + ">");
-        classInstance.isExtern = false;
-        // TODO initialize itable
-        classInstance.setInitializer(new IRStructureInitializer(new IRStructureType(clazzStructure), List.of(new IRGlobalVariableReference(module.globals.get("<class_instance l.lang.Class>")), new IRIntegerConstant(IRType.getUnsignedLongType(), 1), new IRGlobalVariableReference(vtable), new IRIntegerConstant(IRType.getLongType(), 0), new IRNullptrConstant(new IRPointerType(new IRPointerType(new IRPointerType(IRType.getVoidType())))), new IRNullptrConstant(new IRPointerType(new IRStructureType(clazzStructure))))));
         return super.visitClassDeclaration(lcClassDeclaration, additional);
     }
 
@@ -366,7 +362,7 @@ public final class IRGenerator extends LCAstVisitor {
                 Map<IRBasicBlock, IRValue> map = new LinkedHashMap<>();
                 map.put(thenEnd, trueResult);
                 map.put(elseEnd, falseResult);
-                stack.push(builder.createPhi(map, generateRegisterName()));
+                stack.push(builder.createPhi(map));
             }
         } else {
             builder.setInsertPoint(nextBasicBlock);
@@ -383,7 +379,7 @@ public final class IRGenerator extends LCAstVisitor {
             if (lcBinary._operator == Tokens.Operator.MemberAccess) {
                 type = ((PointerType) type).base;
                 IRValue value = (IRValue) stack.pop();
-                stack.push(builder.createLoad(value, generateRegisterName()));
+                stack.push(builder.createLoad(value));
             }
 
             if (type instanceof ArrayType arrayType && lcBinary.expression2 instanceof LCVariable lcVariable && "length".equals(lcVariable.name)) {
@@ -412,26 +408,26 @@ public final class IRGenerator extends LCAstVisitor {
 //                callMethod(lcBinary.methodSymbol, List.of(operand1, operand2), List.of(lcBinary.expression1.theType, lcBinary.expression2.theType));
             } else if (lcBinary._operator == Tokens.Operator.Plus) {
                 if (lcBinary.expression1.theType instanceof PointerType pointerType) {
-                    IRRegister tmp1 = builder.createBitCast(left, IRType.getUnsignedLongType(), generateRegisterName());
-                    IRRegister tmp2 = builder.createMul(right, new IRIntegerConstant((IRIntegerType) right.getType(), IRType.getLength(parseType(module, pointerType.base))), generateRegisterName());
-                    IRRegister result = builder.createAdd(tmp1, tmp2, generateRegisterName());
-                    stack.push(builder.createBitCast(result, left.getType(), generateRegisterName()));
+                    IRRegister tmp1 = builder.createBitCast(left, IRType.getUnsignedLongType());
+                    IRRegister tmp2 = builder.createMul(right, new IRIntegerConstant((IRIntegerType) right.getType(), IRType.getLength(parseType(module, pointerType.base))));
+                    IRRegister result = builder.createAdd(tmp1, tmp2);
+                    stack.push(builder.createBitCast(result, left.getType()));
 //                    IRType elementType = parseType(pointerType.base);
 //                    String tempRegister = allocateVirtualRegister();
 //                    int constantElementSizeIndex = this.module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), IRType.getLength(elementType)));
 //                    addInstruction(new IRCalculate(IRCalculate.Operator.MUL, IRType.getUnsignedLongType(), new IRConstant(constantElementSizeIndex), operand2, new IRVirtualRegister(tempRegister)));
 //                    addInstruction(new IRCalculate(IRCalculate.Operator.ADD, new IRPointerType(elementType), operand1, new IRVirtualRegister(tempRegister), new IRVirtualRegister(resultRegister)));
                 } else {
-                    stack.push(builder.createAdd(left, right, generateRegisterName()));
+                    stack.push(builder.createAdd(left, right));
                 }
             } else if (lcBinary._operator == Tokens.Operator.Minus) {
                 if (lcBinary.expression1.theType instanceof PointerType pointerType) {
-                    IRRegister tmp1 = builder.createBitCast(left, IRType.getUnsignedLongType(), generateRegisterName());
-                    IRRegister tmp2 = builder.createMul(right, new IRIntegerConstant((IRIntegerType) right.getType(), IRType.getLength(parseType(module, pointerType.base))), generateRegisterName());
-                    IRRegister result = builder.createSub(tmp1, tmp2, generateRegisterName());
-                    stack.push(builder.createBitCast(result, left.getType(), generateRegisterName()));
+                    IRRegister tmp1 = builder.createBitCast(left, IRType.getUnsignedLongType());
+                    IRRegister tmp2 = builder.createMul(right, new IRIntegerConstant((IRIntegerType) right.getType(), IRType.getLength(parseType(module, pointerType.base))));
+                    IRRegister result = builder.createSub(tmp1, tmp2);
+                    stack.push(builder.createBitCast(result, left.getType()));
                 } else {
-                    stack.push(builder.createSub(left, right, generateRegisterName()));
+                    stack.push(builder.createSub(left, right));
                 }
             } else {
                 IRRegister result = new IRRegister(generateRegisterName());
@@ -466,7 +462,7 @@ public final class IRGenerator extends LCAstVisitor {
                 Map<IRBasicBlock, IRValue> map = new LinkedHashMap<>();
                 map.put(leftEndBlock, left);
                 map.put(rightEndBlock, right);
-                stack.push(builder.createPhi(map, generateRegisterName()));
+                stack.push(builder.createPhi(map));
             } else if (lcBinary._operator == Tokens.Operator.Or) {
                 visit(lcBinary.expression1, additional);
                 IRValue left = (IRValue) stack.pop();
@@ -482,7 +478,7 @@ public final class IRGenerator extends LCAstVisitor {
                 Map<IRBasicBlock, IRValue> map = new LinkedHashMap<>();
                 map.put(leftEndBlock, left);
                 map.put(rightEndBlock, right);
-                stack.push(builder.createPhi(map, generateRegisterName()));
+                stack.push(builder.createPhi(map));
             }
         } else if (Token.isRelationOperator(lcBinary._operator)) {
             visit(lcBinary.expression1, additional);
@@ -507,47 +503,47 @@ public final class IRGenerator extends LCAstVisitor {
 //                    release(new IRVirtualRegister(tempRegister), lcBinary.expression1.theType);
                 }
                 case PlusAssign -> {
-                    IRValue leftVal = builder.createLoad(left, generateRegisterName());
+                    IRValue leftVal = builder.createLoad(left);
                     result = builder.createAdd(leftVal, right);
                 }
                 case MinusAssign -> {
-                    IRValue leftVal = builder.createLoad(left, generateRegisterName());
+                    IRValue leftVal = builder.createLoad(left);
                     result = builder.createSub(leftVal, right);
                 }
                 case MultiplyAssign -> {
-                    IRValue leftVal = builder.createLoad(left, generateRegisterName());
+                    IRValue leftVal = builder.createLoad(left);
                     result = builder.createMul(leftVal, right);
                 }
                 case DivideAssign -> {
-                    IRValue leftVal = builder.createLoad(left, generateRegisterName());
+                    IRValue leftVal = builder.createLoad(left);
                     result = builder.createDiv(leftVal, right);
                 }
                 case ModulusAssign -> {
-                    IRValue leftVal = builder.createLoad(left, generateRegisterName());
+                    IRValue leftVal = builder.createLoad(left);
                     result = builder.createMod(leftVal, right);
                 }
                 case LeftShiftArithmeticAssign -> {
-                    IRValue leftVal = builder.createLoad(left, generateRegisterName());
+                    IRValue leftVal = builder.createLoad(left);
                     result = builder.createShl(leftVal, right);
                 }
                 case RightShiftArithmeticAssign -> {
-                    IRValue leftVal = builder.createLoad(left, generateRegisterName());
+                    IRValue leftVal = builder.createLoad(left);
                     result = builder.createShr(leftVal, right);
                 }
                 case RightShiftLogicalAssign -> {
-                    IRValue leftVal = builder.createLoad(left, generateRegisterName());
+                    IRValue leftVal = builder.createLoad(left);
                     result = builder.createUShr(leftVal, right);
                 }
                 case BitAndAssign -> {
-                    IRValue leftVal = builder.createLoad(left, generateRegisterName());
+                    IRValue leftVal = builder.createLoad(left);
                     result = builder.createAnd(leftVal, right);
                 }
                 case BitOrAssign -> {
-                    IRValue leftVal = builder.createLoad(left, generateRegisterName());
+                    IRValue leftVal = builder.createLoad(left);
                     result = builder.createOr(leftVal, right);
                 }
                 case BitXorAssign -> {
-                    IRValue leftVal = builder.createLoad(left, generateRegisterName());
+                    IRValue leftVal = builder.createLoad(left);
                     result = builder.createXor(leftVal, right);
                 }
                 case null, default -> throw new RuntimeException("Unsupported operator: " + lcBinary._operator);
@@ -567,7 +563,7 @@ public final class IRGenerator extends LCAstVisitor {
 //            IRType type = parseType(lcUnary.expression.theType);
             IRValue val;
             if (lcUnary._operator == Tokens.Operator.Inc || lcUnary._operator == Tokens.Operator.Dec) {
-                val = builder.createLoad(value, generateRegisterName());
+                val = builder.createLoad(value);
             } else {
                 val = value;
             }
@@ -586,21 +582,21 @@ public final class IRGenerator extends LCAstVisitor {
                 stack.push(value);
             } else {
                 if (lcUnary._operator == Tokens.Operator.Inc) {
-                    stack.push(builder.createInc(value, generateRegisterName()));
+                    stack.push(builder.createInc(value));
                 } else if (lcUnary._operator == Tokens.Operator.Dec) {
-                    stack.push(builder.createDec(value, generateRegisterName()));
+                    stack.push(builder.createDec(value));
                 } else if (lcUnary._operator == Tokens.Operator.Minus) {
-                    stack.push(builder.createNeg(value, generateRegisterName()));
+                    stack.push(builder.createNeg(value));
                 } else if (lcUnary._operator == Tokens.Operator.BitNot) {
-                    stack.push(builder.createNot(value, generateRegisterName()));
+                    stack.push(builder.createNot(value));
                 }
             }
         } else {
-            var tmp = builder.createLoad(value, generateRegisterName());
+            var tmp = builder.createLoad(value);
             if (lcUnary._operator == Tokens.Operator.Inc) {
-                builder.createInc(value, generateRegisterName());
+                builder.createInc(value);
             } else if (lcUnary._operator == Tokens.Operator.Dec) {
-                builder.createDec(value, generateRegisterName());
+                builder.createDec(value);
             } else {
                 throw new IllegalArgumentException("Unknown unary operator: " + lcUnary._operator);
             }
@@ -765,34 +761,32 @@ public final class IRGenerator extends LCAstVisitor {
             if (isLeftValue) {
                 this.stack.push(val);
             } else {
-                this.stack.push(builder.createLoad(val, generateRegisterName()));
+                this.stack.push(builder.createLoad(val));
             }
         } else {
             if (LCFlags.hasStatic(symbol.flags)) {
-//                IRMacro address = new IRMacro("global_data_address", new String[]{symbol.objectSymbol.getFullName() + "." + symbol.name});
-//                if (isLeftValue) {
-//                    operandStack.push(address);
-//                } else {
-//                    String register = allocateVirtualRegister();
-//                    addInstruction(new IRLoad(type, address, new IRVirtualRegister(register)));
-//                    operandStack.push(new IRVirtualRegister(register));
-//                }
+                IRGlobalVariableReference ref = new IRGlobalVariableReference(module.globals.get(symbol.objectSymbol.getFullName() + "." + symbol.name));
+                if (isLeftValue) {
+                    stack.push(ref);
+                } else {
+                    stack.push(builder.createLoad(ref));
+                }
             } else {
                 if (needThisPtr) this.getThisPtr();
                 IRValue op = (IRValue) stack.pop();
                 IRStructure structure = module.structures.get(symbol.objectSymbol.getFullName());
-                IRValue addr = builder.createGetElementPointer(op, List.of(new IRIntegerConstant(IRType.getUnsignedLongType(), 0L), new IRIntegerConstant(IRType.getUnsignedLongType(), structure.getFieldIndex(symbol.name))), generateRegisterName());
+                IRValue addr = builder.createGetElementPointer(op, List.of(new IRIntegerConstant(IRType.getUnsignedLongType(), 0L), new IRIntegerConstant(IRType.getUnsignedLongType(), structure.getFieldIndex(symbol.name))));
                 if (isLeftValue) {
                     stack.push(addr);
                 } else {
-                    stack.push(builder.createLoad(addr, generateRegisterName()));
+                    stack.push(builder.createLoad(addr));
                 }
             }
         }
     }
 
     private void getThisPtr() {
-        stack.push(builder.createLoad(new IRLocalVariableReference(currentFunction.getLocalVariable("<this_ptr>")), generateRegisterName()));
+        stack.push(builder.createLoad(new IRLocalVariableReference(currentFunction.getLocalVariable("<this_ptr>"))));
     }
 
     private void releaseScope(Scope scope) {

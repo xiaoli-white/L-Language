@@ -43,7 +43,7 @@ public final class DefinitionCreator extends LCAstVisitor {
         for (VariableSymbol variableSymbol : lcClassDeclaration.symbol.getAllProperties()) {
             structure.fields.add(new IRField(parseType(module, variableSymbol.theType), variableSymbol.name));
         }
-        module.putGlobalVariable(new IRGlobalVariable(List.of(), false, "<class_instance " + lcClassDeclaration.getFullName() + ">", new IRStructureType(module.structures.get("l.lang.Class"))));
+        module.putGlobalVariable(new IRGlobalVariable(List.of(), false, "<class_instance " + lcClassDeclaration.getFullName() + ">", new IRStructureType(module.structures.get("l.lang.Class")), null));
         visit(lcClassDeclaration.body, additional);
         return null;
     }
@@ -59,6 +59,14 @@ public final class DefinitionCreator extends LCAstVisitor {
                 args.add(new IRLocalVariable(parseType(module, variableDeclaration.theType), variableDeclaration.name + "_0"));
             }
             module.putFunction(new IRFunction(List.of(), parseType(module, lcMethodDeclaration.returnType), lcMethodDeclaration.symbol.getFullName(), args, false));
+        }
+        return null;
+    }
+
+    @Override
+    public Object visitVariableDeclaration(LCVariableDeclaration lcVariableDeclaration, Object additional) {
+        if (LCFlags.hasStatic(lcVariableDeclaration.modifier.flags) && getEnclosingMethodDeclaration(lcVariableDeclaration) == null) {
+            module.putGlobalVariable(new IRGlobalVariable(List.of(), lcVariableDeclaration.isVal, lcVariableDeclaration.symbol.objectSymbol.getFullName() + "." + lcVariableDeclaration.name, parseType(module, lcVariableDeclaration.theType), null));
         }
         return null;
     }
