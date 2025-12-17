@@ -64,6 +64,8 @@ public final class TypeResolver extends LCAstVisitor {
 
     @Override
     public Object visitClassDeclaration(LCClassDeclaration lcClassDeclaration, Object additional) {
+        if (lcClassDeclaration.originalDeclaration && !lcClassDeclaration.typeParameters.isEmpty()) return null;
+
         super.visitClassDeclaration(lcClassDeclaration, additional);
 
         NamedType type = this.getAST(lcClassDeclaration).name2Type.get(lcClassDeclaration.getFullName());
@@ -79,6 +81,8 @@ public final class TypeResolver extends LCAstVisitor {
 
     @Override
     public Object visitInterfaceDeclaration(LCInterfaceDeclaration lcInterfaceDeclaration, Object additional) {
+        if (lcInterfaceDeclaration.originalDeclaration && !lcInterfaceDeclaration.typeParameters.isEmpty()) return null;
+
         NamedType type = this.getAST(lcInterfaceDeclaration).name2Type.get(lcInterfaceDeclaration.getFullName());
 
         for (LCTypeReferenceExpression extendedInterface : lcInterfaceDeclaration.extendedInterfaces) {
@@ -90,6 +94,8 @@ public final class TypeResolver extends LCAstVisitor {
 
     @Override
     public Object visitEnumDeclaration(LCEnumDeclaration lcEnumDeclaration, Object additional) {
+        if (lcEnumDeclaration.originalDeclaration && !lcEnumDeclaration.typeParameters.isEmpty()) return null;
+
         NamedType type = this.getAST(lcEnumDeclaration).name2Type.get(lcEnumDeclaration.getFullName());
 
         for (LCTypeReferenceExpression implementedInterface : lcEnumDeclaration.implementedInterfaces) {
@@ -101,6 +107,8 @@ public final class TypeResolver extends LCAstVisitor {
 
     @Override
     public Object visitRecordDeclaration(LCRecordDeclaration lcRecordDeclaration, Object additional) {
+        if (lcRecordDeclaration.originalDeclaration && !lcRecordDeclaration.typeParameters.isEmpty()) return null;
+
         NamedType type = this.getAST(lcRecordDeclaration).name2Type.get(lcRecordDeclaration.getFullName());
 
         for (LCTypeReferenceExpression implementedInterface : lcRecordDeclaration.implementedInterfaces) {
@@ -278,6 +286,7 @@ public final class TypeResolver extends LCAstVisitor {
                 } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
                     throw new RuntimeException(e);
                 }
+                cloned.originalDeclaration = false;
                 cloned.parentNode = objectDeclaration.parentNode;
                 cloned.name = cloned.name + "<" + typeArgsString + ">";
                 ((LCBlock) cloned.parentNode).statementQueue.add(cloned);

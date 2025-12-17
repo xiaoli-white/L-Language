@@ -16,6 +16,7 @@ public abstract sealed class LCObjectDeclaration extends LCDeclaration permits L
     public String name;
     public List<LCTypeParameter> typeParameters;
     public LCBlock body;
+    public boolean originalDeclaration = true;
 
     public LCObjectDeclaration(String name, List<LCTypeParameter> typeParameters, LCBlock body, Position pos, boolean isErrorNode) {
         super(pos, isErrorNode);

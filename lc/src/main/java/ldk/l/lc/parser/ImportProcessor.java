@@ -47,10 +47,8 @@ public final class ImportProcessor extends LCAstVisitor {
             }
         }
 
-        File stdDir = new File(this.options.get("rootpath", String.class) + "/l/lang");
-        for (File f : Objects.requireNonNull(stdDir.listFiles())) {
-            if (f.isFile() && f.getName().endsWith(".l")) this.parseFile(f);
-        }
+        File stdDir = new File(this.options.get("rootpath", String.class) + "/l");
+        parseDirectory(stdDir);
 
         for (LCSourceFile lcSourceFile : this.ast.sourceFiles) {
             if (lcSourceFile instanceof LCSourceCodeFile lcSourceCodeFile) {
@@ -111,6 +109,13 @@ public final class ImportProcessor extends LCAstVisitor {
             }
         }
         return null;
+    }
+
+    public void parseDirectory(File dir) {
+        for (File f : Objects.requireNonNull(dir.listFiles())) {
+            if (f.isFile() && f.getName().endsWith(".l")) this.parseFile(f);
+            else if (f.isDirectory()) this.parseDirectory(f);
+        }
     }
 
     private void parseFile(File file) {
