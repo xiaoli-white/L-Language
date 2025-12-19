@@ -9,6 +9,8 @@ public abstract sealed class IRType extends IRNode permits IRArrayType, IRDouble
     @Override
     public abstract int hashCode();
 
+    public abstract long getLength();
+
     public static IRIntegerType getByteType() {
         return new IRIntegerType(IRIntegerType.Size.OneByte, false);
     }
@@ -62,12 +64,6 @@ public abstract sealed class IRType extends IRNode permits IRArrayType, IRDouble
     }
 
     public static long getLength(IRType type) {
-        return switch (type) {
-            case IRIntegerType irIntegerType ->
-                    (irIntegerType.size.size+7) / 8;
-            case IRFloatType _ -> 4;
-            case IRDoubleType _, IRPointerType _ -> 8;
-            default -> throw new IllegalStateException("Unexpected value: " + type);
-        };
+        return type.getLength();
     }
 }

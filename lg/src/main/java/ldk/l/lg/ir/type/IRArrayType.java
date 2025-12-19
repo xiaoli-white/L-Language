@@ -4,9 +4,10 @@ import ldk.l.lg.ir.IRVisitor;
 
 import java.util.Objects;
 
-public final class IRArrayType extends IRType{
+public final class IRArrayType extends IRType {
     public IRType base;
     public long length;
+
     public IRArrayType(IRType base, long length) {
         this.base = base;
         this.length = length;
@@ -30,6 +31,11 @@ public final class IRArrayType extends IRType{
 
     @Override
     public String toString() {
-        return "["+length+" x "+base+"]";
+        return "[" + length + " x " + base + "]";
+    }
+
+    @Override
+    public long getLength() {
+        return length * base.getLength();
     }
 }

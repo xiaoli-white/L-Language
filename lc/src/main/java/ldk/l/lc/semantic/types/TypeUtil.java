@@ -34,11 +34,11 @@ public class TypeUtil {
     }
 
     private static boolean LE_M_M(MethodPointerType t1, MethodPointerType t2) {
-        if (t1.paramTypes.length != t2.paramTypes.length) return false;
+        if (t1.paramTypes.size() != t2.paramTypes.size()) return false;
         if (TypeUtil.LE(t1.returnType, t2.returnType)) return false;
 
-        for (int i = 0; i < t1.paramTypes.length; i++) {
-            if (!TypeUtil.LE(t1.paramTypes[i], t2.paramTypes[i])) {
+        for (int i = 0; i < t1.paramTypes.size(); i++) {
+            if (!TypeUtil.LE(t1.paramTypes.get(i), t2.paramTypes.get(i))) {
                 return false;
             }
         }

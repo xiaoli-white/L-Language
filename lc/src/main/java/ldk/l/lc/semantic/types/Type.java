@@ -75,7 +75,7 @@ public abstract sealed class Type permits ArrayType, MethodPointerType, NamedTyp
             if (string.peek() == ')') {
                 string.addPos(1);
             }
-            return new MethodPointerType(paramTypes.toArray(new Type[0]), Type.parseTypeString(string));
+            return new MethodPointerType(paramTypes, Type.parseTypeString(string));
         } else if (string.startsWith("[")) {
             string.addPos(1);
             return new ArrayType(Type.parseTypeString(string));

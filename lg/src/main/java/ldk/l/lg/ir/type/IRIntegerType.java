@@ -35,6 +35,12 @@ public final class IRIntegerType extends IRType {
         return Objects.hash(size, unsigned);
     }
 
+    @Override
+    public long getLength() {
+        if (size == Size.OneBit) return 1;
+        return size.size / 8;
+    }
+
     public enum Size {
         OneBit(1),
         OneByte(8),

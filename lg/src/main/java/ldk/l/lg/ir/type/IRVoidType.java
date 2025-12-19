@@ -29,4 +29,9 @@ public final class IRVoidType extends IRType {
     public String toString() {
         return "void";
     }
+
+    @Override
+    public long getLength() {
+        return 0;
+    }
 }

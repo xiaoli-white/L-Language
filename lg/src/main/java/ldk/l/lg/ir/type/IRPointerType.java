@@ -32,4 +32,9 @@ public final class IRPointerType extends IRType {
     public int hashCode() {
         return Objects.hashCode(base);
     }
+
+    @Override
+    public long getLength() {
+        return 8;
+    }
 }

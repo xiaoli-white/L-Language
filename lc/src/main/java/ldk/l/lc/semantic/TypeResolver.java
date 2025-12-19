@@ -160,7 +160,7 @@ public final class TypeResolver extends LCAstVisitor {
         for (LCVariableDeclaration lcVariableDeclaration : lcLambda.parameterList.parameters) {
             paramTypes.add((Type) this.visit(lcVariableDeclaration.typeExpression, additional));
         }
-        lcLambda.theType = new MethodPointerType(paramTypes.toArray(new Type[0]), lcLambda.returnType);
+        lcLambda.theType = new MethodPointerType(paramTypes, lcLambda.returnType);
 
         return super.visitLambda(lcLambda, additional);
     }
@@ -337,7 +337,7 @@ public final class TypeResolver extends LCAstVisitor {
             paramTypes.add(lcVariableDeclaration.theType);
         }
         Type returnType = (Type) this.visit(lcMethodPointerTypeExpression.returnTypeExpression, additional);
-        MethodPointerType methodPointerType = new MethodPointerType(paramTypes.toArray(new Type[0]), returnType);
+        MethodPointerType methodPointerType = new MethodPointerType(paramTypes, returnType);
         lcMethodPointerTypeExpression.theType = methodPointerType;
         return methodPointerType;
     }

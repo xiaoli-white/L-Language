@@ -1,13 +1,14 @@
 package ldk.l.lc.semantic.types;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 public final class MethodPointerType extends Type {
-    public Type[] paramTypes;
+    public List<Type> paramTypes;
     public Type returnType;
 
-    public MethodPointerType(Type[] paramTypes, Type returnType) {
+    public MethodPointerType(List<Type>paramTypes, Type returnType) {
         super(TypeKind.MethodPointer);
         this.paramTypes = paramTypes;
         this.returnType = returnType;
@@ -21,7 +22,7 @@ public final class MethodPointerType extends Type {
     @Override
     public String toString() {
         return "MethodPointerType{" +
-                "paramTypes=" + Arrays.toString(paramTypes) +
+                "paramTypes=" + paramTypes +
                 ", returnType=" + returnType +
                 '}';
     }
@@ -40,7 +41,7 @@ public final class MethodPointerType extends Type {
 
     @Override
     public int hashCode() {
-        return Objects.hash(returnType, Arrays.hashCode(paramTypes));
+        return Objects.hash(returnType, paramTypes);
     }
 
     @Override
@@ -49,7 +50,7 @@ public final class MethodPointerType extends Type {
         for (Type paramType : paramTypes) {
             string.append(paramType.toTypeString()).append(", ");
         }
-        if (paramTypes.length > 0) string.delete(string.length() - 2, string.length());
+        if (!paramTypes.isEmpty()) string.delete(string.length() - 2, string.length());
         string.append(")");
         if (returnType != null)
             string.append(":").append(returnType.toTypeString());

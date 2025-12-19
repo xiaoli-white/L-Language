@@ -29,4 +29,9 @@ public final class IRFloatType extends IRType {
     public int hashCode() {
         return Objects.hash(IRFloatType.class);
     }
+
+    @Override
+    public long getLength() {
+        return 4;
+    }
 }

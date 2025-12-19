@@ -29,4 +29,9 @@ public final class IRDoubleType extends IRType {
     public int hashCode() {
         return Objects.hash(IRDoubleType.class);
     }
+
+    @Override
+    public long getLength() {
+        return 8;
+    }
 }

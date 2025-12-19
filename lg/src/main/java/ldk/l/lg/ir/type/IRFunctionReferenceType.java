@@ -43,4 +43,9 @@ public final class IRFunctionReferenceType extends IRType {
         builder.append(") -> ").append(returnType);
         return builder.toString();
     }
+
+    @Override
+    public long getLength() {
+        return 8;
+    }
 }

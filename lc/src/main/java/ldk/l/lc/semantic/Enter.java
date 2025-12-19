@@ -318,7 +318,7 @@ public final class Enter extends LCAstVisitor {
             for (LCVariableDeclaration p : lcMethodDeclaration.parameterList.parameters)
                 paramTypes.add(p.theType);
         }
-        MethodSymbol symbol = new MethodSymbol(lcMethodDeclaration.name, new ArrayList<>(paramTypes), lcMethodDeclaration.returnType, new MethodPointerType(paramTypes.toArray(new Type[0]), lcMethodDeclaration.returnType), lcMethodDeclaration.methodKind, lcMethodDeclaration.modifier.flags, lcMethodDeclaration.modifier.attributes);
+        MethodSymbol symbol = new MethodSymbol(lcMethodDeclaration.name, new ArrayList<>(paramTypes), lcMethodDeclaration.returnType, new MethodPointerType(paramTypes, lcMethodDeclaration.returnType), lcMethodDeclaration.methodKind, lcMethodDeclaration.modifier.flags, lcMethodDeclaration.modifier.attributes);
         symbol.declaration = lcMethodDeclaration;
         lcMethodDeclaration.symbol = symbol;
 
@@ -487,7 +487,7 @@ public final class Enter extends LCAstVisitor {
             for (LCVariableDeclaration p : lcLambda.parameterList.parameters)
                 paramTypes.add(p.theType);
         }
-        MethodSymbol symbol = new MethodSymbol(new ArrayList<>(paramTypes), lcLambda.returnType, new MethodPointerType(paramTypes.toArray(new Type[0]), lcLambda.returnType), MethodKind.Method, lcLambda.modifier.flags, lcLambda.modifier.attributes);
+        MethodSymbol symbol = new MethodSymbol(new ArrayList<>(paramTypes), lcLambda.returnType, new MethodPointerType(paramTypes, lcLambda.returnType), MethodKind.Method, lcLambda.modifier.flags, lcLambda.modifier.attributes);
         symbol.lambdaDeclaration = lcLambda;
         lcLambda.symbol = symbol;
 

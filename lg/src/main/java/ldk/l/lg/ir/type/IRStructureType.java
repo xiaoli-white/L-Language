@@ -32,4 +32,9 @@ public final class IRStructureType extends IRType {
     public int hashCode() {
         return Objects.hashCode(structure);
     }
+
+    @Override
+    public long getLength() {
+        return structure.getLength();
+    }
 }
