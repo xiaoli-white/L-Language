@@ -1,6 +1,7 @@
 package ldk.l.lc.ir;
 
 import ldk.l.lc.ast.LCAstVisitor;
+import ldk.l.lc.ast.expression.type.LCArrayTypeExpression;
 import ldk.l.lc.ast.statement.declaration.object.LCClassDeclaration;
 import ldk.l.lg.ir.IRModule;
 import ldk.l.lg.ir.structure.IRStructure;
@@ -17,6 +18,7 @@ public final class StructureDefinitionCreator extends LCAstVisitor {
     @Override
     public Object visitClassDeclaration(LCClassDeclaration lcClassDeclaration, Object additional) {
         module.putStructure(new IRStructure(lcClassDeclaration.modifier.attributes, lcClassDeclaration.getFullName(), new ArrayList<>()));
+        super.visitClassDeclaration(lcClassDeclaration, additional);
         return null;
     }
 }

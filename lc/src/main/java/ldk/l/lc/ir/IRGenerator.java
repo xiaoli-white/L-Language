@@ -8,6 +8,7 @@ import ldk.l.lc.ast.expression.*;
 import ldk.l.lc.ast.expression.literal.*;
 import ldk.l.lc.ast.file.LCSourceCodeFile;
 import ldk.l.lc.ast.file.LCSourceFileProxy;
+import ldk.l.lc.ast.statement.LCAssert;
 import ldk.l.lc.ast.statement.LCInit;
 import ldk.l.lc.ast.statement.LCReturn;
 import ldk.l.lc.ast.statement.declaration.LCMethodDeclaration;
@@ -659,6 +660,84 @@ public final class IRGenerator extends LCAstVisitor {
     }
 
     @Override
+    public Object visitDereference(LCDereference lcDereference, Object additional) {
+        this.visit(lcDereference.expression, additional);
+        IRValue value = (IRValue) stack.pop();
+
+        if (lcDereference.isLeftValue) {
+            stack.push(value);
+        } else {
+            stack.push(builder.createLoad(value));
+        }
+        return null;
+    }
+
+    @Override
+    public Object visitGetAddress(LCGetAddress lcGetAddress, Object additional) {
+        return super.visitGetAddress(lcGetAddress, additional);
+    }
+
+    @Override
+    public Object visitNotNullAssert(LCNotNullAssert lcNotNullAssert, Object additional) {
+        this.visit(lcNotNullAssert.base, additional);
+        IRValue base = (IRValue) stack.pop();
+        IRNullptrConstant nullValue = new IRNullptrConstant((IRPointerType) parseType(module, lcNotNullAssert.base.theType));
+        var prev = builder.getInsertPoint();
+        createBasicBlock();
+        // TODO throws NullPointerException
+        var end = createBasicBlock();
+        builder.setInsertPoint(prev);
+        builder.createJumpIfNotEqual(base, nullValue, end);
+        builder.setInsertPoint(end);
+
+        stack.push(base);
+        return null;
+    }
+
+    @Override
+    public Object visitAssert(LCAssert lcAssert, Object additional) {
+        this.visit(lcAssert.condition, additional);
+        IRValue condition = (IRValue) stack.pop();
+        var prev = builder.getInsertPoint();
+        createBasicBlock();
+//         TODO throws AssertionError
+        var end = createBasicBlock();
+        builder.setInsertPoint(prev);
+        builder.createJumpIfTrue(condition, end);
+        builder.setInsertPoint(end);
+        return null;
+    }
+
+    @Override
+    public Object visitTypeof(LCTypeof lcTypeof, Object additional) {
+        this.visit(lcTypeof.expression, additional);
+        IRValue value = (IRValue) stack.pop();
+
+//        IRType stringType = parseType(SystemTypes.String_Type);
+
+        if (lcTypeof.expression.theType instanceof PointerType || lcTypeof.expression.theType instanceof ReferenceType || lcTypeof.expression.theType instanceof ArrayType || SystemTypes.isPrimitiveType(lcTypeof.expression.theType)) {
+//            int index = module.constantPool.put(new IRConstantPool.Entry(stringType, lcTypeof.expression.theType.toTypeString()));
+//            operandStack.push(new IRConstant(index));
+        }
+        return null;
+    }
+
+    @Override
+    public Object visitSizeof(LCSizeof lcSizeof, Object additional) {
+        if (SystemTypes.BYTE.equals(lcSizeof.expression.theType) || SystemTypes.UNSIGNED_BYTE.equals(lcSizeof.expression.theType) || SystemTypes.BOOLEAN.equals(lcSizeof.expression.theType)) {
+            stack.push(new IRIntegerConstant(IRType.getUnsignedLongType(), 1));
+        } else if (SystemTypes.SHORT.equals(lcSizeof.expression.theType) || SystemTypes.UNSIGNED_SHORT.equals(lcSizeof.expression.theType)) {
+            stack.push(new IRIntegerConstant(IRType.getUnsignedLongType(), 2));
+        } else if (SystemTypes.INT.equals(lcSizeof.expression.theType) || SystemTypes.UNSIGNED_INT.equals(lcSizeof.expression.theType) || SystemTypes.FLOAT.equals(lcSizeof.expression.theType) || SystemTypes.CHAR.equals(lcSizeof.expression.theType)) {
+            stack.push(new IRIntegerConstant(IRType.getUnsignedLongType(), 4));
+        } else if (SystemTypes.LONG.equals(lcSizeof.expression.theType) || SystemTypes.UNSIGNED_LONG.equals(lcSizeof.expression.theType) || SystemTypes.DOUBLE.equals(lcSizeof.expression.theType) || lcSizeof.expression.theType instanceof PointerType) {
+            stack.push(new IRIntegerConstant(IRType.getUnsignedLongType(), 8));
+        } else {
+        }
+        return null;
+    }
+
+    @Override
     public Object visitIntegerLiteral(LCIntegerLiteral lcIntegerLiteral, Object additional) {
         stack.push(new IRIntegerConstant((IRIntegerType) parseType(module, lcIntegerLiteral.theType), lcIntegerLiteral.value));
         return null;
@@ -894,7 +973,7 @@ public final class IRGenerator extends LCAstVisitor {
         var next = createBasicBlock();
         if (prevBlock != null) {
             builder.setInsertPoint(prevBlock);
-            IRValue nullValue = new IRNullptrConstant(ty);
+            IRNullptrConstant nullValue = new IRNullptrConstant(ty);
             builder.createJumpIfEqual(operand, nullValue, next);
             builder.setInsertPoint(next);
         }
