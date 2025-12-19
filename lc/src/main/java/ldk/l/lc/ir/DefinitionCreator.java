@@ -32,18 +32,28 @@ public final class DefinitionCreator extends LCAstVisitor {
     @Override
     public Object visitSourceCodeFile(LCSourceCodeFile lcSourceCodeFile, Object additional) {
         super.visitSourceCodeFile(lcSourceCodeFile, additional);
+        if (!module.functions.containsKey("malloc")) {
+            module.putFunction(new IRFunction(List.of(), new IRPointerType(IRType.getVoidType()), "malloc", List.of(new IRLocalVariable(IRType.getUnsignedLongType(), "size")), false));
+        }
+        if (!module.functions.containsKey("free")) {
+            module.putFunction(new IRFunction(List.of(), IRType.getVoidType(), "free", List.of(new IRLocalVariable(new IRPointerType(IRType.getVoidType()), "ptr")), false));
+        }
+        if (!module.functions.containsKey("realloc")) {
+            module.putFunction(new IRFunction(List.of(), new IRPointerType(IRType.getVoidType()), "realloc", List.of(new IRLocalVariable(new IRPointerType(IRType.getVoidType()), "ptr"), new IRLocalVariable(IRType.getUnsignedLongType(), "size")), false));
+        }
         return null;
     }
 
     @Override
     public Object visitClassDeclaration(LCClassDeclaration lcClassDeclaration, Object additional) {
         IRStructure structure = module.structures.get(lcClassDeclaration.getFullName());
-        structure.fields.add(new IRField(new IRPointerType(IRType.getVoidType()), "<class_ptr>"));
+        structure.fields.add(new IRField(new IRPointerType(new IRStructureType(module.structures.get("l.lang.Class"))), "<class_ptr>"));
         structure.fields.add(new IRField(IRType.getUnsignedLongType(), "<ref_count>"));
         for (VariableSymbol variableSymbol : lcClassDeclaration.symbol.getAllProperties()) {
             structure.fields.add(new IRField(parseType(module, variableSymbol.theType), variableSymbol.name));
         }
         module.putGlobalVariable(new IRGlobalVariable(List.of(), false, "<class_instance " + lcClassDeclaration.getFullName() + ">", new IRStructureType(module.structures.get("l.lang.Class")), null));
+        module.putFunction(new IRFunction(List.of(), IRType.getVoidType(), lcClassDeclaration.getFullName() + ".<__init__>()V", List.of(new IRLocalVariable(new IRPointerType(new IRStructureType(module.structures.get(lcClassDeclaration.getFullName()))), "<this_ptr>")), false));
         visit(lcClassDeclaration.body, additional);
         return null;
     }

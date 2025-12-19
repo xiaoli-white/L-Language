@@ -1,11 +1,9 @@
 package ldk.l.lc.ir;
 
 import ldk.l.lc.ast.LCAst;
+import ldk.l.lc.ast.LCAstUtil;
 import ldk.l.lc.ast.LCAstVisitor;
-import ldk.l.lc.ast.base.LCBlock;
-import ldk.l.lc.ast.base.LCExpressionStatement;
-import ldk.l.lc.ast.base.LCFlags;
-import ldk.l.lc.ast.base.LCStatement;
+import ldk.l.lc.ast.base.*;
 import ldk.l.lc.ast.expression.*;
 import ldk.l.lc.ast.expression.literal.*;
 import ldk.l.lc.ast.file.LCSourceCodeFile;
@@ -54,7 +52,6 @@ public final class IRGenerator extends LCAstVisitor {
     private final ErrorStream errorStream;
     private IRBuilder builder;
     private IRFunction currentFunction;
-    @Deprecated
     private LCAst ast = null;
     @Deprecated
     private IRControlFlowGraph initCFG = null;
@@ -123,6 +120,12 @@ public final class IRGenerator extends LCAstVisitor {
     }
 
     @Override
+    public Object visitAst(LCAst ast, Object additional) {
+        this.ast = ast;
+        return super.visitAst(ast, additional);
+    }
+
+    @Override
     public Object visitSourceCodeFile(LCSourceCodeFile lcSourceCodeFile, Object additional) {
         module = new IRModule();
         StructureDefinitionCreator structureDefinitionCreator = new StructureDefinitionCreator(module);
@@ -148,7 +151,7 @@ public final class IRGenerator extends LCAstVisitor {
 
     @Override
     public Object visitClassDeclaration(LCClassDeclaration lcClassDeclaration, Object additional) {
-        Map<String, String> virtualMethods = getVirtualMethods(lcClassDeclaration.symbol);
+        Map<String, String> virtualMethods = lcClassDeclaration.symbol.getVirtualMethods();
         IRStructure clazzStructure = module.structures.get("l.lang.Class");
         List<IRConstant> vtableElements = new ArrayList<>();
         for (String name : virtualMethods.values()) {
@@ -497,10 +500,9 @@ public final class IRGenerator extends LCAstVisitor {
             switch (lcBinary._operator) {
                 case Assign -> {
                     result = right;
-//                    retain(operand2, lcBinary.expression2.theType);
-//                    String tempRegister = allocateVirtualRegister();
-//                    addInstruction(new IRLoad(operandType, operand1, new IRVirtualRegister(tempRegister)));
-//                    release(new IRVirtualRegister(tempRegister), lcBinary.expression1.theType);
+                    retain(right, lcBinary.expression2.theType);
+//                    var tmp = builder.createLoad(left);
+//                    release(tmp, lcBinary.expression1.theType);
                 }
                 case PlusAssign -> {
                     IRValue leftVal = builder.createLoad(left);
@@ -606,6 +608,57 @@ public final class IRGenerator extends LCAstVisitor {
     }
 
     @Override
+    public Object visitNewObject(LCNewObject lcNewObject, Object additional) {
+        String typeName = lcNewObject.theType.toTypeString();
+
+        IRValue place;
+        if (lcNewObject.place != null) {
+            this.visit(lcNewObject.place, additional);
+            place = (IRValue) stack.pop();
+            retain(place, lcNewObject.theType);
+        } else {
+            IRStructure structure = module.structures.get(typeName);
+            IRValue ptr = builder.createInvoke(module.functions.get("malloc"), List.of(new IRIntegerConstant(IRType.getUnsignedLongType(), structure.getLength())));
+            place = builder.createPointerToPointer(ptr, new IRPointerType(new IRStructureType(structure)));
+            var refCountPtr = builder.createGetElementPointer(place, List.of(new IRIntegerConstant(IRType.getUnsignedLongType(), 0), new IRIntegerConstant(IRType.getUnsignedLongType(), structure.getFieldIndex("<ref_count>"))));
+            builder.createInc(refCountPtr);
+        }
+
+        retain(place, lcNewObject.theType);
+        builder.createInvoke(module.functions.get(typeName + ".<__init__>()V"), List.of(place));
+
+        List<IRValue> args = new ArrayList<>(lcNewObject.arguments.size() + 1);
+        args.add(place);
+        retain(place, lcNewObject.theType);
+        for (LCExpression argument : lcNewObject.arguments) {
+            Type type = argument.theType;
+            this.visit(argument, additional);
+            IRValue arg = (IRValue) stack.pop();
+            retain(arg, type);
+            args.add(arg);
+        }
+        builder.createInvoke(module.functions.get(typeName + ".<__init__>()V"), args);
+
+        stack.push(place);
+
+        return null;
+    }
+
+    @Override
+    public Object visitDelete(LCDelete lcDelete, Object additional) {
+        this.visit(lcDelete.expression, additional);
+        IRValue value = (IRValue) stack.pop();
+        deleteSomething(value, lcDelete.expression.theType);
+        return null;
+    }
+
+    @Override
+    public Object visitClassof(LCClassof lcClassof, Object additional) {
+        stack.push(new IRGlobalVariableReference(module.globals.get(("<class_instance " + lcClassof.typeExpression.theType.toTypeString() + ">"))));
+        return null;
+    }
+
+    @Override
     public Object visitIntegerLiteral(LCIntegerLiteral lcIntegerLiteral, Object additional) {
         stack.push(new IRIntegerConstant((IRIntegerType) parseType(module, lcIntegerLiteral.theType), lcIntegerLiteral.value));
         return null;
@@ -673,22 +726,37 @@ public final class IRGenerator extends LCAstVisitor {
         List<IRValue> arguments = new ArrayList<>();
         IRValue func;
         if (lcMethodCall.symbol != null) {
+            List<IRType> types = new ArrayList<>();
+            IRValue thisPtr;
             if (!LCFlags.hasStatic(lcMethodCall.symbol.flags)) {
                 if (needThisPtr) getThisPtr();
-                IRValue thisPtr = (IRValue) stack.pop();
+                thisPtr = (IRValue) stack.pop();
                 arguments.add(thisPtr);
+                types.add(thisPtr.getType());
+            } else {
+                thisPtr = null;
             }
             for (int i = 0; i < lcMethodCall.arguments.size(); ++i) {
                 visit(lcMethodCall.arguments.get(i), null);
                 IRValue argument = (IRValue) stack.pop();
                 arguments.add(argument);
+                types.add(argument.getType());
             }
             if (LCFlags.hasStatic(lcMethodCall.symbol.flags) || LCFlags.hasFinal(lcMethodCall.symbol.flags) || lcMethodCall.symbol.methodKind == MethodKind.Constructor) {
                 IRFunction function = module.functions.get(lcMethodCall.symbol.getFullName());
                 func = new IRFunctionReference(function);
             } else {
+                if (thisPtr == null) throw new RuntimeException();
                 switch (lcMethodCall.symbol.objectSymbol) {
                     case ClassSymbol classSymbol -> {
+                        var classInstancePtr = builder.createGetElementPointer(thisPtr, List.of(new IRIntegerConstant(IRType.getIntType(), 0), new IRIntegerConstant(IRType.getIntType(), ((IRStructureType) ((IRPointerType) thisPtr.getType()).base).structure.getFieldIndex("<class_ptr>"))));
+                        var classInstance = builder.createLoad(classInstancePtr);
+                        System.err.println(classInstance.getType());
+                        var vtablePtr = builder.createGetElementPointer(classInstance, List.of(new IRIntegerConstant(IRType.getIntType(), 0), new IRIntegerConstant(IRType.getIntType(), ((IRStructureType) ((IRPointerType) classInstance.getType()).base).structure.getFieldIndex("vtable"))));
+                        var vtable = builder.createLoad(vtablePtr);
+                        var funcPtr = builder.createGetElementPointer(vtable, List.of(new IRIntegerConstant(IRType.getIntType(), classSymbol.getVirtualMethods().keySet().stream().toList().indexOf(lcMethodCall.symbol.getSimpleName()))));
+                        var voidPtr = builder.createLoad(funcPtr);
+                        func = builder.createBitCast(voidPtr, new IRFunctionReferenceType(parseType(module, lcMethodCall.theType), types, false));
 //                    String classInstanceAddressRegister = allocateVirtualRegister();
 //                    addInstruction(new IRLoad(new IRPointerType(IRType.getVoidType()), arguments.getFirst(), new IRVirtualRegister(classInstanceAddressRegister)));
 //                    String temp1 = allocateVirtualRegister();
@@ -700,6 +768,7 @@ public final class IRGenerator extends LCAstVisitor {
 //                    address = new IRVirtualRegister(result);
                     }
                     case InterfaceSymbol interfaceSymbol -> {
+                        func = null;
 //                    String classInstanceAddressRegister = allocateVirtualRegister();
 //                    addInstruction(new IRLoad(new IRPointerType(IRType.getVoidType()), arguments.getFirst(), new IRVirtualRegister(classInstanceAddressRegister)));
 //                    ClassSymbol symbol = ((LCClassDeclaration) Objects.requireNonNull(this.ast.getObjectDeclaration(SystemTypes.Class_Type.name))).symbol;
@@ -723,16 +792,19 @@ public final class IRGenerator extends LCAstVisitor {
 //                    address = new IRVirtualRegister(addressRegister);
                     }
                     case EnumSymbol enumSymbol -> {
+                        func = null;
 //                    address = null;
                     }
                     case RecordSymbol recordSymbol -> {
+                        func = null;
 //                    address = null;
                     }
                     case AnnotationSymbol annotationSymbol -> {
+                        func = null;
 //                    address = null;
                     }
                 }
-                return;
+                if (func == null) return;
             }
         } else {
             visit(lcMethodCall.expression, null);
@@ -792,31 +864,174 @@ public final class IRGenerator extends LCAstVisitor {
     private void releaseScope(Scope scope) {
         for (Symbol symbol : scope.name2symbol.values()) {
             if (symbol instanceof VariableSymbol variableSymbol) {
-                // TODO
-//                if (!SystemTypes.isReference(variableSymbol.theType)) continue;
-//                boolean ret = getVariable(variableSymbol, false);
-//                if (!ret) continue;
-//                IROperand operand = operandStack.pop();
-//                release(operand, variableSymbol.theType);
+                if (!SystemTypes.isReference(variableSymbol.theType)) continue;
+                getVariable(variableSymbol, false, true);
+                IRValue operand = (IRValue) stack.pop();
+                release(operand, variableSymbol.theType);
             }
         }
     }
 
-    private Map<String, String> getVirtualMethods(ClassSymbol classSymbol) {
-        Map<String, String> result;
-        if (classSymbol.extended == null) {
-            result = new LinkedHashMap<>();
+    private void retain(IRValue operand, Type type) {
+        if (!SystemTypes.isReference(type)) return;
+        if (type instanceof ArrayType) return;
+
+        IRPointerType ty;
+        IRBasicBlock prevBlock;
+        if (type instanceof NullableType nullableType) {
+            ty = (IRPointerType) parseType(module, nullableType);
+            prevBlock = builder.getInsertPoint();
+            createBasicBlock();
         } else {
-            result = getVirtualMethods(classSymbol.extended);
+            ty = (IRPointerType) parseType(module, type);
+            prevBlock = null;
         }
-        for (MethodSymbol methodSymbol : classSymbol.methods) {
-            if (LCFlags.hasStatic(methodSymbol.flags)) continue;
-            result.put(methodSymbol.getSimpleName(), LCFlags.hasAbstract(methodSymbol.flags) ? "" : methodSymbol.getFullName());
+        if (ty == null) throw new RuntimeException("Invalid type");
+
+        var refCountPtr = builder.createGetElementPointer(operand, List.of(new IRIntegerConstant(IRType.getUnsignedLongType(), 0L), new IRIntegerConstant(IRType.getUnsignedLongType(), ((IRStructureType) ty.base).structure.getFieldIndex("<ref_count>"))));
+        builder.createInc(refCountPtr);
+
+        var next = createBasicBlock();
+        if (prevBlock != null) {
+            builder.setInsertPoint(prevBlock);
+            IRValue nullValue = new IRNullptrConstant(ty);
+            builder.createJumpIfEqual(operand, nullValue, next);
+            builder.setInsertPoint(next);
         }
-        if (classSymbol.destructor != null) {
-            result.put(classSymbol.destructor.getSimpleName(), classSymbol.destructor.getFullName());
+    }
+
+    private void release(IRValue operand, Type type) {
+        if (!SystemTypes.isReference(type)) return;
+        if (type instanceof ArrayType) return;
+
+        IRPointerType ty;
+        IRBasicBlock prevBlock;
+        if (type instanceof NullableType nullableType) {
+            ty = (IRPointerType) parseType(module, nullableType);
+            prevBlock = builder.getInsertPoint();
+            createBasicBlock();
+        } else {
+            ty = (IRPointerType) parseType(module, type);
+            prevBlock = null;
         }
-        return result;
+        if (ty == null) throw new RuntimeException("Invalid type");
+
+        var refCountPtr = builder.createGetElementPointer(operand, List.of(new IRIntegerConstant(IRType.getUnsignedLongType(), 0L), new IRIntegerConstant(IRType.getUnsignedLongType(), ((IRStructureType) ty.base).structure.getFieldIndex("<ref_count>"))));
+        var refCount = builder.createDec(refCountPtr);
+        var prev = builder.getInsertPoint();
+        createBasicBlock();
+        deleteSomething(operand, type);
+        var next = createBasicBlock();
+        builder.setInsertPoint(prev);
+        builder.createJumpIfNotEqual(refCount, new IRIntegerConstant(IRType.getUnsignedLongType(), 0L), next);
+
+        if (prevBlock != null) {
+            builder.setInsertPoint(prevBlock);
+            IRValue nullValue = new IRNullptrConstant(ty);
+            builder.createJumpIfEqual(operand, nullValue, next);
+            builder.setInsertPoint(next);
+        }
+    }
+
+    private void deleteSomething(IRValue operand, Type type) {
+        if (type instanceof ArrayType arrayType) deleteArray(operand, arrayType);
+        else if (type instanceof NamedType namedType && !SystemTypes.isPrimitiveType(namedType))
+            deleteObject(operand, namedType);
+    }
+
+    private void deleteObject(IRValue object, NamedType objectType) {
+        var classInstancePtr = builder.createGetElementPointer(object, List.of(new IRIntegerConstant(IRType.getIntType(), 0), new IRIntegerConstant(IRType.getIntType(), ((IRStructureType) ((IRPointerType) object.getType()).base).structure.getFieldIndex("<class_ptr>"))));
+        var classInstance = builder.createLoad(classInstancePtr);
+        ObjectSymbol objectSymbol = LCAstUtil.getObjectSymbol(Objects.requireNonNull(ast.getObjectDeclaration(objectType.name)));
+        IRFunctionReferenceType destructorType = new IRFunctionReferenceType(IRType.getVoidType(), List.of(parseType(module, objectType)), false);
+        IRValue destructor;
+        if (objectSymbol instanceof InterfaceSymbol interfaceSymbol) {
+//            ClassSymbol classSymbol = ((LCClassDeclaration) Objects.requireNonNull(this.ast.getObjectDeclaration(SystemTypes.Class_Type.name))).symbol;
+//            MethodSymbol methodSymbol = null;
+//            for (MethodSymbol method : classSymbol.methods) {
+//                if (method.name.equals("getITableEntry")) {
+//                    methodSymbol = method;
+//                    break;
+//                }
+//            }
+//            IRMacro interfaceClassInstance = new IRMacro("global_data_address", new String[]{"<class_instance " + interfaceSymbol.getFullName() + ">"});
+//            IRVirtualRegister classInstance = new IRVirtualRegister(classInstanceAddressRegister);
+//            retain(classInstance, SystemTypes.Class_Type);
+//            retain(interfaceClassInstance, SystemTypes.Class_Type);
+//            String itableAddressRegister = allocateVirtualRegister();
+//            addInstruction(new IRInvoke(new IRPointerType(IRType.getVoidType()), new IRMacro("function_address", new String[]{Objects.requireNonNull(methodSymbol).getFullName()}), new IRType[]{new IRPointerType(IRType.getVoidType()), new IRPointerType(IRType.getVoidType())}, new IROperand[]{classInstance, interfaceClassInstance}, new IRVirtualRegister(itableAddressRegister)));
+//            String temp = allocateVirtualRegister();
+//            addInstruction(new IRCalculate(IRCalculate.Operator.ADD, new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(itableAddressRegister), new IRMacro("itable_entry_offset", new String[]{interfaceSymbol.getFullName(), "<deinit>()V"}), new IRVirtualRegister(temp)));
+//            addInstruction(new IRLoad(new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(temp), new IRVirtualRegister(destructor)));
+            destructor = null;
+        } else {
+            var vtablePtr = builder.createGetElementPointer(classInstance, List.of(new IRIntegerConstant(IRType.getIntType(), 0), new IRIntegerConstant(IRType.getIntType(), ((IRStructureType) ((IRPointerType) classInstance.getType()).base).structure.getFieldIndex("vtable"))));
+            var vtable = builder.createLoad(vtablePtr);
+            var funcPtr = builder.createGetElementPointer(vtable, List.of(new IRIntegerConstant(IRType.getIntType(), ((ClassSymbol) objectSymbol).getVirtualMethods().keySet().stream().toList().indexOf("<deinit>"))));
+            var voidPtr = builder.createLoad(funcPtr);
+            destructor = builder.createBitCast(voidPtr, destructorType);
+        }
+        builder.createInvoke(destructorType, destructor, List.of(object));
+        builder.createInvoke(module.functions.get("free"), List.of(object));
+    }
+
+    private void deleteArray(IRValue array, ArrayType arrayType) {
+        if (!SystemTypes.isPrimitiveType(arrayType.base)) {
+//            int constantTypeSizeIndex = module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), IRType.getLength(parseType(arrayType.base))));
+//
+//            String addressRegister = allocateVirtualRegister();
+//            int constant8Index = module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 8));
+//            addInstruction(new IRStackAllocate(new IRConstant(constant8Index), new IRVirtualRegister(addressRegister)));
+//            String temp = allocateVirtualRegister();
+//            addInstruction(new IRCalculate(IRCalculate.Operator.SUB, parseType(arrayType), array, new IRConstant(constant8Index), new IRVirtualRegister(temp)));
+//            addInstruction(new IRStore(new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(addressRegister), new IRVirtualRegister(temp)));
+//            String sizeRegister0 = allocateVirtualRegister();
+//            addInstruction(new IRLoad(new IRPointerType(IRType.getUnsignedLongType()), new IRVirtualRegister(addressRegister), new IRVirtualRegister(sizeRegister0)));
+//            String sizeRegister1 = allocateVirtualRegister();
+//            addInstruction(new IRLoad(IRType.getUnsignedLongType(), new IRVirtualRegister(sizeRegister0), new IRVirtualRegister(sizeRegister1)));
+//            String sizeRegister = allocateVirtualRegister();
+//            int constant16Index = module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 16));
+//            addInstruction(new IRCalculate(IRCalculate.Operator.SUB, IRType.getUnsignedLongType(), new IRVirtualRegister(sizeRegister1), new IRConstant(constant16Index), new IRVirtualRegister(sizeRegister)));
+//            String lengthRegister = allocateVirtualRegister();
+//            addInstruction(new IRCalculate(IRCalculate.Operator.DIV, IRType.getUnsignedLongType(), new IRVirtualRegister(sizeRegister), new IRConstant(constantTypeSizeIndex), new IRVirtualRegister(lengthRegister)));
+//            String temp2 = allocateVirtualRegister();
+//            addInstruction(new IRCalculate(IRCalculate.Operator.ADD, parseType(arrayType), array, new IRConstant(constant16Index), new IRVirtualRegister(temp2)));
+//            addInstruction(new IRStore(new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(addressRegister), new IRVirtualRegister(temp2)));
+//
+//            String countRegister = allocateVirtualRegister();
+//            addInstruction(new IRStackAllocate(new IRConstant(constant8Index), new IRVirtualRegister(countRegister)));
+//            int constant0Index = module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 0));
+//            addInstruction(new IRStore(IRType.getUnsignedLongType(), new IRVirtualRegister(countRegister), new IRConstant(constant0Index)));
+//
+//            IRBasicBlock conditionBlock = createBasicBlock();
+//            String temp3 = allocateVirtualRegister();
+//            addInstruction(new IRLoad(IRType.getUnsignedLongType(), new IRVirtualRegister(countRegister), new IRVirtualRegister(temp3)));
+//            IRConditionalJump irConditionalJump = new IRConditionalJump(IRType.getUnsignedLongType(), IRCondition.GreaterEqual, new IRVirtualRegister(temp3), new IRVirtualRegister(lengthRegister), null);
+//            addInstruction(irConditionalJump);
+//            createBasicBlock();
+//
+//            String temp4 = allocateVirtualRegister();
+//            addInstruction(new IRLoad(new IRPointerType(new IRPointerType(IRType.getVoidType())), new IRVirtualRegister(addressRegister), new IRVirtualRegister(temp4)));
+//            String elementRegister = allocateVirtualRegister();
+//            addInstruction(new IRLoad(new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(temp4), new IRVirtualRegister(elementRegister)));
+//            release(new IRVirtualRegister(elementRegister), arrayType.base);
+//
+//            String temp5 = allocateVirtualRegister();
+//            addInstruction(new IRLoad(IRType.getUnsignedLongType(), new IRVirtualRegister(addressRegister), new IRVirtualRegister(temp5)));
+//            String temp6 = allocateVirtualRegister();
+//            addInstruction(new IRCalculate(IRCalculate.Operator.ADD, IRType.getUnsignedLongType(), new IRVirtualRegister(temp5), new IRConstant(constantTypeSizeIndex), new IRVirtualRegister(temp6)));
+//            addInstruction(new IRStore(IRType.getUnsignedLongType(), new IRVirtualRegister(addressRegister), new IRVirtualRegister(temp6)));
+//            String temp7 = allocateVirtualRegister();
+//            addInstruction(new IRLoad(IRType.getUnsignedLongType(), new IRVirtualRegister(countRegister), new IRVirtualRegister(temp7)));
+//            String temp8 = allocateVirtualRegister();
+//            addInstruction(new IRIncrease(IRType.getUnsignedLongType(), new IRVirtualRegister(temp7), new IRVirtualRegister(temp8)));
+//            addInstruction(new IRStore(IRType.getUnsignedLongType(), new IRVirtualRegister(countRegister), new IRVirtualRegister(temp8)));
+//            addInstruction(new IRGoto(conditionBlock.name));
+//            IRBasicBlock end = createBasicBlock();
+//            irConditionalJump.target = end.name;
+        }
+
+//        addInstruction(new IRFree(array));
     }
 
     private IRCondition parseRelationOperator(Tokens.Operator _operator) {

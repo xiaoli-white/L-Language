@@ -4,6 +4,7 @@ import ldk.l.lc.ast.LCAstVisitor;
 import ldk.l.lc.ast.base.LCExpression;
 import ldk.l.lc.util.Position;
 
+@Deprecated
 public final class LCFree extends LCExpression {
     public LCExpression expression;
 

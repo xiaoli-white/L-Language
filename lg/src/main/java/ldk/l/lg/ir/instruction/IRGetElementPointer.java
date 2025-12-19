@@ -13,19 +13,21 @@ import java.util.List;
 
 public final class IRGetElementPointer extends IRInstruction {
     public IRValue ptr;
-    public List<IRIntegerConstant> indices;
+    public List<IRValue> indices;
     public IRRegister target;
-    public IRGetElementPointer(IRValue ptr, List<IRIntegerConstant> indices, IRRegister target) {
+
+    public IRGetElementPointer(IRValue ptr, List<IRValue> indices, IRRegister target) {
         this.ptr = ptr;
         this.indices = indices;
         this.target = target;
         target.def = this;
         IRType ty = ptr.getType();
-        for (IRIntegerConstant index : indices) {
+        for (IRValue index : indices) {
             ty = switch (ty) {
                 case IRPointerType pointerType -> pointerType.base;
                 case IRArrayType arrayType -> arrayType.base;
-                case IRStructureType structureType -> structureType.structure.fields.get((int) index.value).type;
+                case IRStructureType structureType ->
+                        structureType.structure.fields.get((int) ((IRIntegerConstant) index).value).type;
                 case null, default -> throw new RuntimeException("Invalid type");
             };
         }
@@ -41,7 +43,7 @@ public final class IRGetElementPointer extends IRInstruction {
     public String toString() {
         StringBuilder sb = new StringBuilder("%\"");
         sb.append(target.name).append("\" = getelementptr ").append(ptr);
-        for (IRIntegerConstant index : indices) {
+        for (IRValue index : indices) {
             sb.append(", ").append(index);
         }
         return sb.toString();

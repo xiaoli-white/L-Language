@@ -5,9 +5,7 @@ import ldk.l.lc.ast.statement.declaration.object.LCClassDeclaration;
 import ldk.l.lc.semantic.types.Type;
 import ldk.l.lc.util.symbol.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public final class ClassSymbol extends ObjectSymbol {
     public LCClassDeclaration declaration;
@@ -18,6 +16,7 @@ public final class ClassSymbol extends ObjectSymbol {
     public ClassSymbol extended = null;
     public List<InterfaceSymbol> implementedInterfaces = null;
     public List<ClassSymbol> permittedClasses = null;
+    private Map<String, String> virtualMethods = null;
 
     public ClassSymbol(LCClassDeclaration declaration, Type theType, List<TypeParameterSymbol> typeParameters, long flags, List<String> attributes, List<VariableSymbol> properties, List<MethodSymbol> constructors, List<MethodSymbol> methods, MethodSymbol destructor) {
         super(declaration.getRealPackageName(), declaration.name, theType, SymbolKind.Class, typeParameters, flags, attributes);
@@ -160,5 +159,26 @@ public final class ClassSymbol extends ObjectSymbol {
         }
         properties.addAll(this.properties.stream().filter(variableSymbol -> !LCFlags.hasStatic(variableSymbol.flags)).toList());
         return properties.toArray(new VariableSymbol[0]);
+    }
+
+    public Map<String, String> getVirtualMethods() {
+        return getVirtualMethods(false);
+    }
+
+    public Map<String, String> getVirtualMethods(boolean forceRefresh) {
+        if (!forceRefresh && virtualMethods != null) return virtualMethods;
+        if (extended == null) {
+            virtualMethods = new LinkedHashMap<>();
+        } else {
+            virtualMethods = extended.getVirtualMethods();
+        }
+        for (MethodSymbol methodSymbol : methods) {
+            if (LCFlags.hasStatic(methodSymbol.flags)) continue;
+            virtualMethods.put(methodSymbol.getSimpleName(), LCFlags.hasAbstract(methodSymbol.flags) ? "" : methodSymbol.getFullName());
+        }
+        if (destructor != null) {
+            virtualMethods.put(destructor.getSimpleName(), destructor.getFullName());
+        }
+        return virtualMethods;
     }
 }

@@ -5,6 +5,7 @@ import ldk.l.lc.ast.base.LCExpression;
 import ldk.l.lc.semantic.types.SystemTypes;
 import ldk.l.lc.util.Position;
 
+@Deprecated
 public final class LCMalloc extends LCExpression {
     public LCExpression size;
 

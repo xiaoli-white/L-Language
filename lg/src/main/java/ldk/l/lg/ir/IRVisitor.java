@@ -312,7 +312,7 @@ public abstract class IRVisitor {
 
     public Object visitGetElementPointer(IRGetElementPointer irGetElementPointer, Object additional) {
         this.visit(irGetElementPointer.ptr, additional);
-        for (IRIntegerConstant index : irGetElementPointer.indices) {
+        for (IRValue index : irGetElementPointer.indices) {
             this.visit(index, additional);
         }
         return null;

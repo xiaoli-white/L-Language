@@ -465,13 +465,13 @@ public class IRBuilder {
         return createInvoke(returnType, func, arguments, allocateRegisterName());
     }
 
-    public IRRegister createGetElementPointer(IRValue ptr, List<IRIntegerConstant> indices, String targetName) {
+    public IRRegister createGetElementPointer(IRValue ptr, List<IRValue> indices, String targetName) {
         IRRegister register = new IRRegister(targetName);
         insertPoint.instructions.add(new IRGetElementPointer(ptr, indices, register));
         return register;
     }
 
-    public IRRegister createGetElementPointer(IRValue ptr, List<IRIntegerConstant> indices) {
+    public IRRegister createGetElementPointer(IRValue ptr, List<IRValue> indices) {
         return createGetElementPointer(ptr, indices, allocateRegisterName());
     }
 
