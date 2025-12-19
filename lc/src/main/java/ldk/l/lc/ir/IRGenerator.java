@@ -95,6 +95,7 @@ public final class IRGenerator extends LCAstVisitor {
     private final Map<IRControlFlowGraph, Map<String, String>> label2LoopEnd = new HashMap<>();
     @Deprecated
     private final Map<IRControlFlowGraph, Map<LCAbstractLoop, String>> abstractLoop2VLabel = new HashMap<>();
+    private final Map<String, String> string2GlobalName = new LinkedHashMap<>();
     private Map<String, Stack<String>> variableName2LocalName = new HashMap<>();
     private long basicBlockCount;
     private long registerCount;
@@ -167,11 +168,13 @@ public final class IRGenerator extends LCAstVisitor {
         module.putGlobalVariable(vtable);
         return super.visitClassDeclaration(lcClassDeclaration, additional);
     }
+
     @Override
     public Object visitInterfaceDeclaration(LCInterfaceDeclaration lcInterfaceDeclaration, Object additional) {
         super.visitInterfaceDeclaration(lcInterfaceDeclaration, additional);
         return null;
     }
+
     @Override
     public Object visitMethodDeclaration(LCMethodDeclaration lcMethodDeclaration, Object additional) {
         if (!LCFlags.hasAbstract(lcMethodDeclaration.modifier.flags)) {
@@ -859,6 +862,37 @@ public final class IRGenerator extends LCAstVisitor {
     @Override
     public Object visitCharLiteral(LCCharLiteral lcCharLiteral, Object additional) {
         stack.push(new IRIntegerConstant(IRType.getCharType(), lcCharLiteral.value));
+        return null;
+    }
+
+    @Override
+    public Object visitStringLiteral(LCStringLiteral lcStringLiteral, Object additional) {
+        String name;
+        boolean flag;
+        if (string2GlobalName.containsKey(lcStringLiteral.value)) {
+            name = string2GlobalName.get(lcStringLiteral.value);
+            flag = false;
+        } else {
+            name = "<string_constant_" + string2GlobalName.size() + ">";
+            string2GlobalName.put(lcStringLiteral.value, name);
+            flag = true;
+        }
+        if (!module.globals.containsKey(name)) {
+            if (flag) {
+                IRGlobalVariable rawString = new IRGlobalVariable(List.of(), true, name + "<raw>", new IRStringConstant(lcStringLiteral.value));
+                module.putGlobalVariable(rawString);
+                module.putGlobalVariable(new IRGlobalVariable(List.of(), false, name, new IRStructureInitializer(new IRStructureType(module.structures.get("l.lang.String")),
+                        List.of(new IRGlobalVariableReference(module.globals.get("<class_instance l.lang.String>")),
+                                new IRIntegerConstant(IRType.getUnsignedLongType(), 1),
+                                new IRGlobalVariableReference(rawString),
+                                new IRIntegerConstant(IRType.getUnsignedLongType(), lcStringLiteral.value.length()),
+                                new IRIntegerConstant(IRType.getUnsignedLongType(), lcStringLiteral.value.length())
+                        ))));
+            } else {
+                module.putGlobalVariable(new IRGlobalVariable(List.of(), false, name, new IRStructureType(module.structures.get("l.lang.String"))));
+            }
+        }
+        stack.push(new IRGlobalVariableReference(module.globals.get(name)));
         return null;
     }
 
