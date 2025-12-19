@@ -17,6 +17,7 @@ public final class ClassSymbol extends ObjectSymbol {
     public List<InterfaceSymbol> implementedInterfaces = null;
     public List<ClassSymbol> permittedClasses = null;
     private Map<String, String> virtualMethods = null;
+    private Map<String, Map<String, String>> interfaceMethodMap = new HashMap<>();
 
     public ClassSymbol(LCClassDeclaration declaration, Type theType, List<TypeParameterSymbol> typeParameters, long flags, List<String> attributes, List<VariableSymbol> properties, List<MethodSymbol> constructors, List<MethodSymbol> methods, MethodSymbol destructor) {
         super(declaration.getRealPackageName(), declaration.name, theType, SymbolKind.Class, typeParameters, flags, attributes);
@@ -180,5 +181,31 @@ public final class ClassSymbol extends ObjectSymbol {
             virtualMethods.put(destructor.getSimpleName(), destructor.getFullName());
         }
         return virtualMethods;
+    }
+
+    public Map<String, Map<String, String>> getInterfacesMethodMap() {
+        return getInterfacesMethodMap(false);
+    }
+
+    public Map<String, Map<String, String>> getInterfacesMethodMap(boolean forceRefresh) {
+        if (!forceRefresh && interfaceMethodMap != null) return interfaceMethodMap;
+        if (extended != null) {
+            interfaceMethodMap = extended.getInterfacesMethodMap();
+        } else {
+            interfaceMethodMap = new LinkedHashMap<>();
+        }
+        Queue<InterfaceSymbol> queue = new LinkedList<>(implementedInterfaces);
+        while (!queue.isEmpty()) {
+            InterfaceSymbol interfaceSymbol = queue.poll();
+            Map<String, String> map = new LinkedHashMap<>();
+            for (MethodSymbol methodSymbol : interfaceSymbol.methods) {
+                MethodSymbol symbol = getMethodCascade(methodSymbol.getSimpleName());
+                map.put(methodSymbol.getSimpleName(), symbol != null ? symbol.getFullName() : "");
+            }
+            map.put("<deinit>()V", getFullName() + ".<deinit>()V");
+            interfaceMethodMap.put(interfaceSymbol.getFullName(), map);
+            queue.addAll(interfaceSymbol.extendedInterfaces);
+        }
+        return interfaceMethodMap;
     }
 }

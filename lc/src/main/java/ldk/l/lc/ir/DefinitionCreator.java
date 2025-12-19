@@ -6,6 +6,7 @@ import ldk.l.lc.ast.file.LCSourceCodeFile;
 import ldk.l.lc.ast.statement.declaration.LCMethodDeclaration;
 import ldk.l.lc.ast.statement.declaration.LCVariableDeclaration;
 import ldk.l.lc.ast.statement.declaration.object.LCClassDeclaration;
+import ldk.l.lc.ast.statement.declaration.object.LCInterfaceDeclaration;
 import ldk.l.lc.util.symbol.VariableSymbol;
 import ldk.l.lg.ir.IRModule;
 import ldk.l.lg.ir.base.IRGlobalVariable;
@@ -54,8 +55,13 @@ public final class DefinitionCreator extends LCAstVisitor {
         }
         module.putGlobalVariable(new IRGlobalVariable(List.of(), false, "<class_instance " + lcClassDeclaration.getFullName() + ">", new IRStructureType(module.structures.get("l.lang.Class")), null));
         module.putFunction(new IRFunction(List.of(), IRType.getVoidType(), lcClassDeclaration.getFullName() + ".<__init__>()V", List.of(new IRLocalVariable(new IRPointerType(new IRStructureType(module.structures.get(lcClassDeclaration.getFullName()))), "<this_ptr>")), false));
-        visit(lcClassDeclaration.body, additional);
-        return null;
+        return super.visitClassDeclaration(lcClassDeclaration, additional);
+    }
+
+    @Override
+    public Object visitInterfaceDeclaration(LCInterfaceDeclaration lcInterfaceDeclaration, Object additional) {
+        module.putGlobalVariable(new IRGlobalVariable(List.of(), false, "<class_instance " + lcInterfaceDeclaration.getFullName() + ">", new IRStructureType(module.structures.get("l.lang.Class")), null));
+        return super.visitInterfaceDeclaration(lcInterfaceDeclaration, additional);
     }
 
     @Override

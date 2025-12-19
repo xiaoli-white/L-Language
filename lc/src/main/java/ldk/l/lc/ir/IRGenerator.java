@@ -14,6 +14,7 @@ import ldk.l.lc.ast.statement.LCReturn;
 import ldk.l.lc.ast.statement.declaration.LCMethodDeclaration;
 import ldk.l.lc.ast.statement.declaration.LCVariableDeclaration;
 import ldk.l.lc.ast.statement.declaration.object.LCClassDeclaration;
+import ldk.l.lc.ast.statement.declaration.object.LCInterfaceDeclaration;
 import ldk.l.lc.ast.statement.loops.*;
 import ldk.l.lc.semantic.types.*;
 import ldk.l.lc.token.Token;
@@ -166,7 +167,11 @@ public final class IRGenerator extends LCAstVisitor {
         module.putGlobalVariable(vtable);
         return super.visitClassDeclaration(lcClassDeclaration, additional);
     }
-
+    @Override
+    public Object visitInterfaceDeclaration(LCInterfaceDeclaration lcInterfaceDeclaration, Object additional) {
+        super.visitInterfaceDeclaration(lcInterfaceDeclaration, additional);
+        return null;
+    }
     @Override
     public Object visitMethodDeclaration(LCMethodDeclaration lcMethodDeclaration, Object additional) {
         if (!LCFlags.hasAbstract(lcMethodDeclaration.modifier.flags)) {
