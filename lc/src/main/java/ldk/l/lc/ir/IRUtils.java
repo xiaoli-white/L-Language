@@ -58,11 +58,13 @@ public final class IRUtils {
             }
             return new IRPointerType(new IRStructureType(module.structures.get(structureName)));
         }
-        MethodPointerType methodPointerType = (MethodPointerType) type;
-        List<IRType> paramTypes = new ArrayList<>(methodPointerType.paramTypes.size());
-        for (Type paramType : methodPointerType.paramTypes) {
-            paramTypes.add(parseType(module, paramType));
+        if (type instanceof MethodPointerType methodPointerType) {
+            List<IRType> paramTypes = new ArrayList<>(methodPointerType.paramTypes.size());
+            for (Type paramType : methodPointerType.paramTypes) {
+                paramTypes.add(parseType(module, paramType));
+            }
+            return new IRFunctionReferenceType(parseType(module, methodPointerType.returnType), paramTypes, false);
         }
-        return new IRFunctionReferenceType(parseType(module, methodPointerType.returnType), paramTypes, false);
+        throw new RuntimeException("Unsupported type: " + type);
     }
 }

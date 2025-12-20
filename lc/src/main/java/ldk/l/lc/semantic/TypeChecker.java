@@ -416,11 +416,8 @@ public final class TypeChecker extends LCAstVisitor {
                 }
             }
         } else if (lcBinary._operator == Tokens.Operator.Plus || lcBinary._operator == Tokens.Operator.Minus) {
-            if (t1 instanceof PointerType && SystemTypes.isIntegerType(t2)) {
-                LCTypeCast lcTypeCast = new LCTypeCast(LCTypeCast.Kind.STATIC, new LCPointerTypeExpression(new LCPredefinedTypeExpression(Tokens.Type.Void, Position.origin), Position.origin), lcBinary.expression2, lcBinary.expression2.position, lcBinary.expression2.isErrorNode);
-                lcBinary.expression2 = lcTypeCast;
-                lcBinary.expression2.parentNode = lcBinary;
-                lcTypeCast.theType = SystemTypes.VOID_POINTER;
+            if (t1 instanceof PointerType pointerType && SystemTypes.isIntegerType(t2)) {
+                lcBinary.theType = pointerType;
             } else if (SystemTypes.isNumberType(t1)) {
                 if (SystemTypes.isNumberType(t2)) {
                     lcBinary.theType = TypeUtil.getUpperBound(t1, t2);

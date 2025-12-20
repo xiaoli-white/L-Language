@@ -362,5 +362,4 @@ public final class TypeResolver extends LCAstVisitor {
         lcAutoTypeExpression.theType = SystemTypes.AUTO;
         return SystemTypes.AUTO;
     }
-
 }
