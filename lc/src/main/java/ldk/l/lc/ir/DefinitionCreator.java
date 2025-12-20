@@ -54,6 +54,7 @@ public final class DefinitionCreator extends LCAstVisitor {
             structure.fields.add(new IRField(parseType(module, variableSymbol.theType), variableSymbol.name));
         }
         module.putGlobalVariable(new IRGlobalVariable(List.of(), false, "<class_instance " + lcClassDeclaration.getFullName() + ">", new IRStructureType(module.structures.get("l.lang.Class")), null));
+        module.putFunction(new IRFunction(List.of(), IRType.getVoidType(), lcClassDeclaration.getFullName() + ".<__static_init__>()V", List.of(), false));
         module.putFunction(new IRFunction(List.of(), IRType.getVoidType(), lcClassDeclaration.getFullName() + ".<__init__>()V", List.of(new IRLocalVariable(new IRPointerType(new IRStructureType(module.structures.get(lcClassDeclaration.getFullName()))), "<this_ptr>")), false));
         return super.visitClassDeclaration(lcClassDeclaration, additional);
     }
@@ -81,8 +82,8 @@ public final class DefinitionCreator extends LCAstVisitor {
 
     @Override
     public Object visitVariableDeclaration(LCVariableDeclaration lcVariableDeclaration, Object additional) {
-        if (LCFlags.hasStatic(lcVariableDeclaration.modifier.flags) && getEnclosingMethodDeclaration(lcVariableDeclaration) == null) {
-            module.putGlobalVariable(new IRGlobalVariable(List.of(), lcVariableDeclaration.isVal, lcVariableDeclaration.symbol.objectSymbol.getFullName() + "." + lcVariableDeclaration.name, parseType(module, lcVariableDeclaration.theType), null));
+        if (LCFlags.hasStatic(lcVariableDeclaration.modifier.flags) && getEnclosingMethodDeclaration(lcVariableDeclaration) == null && getEnclosingInit(lcVariableDeclaration) == null) {
+            module.putGlobalVariable(new IRGlobalVariable(List.of(), lcVariableDeclaration.isVal, lcVariableDeclaration.symbol.objectSymbol.getFullName() + "." + lcVariableDeclaration.name, parseType(module, lcVariableDeclaration.theType)));
         }
         return null;
     }

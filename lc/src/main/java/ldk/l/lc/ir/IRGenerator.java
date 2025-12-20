@@ -101,6 +101,8 @@ public final class IRGenerator extends LCAstVisitor {
     private long basicBlockCount;
     private long registerCount;
     private Stack<Object> stack = new Stack<>();
+    private IRFunction currentStaticInitFunction = null;
+    private IRFunction currentInitFunction = null;
 
     public IRGenerator(IRModule module, Options options, ErrorStream errorStream) {
         this.module = module;
@@ -167,6 +169,10 @@ public final class IRGenerator extends LCAstVisitor {
         }
         IRGlobalVariable vtable = new IRGlobalVariable(List.of(), false, "<vtable " + lcClassDeclaration.getFullName() + ">", new IRArrayConstant(new IRArrayType(new IRPointerType(IRType.getVoidType()), virtualMethods.size()), vtableElements));
         module.putGlobalVariable(vtable);
+        currentStaticInitFunction = module.functions.get(lcClassDeclaration.getFullName() + ".<__static_init__>()V");
+        currentStaticInitFunction.setControlFlowGraph(new IRControlFlowGraph());
+        currentInitFunction = module.functions.get(lcClassDeclaration.getFullName() + ".<__init__>()V");
+        currentInitFunction.setControlFlowGraph(new IRControlFlowGraph());
         return super.visitClassDeclaration(lcClassDeclaration, additional);
     }
 
@@ -181,10 +187,7 @@ public final class IRGenerator extends LCAstVisitor {
         if (!LCFlags.hasAbstract(lcMethodDeclaration.modifier.flags)) {
             IRFunction function = module.functions.get(lcMethodDeclaration.symbol.getFullName());
             currentFunction = function;
-            function.isExtern = false;
-            function.locals = new ArrayList<>();
-            function.controlFlowGraph = new IRControlFlowGraph();
-            function.controlFlowGraph.function = function;
+            function.setControlFlowGraph(new IRControlFlowGraph());
 
             for (var arg : lcMethodDeclaration.parameterList.parameters) {
                 Stack<String> stack = new Stack<>();
@@ -264,6 +267,17 @@ public final class IRGenerator extends LCAstVisitor {
             if (lcVariableDeclaration.init != null) {
                 visit(lcVariableDeclaration.init, additional);
                 builder.createStore(new IRLocalVariableReference(localVariable), (IRValue) stack.pop());
+            }
+        } else if (LCFlags.hasStatic(lcVariableDeclaration.modifier.flags)) {
+            String name = lcVariableDeclaration.symbol.objectSymbol.getFullName() + "." + lcVariableDeclaration.name;
+            IRGlobalVariable global = module.globals.get(name);
+            global.isExtern = false;
+            if (lcVariableDeclaration.init != null) {
+                currentFunction = currentStaticInitFunction;
+                if (builder == null) builder = new IRBuilder();
+                createBasicBlock();
+                visit(lcVariableDeclaration.init, additional);
+                builder.createStore(new IRGlobalVariableReference(global), (IRValue) stack.pop());
             }
         }
         return null;

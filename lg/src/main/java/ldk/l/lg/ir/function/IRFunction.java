@@ -7,10 +7,7 @@ import ldk.l.lg.ir.base.IRNode;
 import ldk.l.lg.ir.structure.IRField;
 import ldk.l.lg.ir.type.IRType;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public final class IRFunction extends IRNode {
     private final Map<String, IRLocalVariable> name2LocalVariable = new HashMap<>();
@@ -108,5 +105,12 @@ public final class IRFunction extends IRNode {
     public void addLocal(IRLocalVariable local) {
         name2LocalVariable.put(local.name, local);
         locals.add(local);
+    }
+
+    public void setControlFlowGraph(IRControlFlowGraph controlFlowGraph) {
+        isExtern = false;
+        this.controlFlowGraph = controlFlowGraph;
+        controlFlowGraph.function = this;
+        if (locals == null) locals = new ArrayList<>();
     }
 }
