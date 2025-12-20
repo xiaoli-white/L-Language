@@ -206,6 +206,18 @@ public final class IRGenerator extends LCAstVisitor {
     }
 
     @Override
+    public Object visitInit(LCInit lcInit, Object additional) {
+        if (lcInit.isStatic)
+            currentFunction = currentStaticInitFunction;
+        else
+            currentFunction = currentInitFunction;
+        if (builder == null) builder = new IRBuilder();
+        createBasicBlock();
+        visit(lcInit.body, additional);
+        return null;
+    }
+
+    @Override
     public Object visitBlock(LCBlock lcBlock, Object additional) {
         for (LCStatement x : lcBlock.statements) {
             this.visit(x, additional);
@@ -966,6 +978,50 @@ public final class IRGenerator extends LCAstVisitor {
         return null;
     }
 
+    @Override
+    public Object visitTypeCast(LCTypeCast lcTypeCast, Object additional) {
+        this.visit(lcTypeCast.expression, null);
+        IRValue operand = (IRValue) stack.pop();
+        if (lcTypeCast.kind == LCTypeCast.Kind.REINTERPRET || lcTypeCast.expression.theType.equals(lcTypeCast.typeExpression.theType)) {
+            stack.push(builder.createBitCast(operand, parseType(module, lcTypeCast.typeExpression.theType)));
+        } else if (lcTypeCast.kind == LCTypeCast.Kind.STATIC) {
+            if ((lcTypeCast.expression.theType instanceof PointerType || SystemTypes.isPrimitiveType(lcTypeCast.expression.theType)) && (lcTypeCast.expression.theType instanceof PointerType || SystemTypes.isPrimitiveType(lcTypeCast.typeExpression.theType))) {
+                IRType targetType = parseType(module, lcTypeCast.typeExpression.theType);
+                IRRegister result = new IRRegister(generateRegisterName());
+                builder.getInsertPoint().instructions.add(new IRTypeCast(parseTypeCastKind(lcTypeCast.expression.theType, lcTypeCast.typeExpression.theType), operand, targetType, result));
+                stack.push(result);
+            } else {
+                stack.push(builder.createBitCast(operand, parseType(module, lcTypeCast.typeExpression.theType)));
+            }
+        } else {
+            var classInstancePtr = builder.createGetElementPointer(operand,List.of(new IRIntegerConstant(IRType.getUnsignedLongType(), 0), new IRIntegerConstant(IRType.getUnsignedLongType(), 0)));
+            var classInstance = builder.createLoad(classInstancePtr);
+            // TODO check sub class
+//            String classInstanceName = String.format("<class_instance %s>", lcTypeCast.typeExpression.theType.toTypeString());
+//            ClassSymbol classSymbol = ((LCClassDeclaration) Objects.requireNonNull(this.ast.getObjectDeclaration(SystemTypes.Class_Type.name))).symbol;
+//            MethodSymbol methodSymbol = null;
+//            for (MethodSymbol method : classSymbol.methods) {
+//                if (method.name.equals("isSubClassOf")) {
+//                    methodSymbol = method;
+//                    break;
+//                }
+//            }
+//            String resultRegister = allocateVirtualRegister();
+//            IRMacro methodAddress = new IRMacro("function_address", new String[]{Objects.requireNonNull(methodSymbol).getFullName()});
+//            addInstruction(new IRInvoke(IRType.getBooleanType(), methodAddress, new IRType[]{new IRPointerType(IRType.getVoidType()), new IRPointerType(IRType.getVoidType())}, new IROperand[]{new IRVirtualRegister(operandClassInstanceAddressRegister), new IRMacro("global_data_address", new String[]{classInstanceName})}, new IRVirtualRegister(resultRegister)));
+//            IRConditionalJump irConditionalJump = new IRConditionalJump(IRType.getBooleanType(), IRCondition.IfTrue, new IRVirtualRegister(resultRegister), null);
+//            addInstruction(irConditionalJump);
+//            createBasicBlock();
+//            // TODO throw exception
+//
+//            var end = createBasicBlock();
+//            irConditionalJump.target = end.name;
+//
+//            operandStack.push(operand);
+        }
+        return null;
+    }
+
     private void newArray(ArrayType arrayType, IRValue length) {
         IRType elementType = parseType(module, arrayType.base);
         IRIntegerConstant typeSize = new IRIntegerConstant(IRType.getUnsignedLongType(), elementType.getLength());
@@ -1326,6 +1382,47 @@ public final class IRGenerator extends LCAstVisitor {
         }
 
 //        addInstruction(new IRFree(array));
+    }
+
+    private IRTypeCast.Kind parseTypeCastKind(Type originalType, Type targetType) {
+        if (targetType instanceof PointerType) {
+            return IRTypeCast.Kind.ZeroExtend;
+        } else if (SystemTypes.isUnsignedIntegerType(targetType)) {
+            if (isNeedsTruncate(originalType, targetType)) return IRTypeCast.Kind.Truncate;
+            else if (SystemTypes.isUnsignedIntegerType(originalType)) return IRTypeCast.Kind.ZeroExtend;
+            else if (SystemTypes.isDecimalType(originalType)) return IRTypeCast.Kind.FloatToInt;
+            else return IRTypeCast.Kind.SignExtend;
+        } else if (SystemTypes.isSignedIntegerType(targetType)) {
+            if (isNeedsTruncate(originalType, targetType)) return IRTypeCast.Kind.Truncate;
+            else if (SystemTypes.isDecimalType(originalType)) return IRTypeCast.Kind.FloatToInt;
+            else return IRTypeCast.Kind.ZeroExtend;
+        } else if (SystemTypes.isDecimalType(targetType)) {
+            if (isNeedsTruncate(originalType, targetType)) return IRTypeCast.Kind.FloatTruncate;
+            else if (SystemTypes.isDecimalType(originalType)) return IRTypeCast.Kind.FloatExtend;
+            else return IRTypeCast.Kind.IntToFloat;
+        } else {
+            return IRTypeCast.Kind.Truncate;
+        }
+    }
+
+    private static boolean isNeedsTruncate(Type originalType, Type targetType) {
+        if ((SystemTypes.isIntegerType(originalType) && SystemTypes.isIntegerType(targetType)) || (SystemTypes.isDecimalType(originalType) && SystemTypes.isDecimalType(targetType))) {
+            return getTypeNumber(originalType) > getTypeNumber(targetType);
+        } else {
+            return false;
+        }
+    }
+
+    private static int getTypeNumber(Type type) {
+        if (SystemTypes.BOOLEAN.equals(type)) return 1;
+        else if (SystemTypes.BYTE.equals(type) || SystemTypes.UNSIGNED_BYTE.equals(type)) return 2;
+        else if (SystemTypes.SHORT.equals(type) || SystemTypes.UNSIGNED_SHORT.equals(type)) return 3;
+        else if (SystemTypes.INT.equals(type) || SystemTypes.UNSIGNED_INT.equals(type) || SystemTypes.CHAR.equals(type))
+            return 4;
+        else if (SystemTypes.LONG.equals(type) || SystemTypes.UNSIGNED_LONG.equals(type)) return 5;
+        else if (SystemTypes.FLOAT.equals(type)) return 6;
+        else if (SystemTypes.DOUBLE.equals(type)) return 7;
+        else return 0;
     }
 
     private IRCondition parseRelationOperator(Tokens.Operator _operator) {
