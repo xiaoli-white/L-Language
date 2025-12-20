@@ -279,6 +279,17 @@ public final class IRGenerator extends LCAstVisitor {
                 visit(lcVariableDeclaration.init, additional);
                 builder.createStore(new IRGlobalVariableReference(global), (IRValue) stack.pop());
             }
+        } else {
+            if (lcVariableDeclaration.init != null) {
+                currentFunction = currentInitFunction;
+                if (builder == null) builder = new IRBuilder();
+                createBasicBlock();
+                getThisPtr();
+                IRValue thisPtr = (IRValue) stack.pop();
+                var ptr = builder.createGetElementPointer(thisPtr, List.of(new IRIntegerConstant(IRType.getUnsignedLongType(), 0), new IRIntegerConstant(IRType.getUnsignedLongType(), ((IRStructureType) ((IRPointerType) thisPtr.getType()).base).structure.getFieldIndex(lcVariableDeclaration.name))));
+                visit(lcVariableDeclaration.init, additional);
+                builder.createStore(ptr, (IRValue) stack.pop());
+            }
         }
         return null;
     }
