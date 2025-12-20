@@ -28,7 +28,7 @@ public final class IRGetElementPointer extends IRInstruction {
                 case IRArrayType arrayType -> arrayType.base;
                 case IRStructureType structureType ->
                         structureType.structure.fields.get((int) ((IRIntegerConstant) index).value).type;
-                case null, default -> throw new RuntimeException("Invalid type");
+                case null, default -> throw new RuntimeException("Invalid type: " + ty);
             };
         }
         target.type = new IRPointerType(ty);

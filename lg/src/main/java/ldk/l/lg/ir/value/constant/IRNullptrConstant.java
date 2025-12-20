@@ -13,7 +13,7 @@ public final class IRNullptrConstant extends IRConstant {
 
     @Override
     public IRType getType() {
-        return null;
+        return type;
     }
 
     @Override
