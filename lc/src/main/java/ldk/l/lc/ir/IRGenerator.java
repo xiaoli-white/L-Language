@@ -286,7 +286,9 @@ public final class IRGenerator extends LCAstVisitor {
             variableName2LocalName.get(lcVariableDeclaration.name).push(localName);
             if (lcVariableDeclaration.init != null) {
                 visit(lcVariableDeclaration.init, additional);
-                builder.createStore(new IRLocalVariableReference(localVariable), (IRValue) stack.pop());
+                IRValue value = (IRValue) stack.pop();
+                retain(value, lcVariableDeclaration.init.theType);
+                builder.createStore(new IRLocalVariableReference(localVariable), value);
             }
         } else if (LCFlags.hasStatic(lcVariableDeclaration.modifier.flags)) {
             String name = lcVariableDeclaration.symbol.objectSymbol.getFullName() + "." + lcVariableDeclaration.name;
@@ -296,7 +298,9 @@ public final class IRGenerator extends LCAstVisitor {
                 currentFunction = currentStaticInitFunction;
                 createBasicBlock();
                 visit(lcVariableDeclaration.init, additional);
-                builder.createStore(new IRGlobalVariableReference(global), (IRValue) stack.pop());
+                IRValue value = (IRValue) stack.pop();
+                retain(value, lcVariableDeclaration.init.theType);
+                builder.createStore(new IRGlobalVariableReference(global), value);
             }
         } else {
             if (lcVariableDeclaration.init != null) {
@@ -306,7 +310,9 @@ public final class IRGenerator extends LCAstVisitor {
                 IRValue thisPtr = (IRValue) stack.pop();
                 var ptr = builder.createGetElementPointer(thisPtr, List.of(new IRIntegerConstant(IRType.getUnsignedLongType(), 0), new IRIntegerConstant(IRType.getUnsignedLongType(), ((IRStructureType) ((IRPointerType) thisPtr.getType()).base).structure.getFieldIndex(lcVariableDeclaration.name))));
                 visit(lcVariableDeclaration.init, additional);
-                builder.createStore(ptr, (IRValue) stack.pop());
+                IRValue value = (IRValue) stack.pop();
+                retain(value, lcVariableDeclaration.init.theType);
+                builder.createStore(ptr, value);
             }
         }
         return null;
@@ -440,6 +446,28 @@ public final class IRGenerator extends LCAstVisitor {
         } else {
             builder.setInsertPoint(nextBasicBlock);
         }
+        return null;
+    }
+
+    @Override
+    public Object visitIn(LCIn lcIn, Object additional) {
+        this.visit(lcIn.expression1, additional);
+        IRValue value1 = (IRValue) stack.pop();
+        this.visit(lcIn.expression2, additional);
+        IRValue value2 = (IRValue) stack.pop();
+        retain(value1, lcIn.expression1.theType);
+        retain(value2, lcIn.expression2.theType);
+        callMethod(lcIn.symbol, List.of(value1, value2));
+        return null;
+    }
+
+    @Override
+    public Object visitIs(LCIs lcIs, Object additional) {
+        this.visit(lcIs.expression1, additional);
+        IRValue value1 = (IRValue) stack.pop();
+        this.visit(lcIs.expression2, additional);
+        IRValue value2 = (IRValue) stack.pop();
+        stack.push(builder.createCmpEqual(value1, value2));
         return null;
     }
 
