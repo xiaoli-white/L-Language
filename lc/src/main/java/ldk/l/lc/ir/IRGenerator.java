@@ -588,6 +588,22 @@ public final class IRGenerator extends LCAstVisitor {
                     this.visit(lcBinary.expression2, additional);
                 }
             }
+        } else if (lcBinary._operator == Tokens.Operator.Elvis) {
+            this.visit(lcBinary.expression1, additional);
+            IRValue value1 = (IRValue) stack.pop();
+            var prev = builder.getInsertPoint();
+            var end = generateBasicBlock();
+            builder.createJumpIfNotEqual(value1, new IRNullptrConstant((IRPointerType) parseType(module, lcBinary.expression1.theType)), end);
+            createBasicBlock();
+            visit(lcBinary.expression2, additional);
+            IRValue value2 = (IRValue) stack.pop();
+            var then = builder.getInsertPoint();
+            currentFunction.addBasicBlock(end);
+            builder.setInsertPoint(end);
+            Map<IRBasicBlock, IRValue> map = new LinkedHashMap<>();
+            map.put(prev, value1);
+            map.put(then, value2);
+            stack.push(builder.createPhi(map));
         } else if (Token.isArithmeticOperator(lcBinary._operator)) {
             visit(lcBinary.expression1, additional);
             IRValue left = (IRValue) stack.pop();
