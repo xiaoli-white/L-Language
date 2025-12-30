@@ -90,12 +90,9 @@ public final class IRGenerator extends LCAstVisitor {
     private final Map<String, String> stringConstant2GlobalDataName = new HashMap<>();
     @Deprecated
     public final Map<IRControlFlowGraph, Map<String, String>> label2BasicBlock = new HashMap<>();
-    @Deprecated
-    private final Map<IRControlFlowGraph, Map<String, String>> label2LoopBegin = new HashMap<>();
-    @Deprecated
-    private final Map<IRControlFlowGraph, Map<String, String>> label2LoopEnd = new HashMap<>();
-    @Deprecated
-    private final Map<IRControlFlowGraph, Map<LCAbstractLoop, String>> abstractLoop2VLabel = new HashMap<>();
+    private final Map<IRFunction, Map<String, IRBasicBlock>> label2LoopBegin = new HashMap<>();
+    private final Map<IRFunction, Map<String, IRBasicBlock>> label2LoopEnd = new HashMap<>();
+    private final Map<IRFunction, Map<LCAbstractLoop, String>> abstractLoop2VLabel = new HashMap<>();
     private final Map<String, String> string2GlobalName = new LinkedHashMap<>();
     private Map<String, Stack<String>> variableName2LocalName = new HashMap<>();
     private long basicBlockCount;
@@ -329,6 +326,8 @@ public final class IRGenerator extends LCAstVisitor {
 
     @Override
     public Object visitFor(LCFor lcFor, Object additional) {
+        String vLabel = String.format("<loop_%d>", this.abstractLoop2VLabel.get(currentFunction).size());
+        this.abstractLoop2VLabel.get(currentFunction).put(lcFor, vLabel);
         if (lcFor.init != null) {
             this.visit(lcFor.init, additional);
         }
@@ -366,20 +365,19 @@ public final class IRGenerator extends LCAstVisitor {
                 variableName2LocalName.get(variableSymbol.name).pop();
         }
 
-//        if (irConditionalJump != null) {
-//            irConditionalJump.target = end.name;
-//        }
-//        for (var label : lcFor.labels) {
-//            this.label2LoopBegin.get(currentCFG).put(label, condition.name);
-//            this.label2LoopEnd.get(currentCFG).put(label, end.name);
-//        }
-//        this.label2LoopBegin.get(currentCFG).put(vLabel, condition.name);
-//        this.label2LoopEnd.get(currentCFG).put(vLabel, end.name);
+        for (var label : lcFor.labels) {
+            this.label2LoopBegin.get(currentFunction).put(label, condition);
+            this.label2LoopEnd.get(currentFunction).put(label, end);
+        }
+        this.label2LoopBegin.get(currentFunction).put(vLabel, condition);
+        this.label2LoopEnd.get(currentFunction).put(vLabel, end);
         return null;
     }
 
     @Override
     public Object visitWhile(LCWhile lcWhile, Object additional) {
+        String vLabel = String.format("<loop_%d>", this.abstractLoop2VLabel.get(currentFunction).size());
+        this.abstractLoop2VLabel.get(currentFunction).put(lcWhile, vLabel);
         IRBasicBlock condition = createBasicBlock();
         visit(lcWhile.condition, additional);
         IRValue result = (IRValue) stack.pop();
@@ -393,16 +391,31 @@ public final class IRGenerator extends LCAstVisitor {
         builder.setInsertPoint(conditionEndBasicBlock);
         builder.createJumpIfFalse(result, end);
         builder.setInsertPoint(end);
+        for (var label : lcWhile.labels) {
+            this.label2LoopBegin.get(currentFunction).put(label, condition);
+            this.label2LoopEnd.get(currentFunction).put(label, end);
+        }
+        this.label2LoopBegin.get(currentFunction).put(vLabel, condition);
+        this.label2LoopEnd.get(currentFunction).put(vLabel, end);
         return null;
     }
 
     @Override
     public Object visitDoWhile(LCDoWhile lcDoWhile, Object additional) {
+        String vLabel = String.format("<loop_%d>", this.abstractLoop2VLabel.get(currentFunction).size());
+        this.abstractLoop2VLabel.get(currentFunction).put(lcDoWhile, vLabel);
         IRBasicBlock bodyBegin = createBasicBlock();
         visit(lcDoWhile.body, additional);
+        var condition = createBasicBlock();
         visit(lcDoWhile.condition, additional);
         builder.createJumpIfTrue((IRValue) stack.pop(), bodyBegin);
         IRBasicBlock end = createBasicBlock();
+        for (var label : lcDoWhile.labels) {
+            this.label2LoopBegin.get(currentFunction).put(label, condition);
+            this.label2LoopEnd.get(currentFunction).put(label, end);
+        }
+        this.label2LoopBegin.get(currentFunction).put(vLabel, condition);
+        this.label2LoopEnd.get(currentFunction).put(vLabel, end);
         return null;
     }
 
