@@ -8,9 +8,7 @@ import ldk.l.lc.ast.expression.*;
 import ldk.l.lc.ast.expression.literal.*;
 import ldk.l.lc.ast.file.LCSourceCodeFile;
 import ldk.l.lc.ast.file.LCSourceFileProxy;
-import ldk.l.lc.ast.statement.LCAssert;
-import ldk.l.lc.ast.statement.LCInit;
-import ldk.l.lc.ast.statement.LCReturn;
+import ldk.l.lc.ast.statement.*;
 import ldk.l.lc.ast.statement.declaration.LCMethodDeclaration;
 import ldk.l.lc.ast.statement.declaration.LCVariableDeclaration;
 import ldk.l.lc.ast.statement.declaration.object.LCClassDeclaration;
@@ -90,9 +88,9 @@ public final class IRGenerator extends LCAstVisitor {
     private final Map<String, String> stringConstant2GlobalDataName = new HashMap<>();
     @Deprecated
     public final Map<IRControlFlowGraph, Map<String, String>> label2BasicBlock = new HashMap<>();
-    private final Map<IRFunction, Map<String, IRBasicBlock>> label2LoopBegin = new HashMap<>();
-    private final Map<IRFunction, Map<String, IRBasicBlock>> label2LoopEnd = new HashMap<>();
-    private final Map<IRFunction, Map<LCAbstractLoop, String>> abstractLoop2VLabel = new HashMap<>();
+    private final Map<String, IRBasicBlock> label2LoopBegin = new HashMap<>();
+    private final Map<String, IRBasicBlock> label2LoopEnd = new HashMap<>();
+    private final Map<LCAbstractLoop, String> abstractLoop2VLabel = new HashMap<>();
     private final Map<String, String> string2GlobalName = new LinkedHashMap<>();
     private Map<String, Stack<String>> variableName2LocalName = new HashMap<>();
     private long basicBlockCount;
@@ -115,8 +113,12 @@ public final class IRGenerator extends LCAstVisitor {
         return String.valueOf(currentFunction.registerCount++);
     }
 
+    private IRBasicBlock generateBasicBlock() {
+        return new IRBasicBlock(generateBasicBlockName());
+    }
+
     private IRBasicBlock createBasicBlock() {
-        IRBasicBlock basicBlock = new IRBasicBlock(generateBasicBlockName());
+        IRBasicBlock basicBlock = generateBasicBlock();
         currentFunction.addBasicBlock(basicBlock);
         builder.setInsertPoint(basicBlock);
         return basicBlock;
@@ -207,6 +209,9 @@ public final class IRGenerator extends LCAstVisitor {
                 if (!stack.isEmpty()) builder.createReturn((IRValue) stack.pop());
             }
             variableName2LocalName.clear();
+            abstractLoop2VLabel.clear();
+            label2LoopBegin.clear();
+            label2LoopEnd.clear();
         }
         return null;
     }
@@ -326,8 +331,8 @@ public final class IRGenerator extends LCAstVisitor {
 
     @Override
     public Object visitFor(LCFor lcFor, Object additional) {
-        String vLabel = String.format("<loop_%d>", this.abstractLoop2VLabel.get(currentFunction).size());
-        this.abstractLoop2VLabel.get(currentFunction).put(lcFor, vLabel);
+        String vLabel = String.format("<loop_%d>", this.abstractLoop2VLabel.size());
+        this.abstractLoop2VLabel.put(lcFor, vLabel);
         if (lcFor.init != null) {
             this.visit(lcFor.init, additional);
         }
@@ -343,6 +348,14 @@ public final class IRGenerator extends LCAstVisitor {
             conditionEndBasicBlock = null;
             result = null;
         }
+        IRBasicBlock end = generateBasicBlock();
+
+        for (var label : lcFor.labels) {
+            this.label2LoopBegin.put(label, condition);
+            this.label2LoopEnd.put(label, end);
+        }
+        this.label2LoopBegin.put(vLabel, condition);
+        this.label2LoopEnd.put(vLabel, end);
 
         this.visit(lcFor.body, additional);
 
@@ -351,7 +364,8 @@ public final class IRGenerator extends LCAstVisitor {
         }
         builder.createGoto(condition);
 
-        IRBasicBlock end = createBasicBlock();
+        currentFunction.addBasicBlock(end);
+        builder.setInsertPoint(end);
 
         if (conditionEndBasicBlock != null) {
             builder.setInsertPoint(conditionEndBasicBlock);
@@ -364,58 +378,85 @@ public final class IRGenerator extends LCAstVisitor {
             if (symbols.get(i) instanceof VariableSymbol variableSymbol)
                 variableName2LocalName.get(variableSymbol.name).pop();
         }
-
-        for (var label : lcFor.labels) {
-            this.label2LoopBegin.get(currentFunction).put(label, condition);
-            this.label2LoopEnd.get(currentFunction).put(label, end);
-        }
-        this.label2LoopBegin.get(currentFunction).put(vLabel, condition);
-        this.label2LoopEnd.get(currentFunction).put(vLabel, end);
         return null;
     }
 
     @Override
     public Object visitWhile(LCWhile lcWhile, Object additional) {
-        String vLabel = String.format("<loop_%d>", this.abstractLoop2VLabel.get(currentFunction).size());
-        this.abstractLoop2VLabel.get(currentFunction).put(lcWhile, vLabel);
+        String vLabel = String.format("<loop_%d>", this.abstractLoop2VLabel.size());
+        this.abstractLoop2VLabel.put(lcWhile, vLabel);
         IRBasicBlock condition = createBasicBlock();
         visit(lcWhile.condition, additional);
         IRValue result = (IRValue) stack.pop();
         IRBasicBlock conditionEndBasicBlock = builder.getInsertPoint();
 
+        IRBasicBlock end = generateBasicBlock();
+
+        for (var label : lcWhile.labels) {
+            this.label2LoopBegin.put(label, condition);
+            this.label2LoopEnd.put(label, end);
+        }
+        this.label2LoopBegin.put(vLabel, condition);
+        this.label2LoopEnd.put(vLabel, end);
+
         IRBasicBlock bb = createBasicBlock();
         visit(lcWhile.body, additional);
         builder.createGoto(condition);
 
-        IRBasicBlock end = createBasicBlock();
+        currentFunction.addBasicBlock(end);
         builder.setInsertPoint(conditionEndBasicBlock);
         builder.createJumpIfFalse(result, end);
         builder.setInsertPoint(end);
-        for (var label : lcWhile.labels) {
-            this.label2LoopBegin.get(currentFunction).put(label, condition);
-            this.label2LoopEnd.get(currentFunction).put(label, end);
-        }
-        this.label2LoopBegin.get(currentFunction).put(vLabel, condition);
-        this.label2LoopEnd.get(currentFunction).put(vLabel, end);
         return null;
     }
 
     @Override
     public Object visitDoWhile(LCDoWhile lcDoWhile, Object additional) {
-        String vLabel = String.format("<loop_%d>", this.abstractLoop2VLabel.get(currentFunction).size());
-        this.abstractLoop2VLabel.get(currentFunction).put(lcDoWhile, vLabel);
+        String vLabel = String.format("<loop_%d>", this.abstractLoop2VLabel.size());
+        this.abstractLoop2VLabel.put(lcDoWhile, vLabel);
+
+        IRBasicBlock condition = generateBasicBlock();
+        IRBasicBlock end = generateBasicBlock();
+
+        for (var label : lcDoWhile.labels) {
+            this.label2LoopBegin.put(label, condition);
+            this.label2LoopEnd.put(label, end);
+        }
+        this.label2LoopBegin.put(vLabel, condition);
+        this.label2LoopEnd.put(vLabel, end);
+
         IRBasicBlock bodyBegin = createBasicBlock();
         visit(lcDoWhile.body, additional);
-        var condition = createBasicBlock();
+        currentFunction.addBasicBlock(condition);
+        builder.setInsertPoint(condition);
         visit(lcDoWhile.condition, additional);
         builder.createJumpIfTrue((IRValue) stack.pop(), bodyBegin);
-        IRBasicBlock end = createBasicBlock();
-        for (var label : lcDoWhile.labels) {
-            this.label2LoopBegin.get(currentFunction).put(label, condition);
-            this.label2LoopEnd.get(currentFunction).put(label, end);
+        currentFunction.addBasicBlock(end);
+        builder.setInsertPoint(end);
+        return null;
+    }
+
+    @Override
+    public Object visitBreak(LCBreak lcBreak, Object additional) {
+        if (lcBreak.label != null) {
+            builder.createGoto(label2LoopEnd.get(lcBreak.label));
+        } else {
+            LCAbstractLoop abstractLoop = getEnclosingLoop(lcBreak);
+            builder.createGoto(label2LoopEnd.get(abstractLoop2VLabel.get(abstractLoop)));
         }
-        this.label2LoopBegin.get(currentFunction).put(vLabel, condition);
-        this.label2LoopEnd.get(currentFunction).put(vLabel, end);
+        createBasicBlock();
+        return null;
+    }
+
+    @Override
+    public Object visitContinue(LCContinue lcContinue, Object additional) {
+        if (lcContinue.label != null) {
+            builder.createGoto(label2LoopBegin.get(lcContinue.label));
+        } else {
+            LCAbstractLoop abstractLoop = getEnclosingLoop(lcContinue);
+            builder.createGoto(label2LoopBegin.get(abstractLoop2VLabel.get(abstractLoop)));
+        }
+        createBasicBlock();
         return null;
     }
 
@@ -424,12 +465,10 @@ public final class IRGenerator extends LCAstVisitor {
         visit(lcIf.condition, additional);
         IRValue cond = (IRValue) stack.pop();
         var last = builder.getInsertPoint();
-        var trueBasicBlock = new IRBasicBlock(generateBasicBlockName());
-        currentFunction.addBasicBlock(trueBasicBlock);
-        builder.setInsertPoint(trueBasicBlock);
+        var trueBasicBlock = createBasicBlock();
         visit(lcIf.then, additional);
         var thenEnd = builder.getInsertPoint();
-        var nextBasicBlock = new IRBasicBlock(generateBasicBlockName());
+        var nextBasicBlock = generateBasicBlock();
         builder.setInsertPoint(last);
         builder.createJumpIfFalse(cond, nextBasicBlock);
         currentFunction.addBasicBlock(nextBasicBlock);
@@ -444,8 +483,7 @@ public final class IRGenerator extends LCAstVisitor {
             builder.setInsertPoint(nextBasicBlock);
             visit(lcIf._else, additional);
             var elseEnd = builder.getInsertPoint();
-            var endBasicBlock = new IRBasicBlock(generateBasicBlockName());
-            currentFunction.addBasicBlock(endBasicBlock);
+            var endBasicBlock = createBasicBlock();
             builder.setInsertPoint(thenEnd);
             builder.createGoto(endBasicBlock);
             builder.setInsertPoint(endBasicBlock);
@@ -489,12 +527,10 @@ public final class IRGenerator extends LCAstVisitor {
         visit(lcTernary.condition, additional);
         IRValue cond = (IRValue) stack.pop();
         var last = builder.getInsertPoint();
-        var trueBasicBlock = new IRBasicBlock(generateBasicBlockName());
-        currentFunction.addBasicBlock(trueBasicBlock);
-        builder.setInsertPoint(trueBasicBlock);
+        var trueBasicBlock = createBasicBlock();
         visit(lcTernary.then, additional);
         var thenEnd = builder.getInsertPoint();
-        var nextBasicBlock = new IRBasicBlock(generateBasicBlockName());
+        var nextBasicBlock = generateBasicBlock();
         builder.setInsertPoint(last);
         builder.createJumpIfFalse(cond, nextBasicBlock);
         currentFunction.addBasicBlock(nextBasicBlock);
@@ -502,8 +538,7 @@ public final class IRGenerator extends LCAstVisitor {
         builder.setInsertPoint(nextBasicBlock);
         visit(lcTernary._else, additional);
         var elseEnd = builder.getInsertPoint();
-        var endBasicBlock = new IRBasicBlock(generateBasicBlockName());
-        currentFunction.addBasicBlock(endBasicBlock);
+        var endBasicBlock = createBasicBlock();
         builder.setInsertPoint(thenEnd);
         builder.createGoto(endBasicBlock);
         builder.setInsertPoint(endBasicBlock);
