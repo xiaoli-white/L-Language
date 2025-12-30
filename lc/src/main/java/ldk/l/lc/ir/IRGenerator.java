@@ -455,9 +455,9 @@ public final class IRGenerator extends LCAstVisitor {
         IRValue value1 = (IRValue) stack.pop();
         this.visit(lcIn.expression2, additional);
         IRValue value2 = (IRValue) stack.pop();
-        retain(value1, lcIn.expression1.theType);
         retain(value2, lcIn.expression2.theType);
-        callMethod(lcIn.symbol, List.of(value1, value2));
+        retain(value1, lcIn.expression1.theType);
+        callMethod(lcIn.symbol, List.of(value2, value1));
         return null;
     }
 
@@ -468,6 +468,37 @@ public final class IRGenerator extends LCAstVisitor {
         this.visit(lcIs.expression2, additional);
         IRValue value2 = (IRValue) stack.pop();
         stack.push(builder.createCmpEqual(value1, value2));
+        return null;
+    }
+
+    @Override
+    public Object visitTernary(LCTernary lcTernary, Object additional) {
+        visit(lcTernary.condition, additional);
+        IRValue cond = (IRValue) stack.pop();
+        var last = builder.getInsertPoint();
+        var trueBasicBlock = new IRBasicBlock(generateBasicBlockName());
+        currentFunction.addBasicBlock(trueBasicBlock);
+        builder.setInsertPoint(trueBasicBlock);
+        visit(lcTernary.then, additional);
+        var thenEnd = builder.getInsertPoint();
+        var nextBasicBlock = new IRBasicBlock(generateBasicBlockName());
+        builder.setInsertPoint(last);
+        builder.createJumpIfFalse(cond, nextBasicBlock);
+        currentFunction.addBasicBlock(nextBasicBlock);
+        IRValue trueResult = (IRValue) stack.pop();
+        builder.setInsertPoint(nextBasicBlock);
+        visit(lcTernary._else, additional);
+        var elseEnd = builder.getInsertPoint();
+        var endBasicBlock = new IRBasicBlock(generateBasicBlockName());
+        currentFunction.addBasicBlock(endBasicBlock);
+        builder.setInsertPoint(thenEnd);
+        builder.createGoto(endBasicBlock);
+        builder.setInsertPoint(endBasicBlock);
+        IRValue falseResult = (IRValue) stack.pop();
+        Map<IRBasicBlock, IRValue> map = new LinkedHashMap<>();
+        map.put(thenEnd, trueResult);
+        map.put(elseEnd, falseResult);
+        stack.push(builder.createPhi(map));
         return null;
     }
 
