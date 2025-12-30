@@ -169,6 +169,13 @@ public final class IRGenerator extends LCAstVisitor {
         IRGlobalVariable vtable = new IRGlobalVariable(List.of(), false, "<vtable " + lcClassDeclaration.getFullName() + ">", new IRArrayConstant(new IRArrayType(new IRPointerType(IRType.getVoidType()), virtualMethods.size()), vtableElements));
         module.putGlobalVariable(vtable);
         IRGlobalVariable classInstance = module.globals.get("<class_instance " + lcClassDeclaration.getFullName() + ">");
+        classInstance.setInitializer(new IRStructureInitializer(new IRStructureType(clazzStructure),
+                List.of(new IRGlobalVariableReference(module.globals.get("<class_instance l.lang.Class>")),
+                        new IRIntegerConstant(IRType.getUnsignedLongType(), 1),
+                        new IRGlobalVariableReference(vtable),
+                        new IRIntegerConstant(IRType.getLongType(), 0),
+                        new IRNullptrConstant(new IRPointerType(IRType.getVoidType())),
+                        new IRNullptrConstant(new IRPointerType(new IRStructureType(clazzStructure))))));
         currentStaticInitFunction = module.functions.get(lcClassDeclaration.getFullName() + ".<__static_init__>()V");
         currentStaticInitFunction.setControlFlowGraph(new IRControlFlowGraph());
         currentInitFunction = module.functions.get(lcClassDeclaration.getFullName() + ".<__init__>()V");
