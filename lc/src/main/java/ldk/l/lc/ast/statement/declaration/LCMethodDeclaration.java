@@ -127,4 +127,15 @@ public final class LCMethodDeclaration extends LCDeclaration {
                 ", isErrorNode=" + isErrorNode +
                 '}';
     }
+    public String getName() {
+        List<String> l = modifier.attributes.stream().filter(attr -> attr.startsWith("native_name(\"") && attr.endsWith("\")")).toList();
+        if (l.isEmpty()) {
+            return symbol.getFullName();
+        } else if (l.size() == 1) {
+            String s = l.getFirst();
+            return s.substring("native_name(\"".length(), s.length() - 2);
+        } else {
+            throw new RuntimeException();
+        }
+    }
 }

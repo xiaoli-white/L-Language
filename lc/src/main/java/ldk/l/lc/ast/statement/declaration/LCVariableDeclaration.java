@@ -9,6 +9,8 @@ import ldk.l.lc.semantic.types.Type;
 import ldk.l.lc.util.Position;
 import ldk.l.lc.util.symbol.VariableSymbol;
 
+import java.util.List;
+
 public final class LCVariableDeclaration extends LCDeclaration {
     public LCModifier modifier = null;
     public boolean isVal;
@@ -98,5 +100,17 @@ public final class LCVariableDeclaration extends LCDeclaration {
                 ", position=" + position +
                 ", isErrorNode=" + isErrorNode +
                 '}';
+    }
+
+    public String getName() {
+        List<String> l = modifier.attributes.stream().filter(attr -> attr.startsWith("native_name(\"") && attr.endsWith("\")")).toList();
+        if (l.isEmpty()) {
+            return symbol.objectSymbol.getFullName() + "." + name;
+        } else if (l.size() == 1) {
+            String s = l.getFirst();
+            return s.substring("native_name(\"".length(), s.length() - 2);
+        } else {
+            throw new RuntimeException();
+        }
     }
 }

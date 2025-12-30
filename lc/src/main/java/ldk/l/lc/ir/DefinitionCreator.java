@@ -67,22 +67,12 @@ public final class DefinitionCreator extends LCAstVisitor {
 
     @Override
     public Object visitMethodDeclaration(LCMethodDeclaration lcMethodDeclaration, Object additional) {
-        String name;
-        List<String> l = lcMethodDeclaration.modifier.attributes.stream().filter(attr -> attr.startsWith("native_name(\"") && attr.endsWith("\")")).toList();
-        if (l.isEmpty()) {
-            name = lcMethodDeclaration.symbol.getFullName();
-        } else if (l.size() == 1) {
-            String s = l.getFirst();
-            name = s.substring("native_name(\"".length(), s.length() - 2);
-        } else {
-            throw new RuntimeException();
-        }
         if (LCFlags.hasExtern(lcMethodDeclaration.modifier.flags)) {
             List<IRLocalVariable> args = new ArrayList<>();
             for (LCVariableDeclaration variableDeclaration : lcMethodDeclaration.parameterList.parameters) {
                 args.add(new IRLocalVariable(parseType(module, variableDeclaration.theType), variableDeclaration.name + "_0"));
             }
-            module.putFunction(new IRFunction(List.of(), parseType(module, lcMethodDeclaration.returnType), name, args, false));
+            module.putFunction(new IRFunction(List.of(), parseType(module, lcMethodDeclaration.returnType), lcMethodDeclaration.getName(), args, false));
         } else if (!LCFlags.hasAbstract(lcMethodDeclaration.modifier.flags)) {
             List<IRLocalVariable> args = new ArrayList<>();
             if (!LCFlags.hasStatic(lcMethodDeclaration.modifier.flags)) {
@@ -91,7 +81,7 @@ public final class DefinitionCreator extends LCAstVisitor {
             for (LCVariableDeclaration variableDeclaration : lcMethodDeclaration.parameterList.parameters) {
                 args.add(new IRLocalVariable(parseType(module, variableDeclaration.theType), variableDeclaration.name + "_0"));
             }
-            module.putFunction(new IRFunction(List.of(), parseType(module, lcMethodDeclaration.returnType), name, args, false));
+            module.putFunction(new IRFunction(List.of(), parseType(module, lcMethodDeclaration.returnType), lcMethodDeclaration.getName(), args, false));
         }
         return null;
     }
@@ -99,7 +89,7 @@ public final class DefinitionCreator extends LCAstVisitor {
     @Override
     public Object visitVariableDeclaration(LCVariableDeclaration lcVariableDeclaration, Object additional) {
         if (LCFlags.hasStatic(lcVariableDeclaration.modifier.flags) && getEnclosingMethodDeclaration(lcVariableDeclaration) == null && getEnclosingInit(lcVariableDeclaration) == null) {
-            module.putGlobalVariable(new IRGlobalVariable(List.of(), lcVariableDeclaration.isVal, lcVariableDeclaration.symbol.objectSymbol.getFullName() + "." + lcVariableDeclaration.name, parseType(module, lcVariableDeclaration.theType)));
+            module.putGlobalVariable(new IRGlobalVariable(List.of(), lcVariableDeclaration.isVal, lcVariableDeclaration.getName(), parseType(module, lcVariableDeclaration.theType)));
         }
         return null;
     }
