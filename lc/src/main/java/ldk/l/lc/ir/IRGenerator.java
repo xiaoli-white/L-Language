@@ -187,14 +187,24 @@ public final class IRGenerator extends LCAstVisitor {
 
     @Override
     public Object visitInterfaceDeclaration(LCInterfaceDeclaration lcInterfaceDeclaration, Object additional) {
-        super.visitInterfaceDeclaration(lcInterfaceDeclaration, additional);
-        return null;
+        IRGlobalVariable classInstance = module.globals.get("<class_instance " + lcInterfaceDeclaration.getFullName() + ">");
+        return super.visitInterfaceDeclaration(lcInterfaceDeclaration, additional);
     }
 
     @Override
     public Object visitMethodDeclaration(LCMethodDeclaration lcMethodDeclaration, Object additional) {
+        String name;
+        List<String> l = lcMethodDeclaration.modifier.attributes.stream().filter(attr -> attr.startsWith("native_name(\"") && attr.endsWith("\")")).toList();
+        if (l.isEmpty()) {
+            name = lcMethodDeclaration.symbol.getFullName();
+        } else if (l.size() == 1) {
+            String s = l.getFirst();
+            name = s.substring("native_name(\"".length(), s.length() - 2);
+        } else {
+            throw new RuntimeException();
+        }
         if (!LCFlags.hasAbstract(lcMethodDeclaration.modifier.flags)) {
-            IRFunction function = module.functions.get(lcMethodDeclaration.symbol.getFullName());
+            IRFunction function = module.functions.get(name);
             currentFunction = function;
             function.setControlFlowGraph(new IRControlFlowGraph());
 

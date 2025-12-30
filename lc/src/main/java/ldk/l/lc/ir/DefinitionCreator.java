@@ -67,7 +67,23 @@ public final class DefinitionCreator extends LCAstVisitor {
 
     @Override
     public Object visitMethodDeclaration(LCMethodDeclaration lcMethodDeclaration, Object additional) {
-        if (!LCFlags.hasAbstract(lcMethodDeclaration.modifier.flags)) {
+        String name;
+        List<String> l = lcMethodDeclaration.modifier.attributes.stream().filter(attr -> attr.startsWith("native_name(\"") && attr.endsWith("\")")).toList();
+        if (l.isEmpty()) {
+            name = lcMethodDeclaration.symbol.getFullName();
+        } else if (l.size() == 1) {
+            String s = l.getFirst();
+            name = s.substring("native_name(\"".length(), s.length() - 2);
+        } else {
+            throw new RuntimeException();
+        }
+        if (LCFlags.hasExtern(lcMethodDeclaration.modifier.flags)) {
+            List<IRLocalVariable> args = new ArrayList<>();
+            for (LCVariableDeclaration variableDeclaration : lcMethodDeclaration.parameterList.parameters) {
+                args.add(new IRLocalVariable(parseType(module, variableDeclaration.theType), variableDeclaration.name + "_0"));
+            }
+            module.putFunction(new IRFunction(List.of(), parseType(module, lcMethodDeclaration.returnType), name, args, false));
+        } else if (!LCFlags.hasAbstract(lcMethodDeclaration.modifier.flags)) {
             List<IRLocalVariable> args = new ArrayList<>();
             if (!LCFlags.hasStatic(lcMethodDeclaration.modifier.flags)) {
                 args.add(new IRLocalVariable(parseType(module, lcMethodDeclaration.symbol.objectSymbol.theType), "<this_ptr>"));
@@ -75,7 +91,7 @@ public final class DefinitionCreator extends LCAstVisitor {
             for (LCVariableDeclaration variableDeclaration : lcMethodDeclaration.parameterList.parameters) {
                 args.add(new IRLocalVariable(parseType(module, variableDeclaration.theType), variableDeclaration.name + "_0"));
             }
-            module.putFunction(new IRFunction(List.of(), parseType(module, lcMethodDeclaration.returnType), lcMethodDeclaration.symbol.getFullName(), args, false));
+            module.putFunction(new IRFunction(List.of(), parseType(module, lcMethodDeclaration.returnType), name, args, false));
         }
         return null;
     }
