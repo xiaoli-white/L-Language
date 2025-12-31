@@ -162,6 +162,12 @@ public final class ClassSymbol extends ObjectSymbol {
         return properties.toArray(new VariableSymbol[0]);
     }
 
+    public MethodSymbol getDestructor() {
+        if (destructor != null) return destructor;
+        if (extended != null) return extended.getDestructor();
+        return null;
+    }
+
     public Map<String, String> getVirtualMethods() {
         return getVirtualMethods(false);
     }

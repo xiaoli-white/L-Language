@@ -26,7 +26,8 @@ public final class InterfaceSymbol extends ObjectSymbol {
         for (MethodSymbol method : this.methods)
             method.objectSymbol = this;
 
-        destructor = new MethodSymbol("<deinit>", List.of(), SystemTypes.VOID, new MethodPointerType(List.of(), SystemTypes.VOID), MethodKind.Method, LCFlags.PUBLIC, List.of());
+        destructor = new MethodSymbol("<deinit>", List.of(), SystemTypes.VOID, new MethodPointerType(List.of(), SystemTypes.VOID), MethodKind.Method, LCFlags.PUBLIC | LCFlags.ABSTRACT, List.of());
+        destructor.objectSymbol = this;
     }
 
     @Override

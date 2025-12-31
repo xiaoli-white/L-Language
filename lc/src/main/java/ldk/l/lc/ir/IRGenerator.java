@@ -1508,7 +1508,7 @@ public final class IRGenerator extends LCAstVisitor {
         ObjectSymbol objectSymbol = LCAstUtil.getObjectSymbol(Objects.requireNonNull(ast.getObjectDeclaration(objectType.name)));
         MethodSymbol destructor;
         if (objectSymbol instanceof ClassSymbol classSymbol) {
-            destructor = classSymbol.destructor;
+            destructor = classSymbol.getDestructor();
         } else if (objectSymbol instanceof InterfaceSymbol interfaceSymbol) {
             destructor = interfaceSymbol.destructor;
         } else {
