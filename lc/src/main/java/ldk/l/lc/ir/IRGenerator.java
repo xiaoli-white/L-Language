@@ -166,16 +166,46 @@ public final class IRGenerator extends LCAstVisitor {
             else
                 vtableElements.add(new IRNullptrConstant(new IRPointerType(IRType.getVoidType())));
         }
-        IRGlobalVariable vtable = new IRGlobalVariable(List.of(), false, "<vtable " + lcClassDeclaration.getFullName() + ">", new IRArrayConstant(new IRArrayType(new IRPointerType(IRType.getVoidType()), virtualMethods.size()), vtableElements));
+        IRGlobalVariable vtable = new IRGlobalVariable(List.of(), false, "<vtable " + lcClassDeclaration.getFullName() + ">", new IRArrayConstant(new IRArrayType(new IRPointerType(IRType.getVoidType()), vtableElements.size()), vtableElements));
         module.putGlobalVariable(vtable);
+        IRStructure itableEntryStructure = module.structures.get("<itable_entry>");
+        Map<String, Map<String, String>> interfacesMethodMap = lcClassDeclaration.symbol.getInterfacesMethodMap();
+        List<IRConstant> itableEntries = new ArrayList<>();
+        for (Map.Entry<String, Map<String, String>> entry : interfacesMethodMap.entrySet()) {
+            List<IRConstant> entryVtableElements = new ArrayList<>();
+            for (String name : entry.getValue().values()) {
+                IRFunction f = module.functions.get(name);
+                if (f != null)
+                    entryVtableElements.add(new IRFunctionReference(f));
+                else
+                    entryVtableElements.add(new IRNullptrConstant(new IRPointerType(IRType.getVoidType())));
+            }
+            IRGlobalVariable entryVtable = new IRGlobalVariable(List.of(), false, "<itable " + lcClassDeclaration.getFullName() + " vtable " + entry.getKey() + ">", new IRArrayConstant(new IRArrayType(new IRPointerType(IRType.getVoidType()), entryVtableElements.size()), entryVtableElements));
+            module.putGlobalVariable(entryVtable);
+            IRGlobalVariable interfaceClazz = module.globals.get("<class_instance " + entry.getKey() + ">");
+            IRGlobalVariable itableEntry = new IRGlobalVariable(List.of(), false, "<itable " + lcClassDeclaration.getFullName() + " entry " + entry.getKey() + ">", new IRStructureInitializer(new IRStructureType(itableEntryStructure),
+                    List.of(new IRGlobalVariableReference(interfaceClazz), new IRGlobalVariableReference(entryVtable))));
+            module.putGlobalVariable(itableEntry);
+            itableEntries.add(new IRGlobalVariableReference(itableEntry));
+        }
+        IRGlobalVariable itable = new IRGlobalVariable(List.of(), false, "<itable " + lcClassDeclaration.getFullName() + ">", new IRArrayConstant(new IRArrayType(new IRStructureType(itableEntryStructure), itableEntries.size()), itableEntries));
+        module.putGlobalVariable(itable);
+        IRGlobalVariable superClassInstance;
+        if (lcClassDeclaration.symbol.extended != null) {
+            superClassInstance = module.globals.get("<class_instance " + lcClassDeclaration.symbol.extended.getFullName() + ">");
+        } else {
+            superClassInstance = null;
+        }
         IRGlobalVariable classInstance = module.globals.get("<class_instance " + lcClassDeclaration.getFullName() + ">");
         classInstance.setInitializer(new IRStructureInitializer(new IRStructureType(clazzStructure),
                 List.of(new IRGlobalVariableReference(module.globals.get("<class_instance l.lang.Class>")),
                         new IRIntegerConstant(IRType.getUnsignedLongType(), 1),
                         new IRGlobalVariableReference(vtable),
-                        new IRIntegerConstant(IRType.getLongType(), 0),
-                        new IRNullptrConstant(new IRPointerType(IRType.getVoidType())),
-                        new IRNullptrConstant(new IRPointerType(new IRStructureType(clazzStructure))))));
+                        new IRIntegerConstant(IRType.getUnsignedLongType(), itableEntries.size()),
+                        new IRGlobalVariableReference(itable),
+                        superClassInstance != null ?
+                                new IRGlobalVariableReference(superClassInstance) :
+                                new IRNullptrConstant(new IRPointerType(new IRStructureType(clazzStructure))))));
         currentStaticInitFunction = module.functions.get(lcClassDeclaration.getFullName() + ".<__static_init__>()V");
         currentStaticInitFunction.setControlFlowGraph(new IRControlFlowGraph());
         currentInitFunction = module.functions.get(lcClassDeclaration.getFullName() + ".<__init__>()V");
@@ -194,7 +224,15 @@ public final class IRGenerator extends LCAstVisitor {
 
     @Override
     public Object visitInterfaceDeclaration(LCInterfaceDeclaration lcInterfaceDeclaration, Object additional) {
+        IRStructure clazzStructure = module.structures.get("l.lang.Class");
         IRGlobalVariable classInstance = module.globals.get("<class_instance " + lcInterfaceDeclaration.getFullName() + ">");
+        classInstance.setInitializer(new IRStructureInitializer(new IRStructureType(clazzStructure),
+                List.of(new IRGlobalVariableReference(module.globals.get("<class_instance l.lang.Class>")),
+                        new IRIntegerConstant(IRType.getUnsignedLongType(), 1),
+                        new IRNullptrConstant(new IRPointerType(IRType.getVoidType())),
+                        new IRIntegerConstant(IRType.getLongType(), 0),
+                        new IRNullptrConstant(new IRPointerType(IRType.getVoidType())),
+                        new IRNullptrConstant(new IRPointerType(new IRStructureType(clazzStructure))))));
         return super.visitInterfaceDeclaration(lcInterfaceDeclaration, additional);
     }
 

@@ -42,6 +42,9 @@ public final class DefinitionCreator extends LCAstVisitor {
         if (!module.functions.containsKey("realloc")) {
             module.putFunction(new IRFunction(List.of(), new IRPointerType(IRType.getVoidType()), "realloc", List.of(new IRLocalVariable(new IRPointerType(IRType.getVoidType()), "ptr"), new IRLocalVariable(IRType.getUnsignedLongType(), "size")), false));
         }
+        module.putStructure(new IRStructure("<itable_entry>", List.of(
+                new IRField(new IRPointerType(new IRStructureType(module.structures.get("l.lang.Class"))), "interfaceClazz"),
+                new IRField(new IRPointerType(IRType.getVoidType()), "vtable"))));
         return null;
     }
 

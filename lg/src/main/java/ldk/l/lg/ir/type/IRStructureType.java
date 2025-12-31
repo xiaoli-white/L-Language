@@ -19,7 +19,7 @@ public final class IRStructureType extends IRType {
 
     @Override
     public String toString() {
-        return "structure \"" + structure.name + "\"";
+        return "#\"" + structure.name + "\"";
     }
 
     @Override
