@@ -61,6 +61,9 @@ public final class DefinitionCreator extends LCAstVisitor {
 
     @Override
     public Object visitInterfaceDeclaration(LCInterfaceDeclaration lcInterfaceDeclaration, Object additional) {
+        IRStructure structure = module.structures.get(lcInterfaceDeclaration.getFullName());
+        structure.fields.add(new IRField(new IRPointerType(new IRStructureType(module.structures.get("l.lang.Class"))), "<class_ptr>"));
+        structure.fields.add(new IRField(IRType.getUnsignedLongType(), "<ref_count>"));
         module.putGlobalVariable(new IRGlobalVariable(List.of(), false, "<class_instance " + lcInterfaceDeclaration.getFullName() + ">", new IRStructureType(module.structures.get("l.lang.Class")), null));
         return super.visitInterfaceDeclaration(lcInterfaceDeclaration, additional);
     }

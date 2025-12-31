@@ -17,7 +17,7 @@ public final class ClassSymbol extends ObjectSymbol {
     public List<InterfaceSymbol> implementedInterfaces = null;
     public List<ClassSymbol> permittedClasses = null;
     private Map<String, String> virtualMethods = null;
-    private Map<String, Map<String, String>> interfaceMethodMap = new HashMap<>();
+    private Map<String, Map<String, String>> interfaceMethodMap = null;
 
     public ClassSymbol(LCClassDeclaration declaration, Type theType, List<TypeParameterSymbol> typeParameters, long flags, List<String> attributes, List<VariableSymbol> properties, List<MethodSymbol> constructors, List<MethodSymbol> methods, MethodSymbol destructor) {
         super(declaration.getRealPackageName(), declaration.name, theType, SymbolKind.Class, typeParameters, flags, attributes);
@@ -168,10 +168,10 @@ public final class ClassSymbol extends ObjectSymbol {
 
     public Map<String, String> getVirtualMethods(boolean forceRefresh) {
         if (!forceRefresh && virtualMethods != null) return virtualMethods;
-        if (extended == null) {
-            virtualMethods = new LinkedHashMap<>();
+        if (extended != null) {
+            virtualMethods = new LinkedHashMap<>(extended.getVirtualMethods());
         } else {
-            virtualMethods = extended.getVirtualMethods();
+            virtualMethods = new LinkedHashMap<>();
         }
         for (MethodSymbol methodSymbol : methods) {
             if (LCFlags.hasStatic(methodSymbol.flags)) continue;
@@ -190,7 +190,7 @@ public final class ClassSymbol extends ObjectSymbol {
     public Map<String, Map<String, String>> getInterfacesMethodMap(boolean forceRefresh) {
         if (!forceRefresh && interfaceMethodMap != null) return interfaceMethodMap;
         if (extended != null) {
-            interfaceMethodMap = extended.getInterfacesMethodMap();
+            interfaceMethodMap = new LinkedHashMap<>(extended.getInterfacesMethodMap());
         } else {
             interfaceMethodMap = new LinkedHashMap<>();
         }
