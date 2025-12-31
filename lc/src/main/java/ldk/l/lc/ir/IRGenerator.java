@@ -1046,11 +1046,34 @@ public final class IRGenerator extends LCAstVisitor {
         this.visit(lcTypeof.expression, additional);
         IRValue value = (IRValue) stack.pop();
 
-//        IRType stringType = parseType(SystemTypes.String_Type);
-
         if (lcTypeof.expression.theType instanceof PointerType || lcTypeof.expression.theType instanceof ReferenceType || lcTypeof.expression.theType instanceof ArrayType || SystemTypes.isPrimitiveType(lcTypeof.expression.theType)) {
-//            int index = module.constantPool.put(new IRConstantPool.Entry(stringType, lcTypeof.expression.theType.toTypeString()));
-//            operandStack.push(new IRConstant(index));
+            String s = lcTypeof.expression.theType.toTypeString();
+            String name;
+            boolean flag;
+            if (string2GlobalName.containsKey(s)) {
+                name = string2GlobalName.get(s);
+                flag = false;
+            } else {
+                name = "<string_constant_" + string2GlobalName.size() + ">";
+                string2GlobalName.put(s, name);
+                flag = true;
+            }
+            if (!module.globals.containsKey(name)) {
+                if (flag) {
+                    IRGlobalVariable rawString = new IRGlobalVariable(List.of(), true, name + "<raw>", new IRStringConstant(s));
+                    module.putGlobalVariable(rawString);
+                    module.putGlobalVariable(new IRGlobalVariable(List.of(), false, name, new IRStructureInitializer(new IRStructureType(module.structures.get("l.lang.String")),
+                            List.of(new IRGlobalVariableReference(module.globals.get("<class_instance l.lang.String>")),
+                                    new IRIntegerConstant(IRType.getUnsignedLongType(), 1),
+                                    new IRGlobalVariableReference(rawString),
+                                    new IRIntegerConstant(IRType.getUnsignedLongType(), s.length()),
+                                    new IRIntegerConstant(IRType.getUnsignedLongType(), s.length())
+                            ))));
+                } else {
+                    module.putGlobalVariable(new IRGlobalVariable(List.of(), false, name, new IRStructureType(module.structures.get("l.lang.String"))));
+                }
+            }
+            stack.push(new IRGlobalVariableReference(module.globals.get(name)));
         }
         return null;
     }
@@ -1311,7 +1334,10 @@ public final class IRGenerator extends LCAstVisitor {
                     var classInstancePtr = builder.createGetElementPointer(thisPtr, List.of(new IRIntegerConstant(IRType.getIntType(), 0), new IRIntegerConstant(IRType.getIntType(), ((IRStructureType) ((IRPointerType) thisPtr.getType()).base).structure.getFieldIndex("<class_ptr>"))));
                     var classInstance = builder.createLoad(classInstancePtr);
 //                    var itableSizePtr = builder.createGetElementPointer(classInstance, List.of(new IRIntegerConstant(IRType.getIntType(), 0), new IRIntegerConstant(IRType.getIntType(), ((IRStructureType) ((IRPointerType) classInstance.getType()).base).structure.getFieldIndex("itableSize"))));
-//                    var itablePtr = builder.createGetElementPointer(classInstance, List.of(new IRIntegerConstant(IRType.getIntType(), 0), new IRIntegerConstant(IRType.getIntType(), ((IRStructureType) ((IRPointerType) classInstance.getType()).base).structure.getFieldIndex("itable"))));
+//                    var itablePtrPtr = builder.createGetElementPointer(classInstance, List.of(new IRIntegerConstant(IRType.getIntType(), 0), new IRIntegerConstant(IRType.getIntType(), ((IRStructureType) ((IRPointerType) classInstance.getType()).base).structure.getFieldIndex("itable"))));
+//                    var itableRawPtr = builder.createLoad(itablePtrPtr);
+                    var itableEntryStructure = module.structures.get("<itable_entry>");
+//                    var itablePtr = builder.createPointerToPointer(itableRawPtr, new IRPointerType(new IRStructureType(itableEntryStructure)));
 //                    var itableSize = builder.createLoad(itableSizePtr);
                     var interfaceClassInstance = module.globals.get("<class_instance " + interfaceSymbol.getFullName() + ">");
                     ClassSymbol classSymbol = ((LCClassDeclaration) Objects.requireNonNull(this.ast.getObjectDeclaration(SystemTypes.Class_Type.name))).symbol;
@@ -1325,7 +1351,7 @@ public final class IRGenerator extends LCAstVisitor {
                     retain(classInstance, SystemTypes.Class_Type);
                     retain(new IRGlobalVariableReference(interfaceClassInstance), SystemTypes.Class_Type);
                     var itableEntryRawPtr = builder.createInvoke(module.functions.get(methodSymbol.getFullName()), List.of(classInstance, new IRGlobalVariableReference(interfaceClassInstance)));
-                    var itableEntryPtr = builder.createPointerToPointer(itableEntryRawPtr, new IRPointerType(new IRStructureType(module.structures.get("<itable_entry>"))));
+                    var itableEntryPtr = builder.createPointerToPointer(itableEntryRawPtr, new IRPointerType(new IRStructureType(itableEntryStructure)));
                     var itableEntryVtablePtr = builder.createGetElementPointer(itableEntryPtr, List.of(new IRIntegerConstant(IRType.getIntType(), 0), new IRIntegerConstant(IRType.getIntType(), ((IRStructureType) ((IRPointerType) itableEntryPtr.getType()).base).structure.getFieldIndex("vtable"))));
                     var vtable = builder.createLoad(itableEntryVtablePtr);
                     var funcPtr = builder.createGetElementPointer(vtable, List.of(new IRIntegerConstant(IRType.getIntType(), classSymbol.getVirtualMethods().keySet().stream().toList().indexOf(symbol.getSimpleName()))));
@@ -1480,35 +1506,16 @@ public final class IRGenerator extends LCAstVisitor {
         var classInstancePtr = builder.createGetElementPointer(object, List.of(new IRIntegerConstant(IRType.getIntType(), 0), new IRIntegerConstant(IRType.getIntType(), ((IRStructureType) ((IRPointerType) object.getType()).base).structure.getFieldIndex("<class_ptr>"))));
         var classInstance = builder.createLoad(classInstancePtr);
         ObjectSymbol objectSymbol = LCAstUtil.getObjectSymbol(Objects.requireNonNull(ast.getObjectDeclaration(objectType.name)));
-        IRFunctionReferenceType destructorType = new IRFunctionReferenceType(IRType.getVoidType(), List.of(parseType(module, objectType)), false);
-        IRValue destructor;
-        if (objectSymbol instanceof InterfaceSymbol interfaceSymbol) {
-//            ClassSymbol classSymbol = ((LCClassDeclaration) Objects.requireNonNull(this.ast.getObjectDeclaration(SystemTypes.Class_Type.name))).symbol;
-//            MethodSymbol methodSymbol = null;
-//            for (MethodSymbol method : classSymbol.methods) {
-//                if (method.name.equals("getITableEntry")) {
-//                    methodSymbol = method;
-//                    break;
-//                }
-//            }
-//            IRMacro interfaceClassInstance = new IRMacro("global_data_address", new String[]{"<class_instance " + interfaceSymbol.getFullName() + ">"});
-//            IRVirtualRegister classInstance = new IRVirtualRegister(classInstanceAddressRegister);
-//            retain(classInstance, SystemTypes.Class_Type);
-//            retain(interfaceClassInstance, SystemTypes.Class_Type);
-//            String itableAddressRegister = allocateVirtualRegister();
-//            addInstruction(new IRInvoke(new IRPointerType(IRType.getVoidType()), new IRMacro("function_address", new String[]{Objects.requireNonNull(methodSymbol).getFullName()}), new IRType[]{new IRPointerType(IRType.getVoidType()), new IRPointerType(IRType.getVoidType())}, new IROperand[]{classInstance, interfaceClassInstance}, new IRVirtualRegister(itableAddressRegister)));
-//            String temp = allocateVirtualRegister();
-//            addInstruction(new IRCalculate(IRCalculate.Operator.ADD, new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(itableAddressRegister), new IRMacro("itable_entry_offset", new String[]{interfaceSymbol.getFullName(), "<deinit>()V"}), new IRVirtualRegister(temp)));
-//            addInstruction(new IRLoad(new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(temp), new IRVirtualRegister(destructor)));
-            destructor = null;
+        MethodSymbol destructor;
+        if (objectSymbol instanceof ClassSymbol classSymbol) {
+            destructor = classSymbol.destructor;
+        } else if (objectSymbol instanceof InterfaceSymbol interfaceSymbol) {
+            destructor = interfaceSymbol.destructor;
         } else {
-            var vtablePtr = builder.createGetElementPointer(classInstance, List.of(new IRIntegerConstant(IRType.getIntType(), 0), new IRIntegerConstant(IRType.getIntType(), ((IRStructureType) ((IRPointerType) classInstance.getType()).base).structure.getFieldIndex("vtable"))));
-            var vtable = builder.createLoad(vtablePtr);
-            var funcPtr = builder.createGetElementPointer(vtable, List.of(new IRIntegerConstant(IRType.getIntType(), ((ClassSymbol) objectSymbol).getVirtualMethods().keySet().stream().toList().indexOf("<deinit>"))));
-            var voidPtr = builder.createLoad(funcPtr);
-            destructor = builder.createBitCast(voidPtr, destructorType);
+            throw new RuntimeException();
         }
-        builder.createInvoke(destructorType, destructor, List.of(object));
+        retain(object, objectType);
+        callMethod(destructor, List.of(object));
         builder.createInvoke(module.functions.get("free"), List.of(object));
     }
 
