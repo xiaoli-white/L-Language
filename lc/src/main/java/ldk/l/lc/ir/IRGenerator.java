@@ -142,6 +142,9 @@ public final class IRGenerator extends LCAstVisitor {
         definitionCreator.visitSourceCodeFile(lcSourceCodeFile, additional);
         for (LCSourceFileProxy proxy : lcSourceCodeFile.proxies.values())
             definitionCreator.visitSourceFileProxy(proxy, additional);
+        module.putStructure(new IRStructure("<itable_entry>", List.of(
+                new IRField(new IRPointerType(new IRStructureType(module.structures.get("l.lang.Class"))), "interfaceClazz"),
+                new IRField(new IRPointerType(IRType.getVoidType()), "vtable"))));
 
         System.out.println("module(before):");
         IRDumper irDumper = new IRDumper();
@@ -368,10 +371,22 @@ public final class IRGenerator extends LCAstVisitor {
 
     @Override
     public Object visitLoop(LCLoop lcLoop, Object additional) {
+        String vLabel = String.format("<loop_%d>", this.abstractLoop2VLabel.size());
+        this.abstractLoop2VLabel.put(lcLoop, vLabel);
+
         IRBasicBlock loopBeginBasicBlock = createBasicBlock();
+        IRBasicBlock loopEndBasicBlock = generateBasicBlock();
+        for (var label : lcLoop.labels) {
+            this.label2LoopBegin.put(label, loopBeginBasicBlock);
+            this.label2LoopEnd.put(label, loopEndBasicBlock);
+        }
+        this.label2LoopBegin.put(vLabel, loopBeginBasicBlock);
+        this.label2LoopEnd.put(vLabel, loopEndBasicBlock);
+
         visit(lcLoop.body, additional);
         builder.createGoto(loopBeginBasicBlock);
-        IRBasicBlock loopEndBasicBlock = createBasicBlock();
+        currentFunction.addBasicBlock(loopEndBasicBlock);
+        builder.setInsertPoint(loopBeginBasicBlock);
         return null;
     }
 
@@ -1296,8 +1311,11 @@ public final class IRGenerator extends LCAstVisitor {
                     voidPtr = builder.createLoad(funcPtr);
                 }
                 case InterfaceSymbol interfaceSymbol -> {
-                    voidPtr = null;
-//                    String cla_operator=Dot, expression1=LCVariable{name='obj', symbol=VariableSymbol{flags=0, attributes=[], name='obj', theType=NullableType{base=NamedType{name='l.lang.Object', upperTypes=[], isComplement=false}}}, theType=NullableType{base=NamedType{name='l.lang.Object', upperTypes=[], isComplement=false}}, shouldBeLeftValue=false, isLeftValue=false, constValue=null, position=(bp:1395, ep:1398, bl:48, el:48, bc:13, ec:16), isErrorNode=false}ssInstanceAddressRegister = allocateVirtualRegister();
+                    var classInstancePtr = builder.createGetElementPointer(thisPtr, List.of(new IRIntegerConstant(IRType.getIntType(), 0), new IRIntegerConstant(IRType.getIntType(), ((IRStructureType) ((IRPointerType) thisPtr.getType()).base).structure.getFieldIndex("<class_ptr>"))));
+                    var classInstance = builder.createLoad(classInstancePtr);
+//                    var itablePtr = builder.createGetElementPointer(classInstance, List.of(new IRIntegerConstant(IRType.getIntType(), 0), new IRIntegerConstant(IRType.getIntType(), ((IRStructureType) ((IRPointerType) classInstance.getType()).base).structure.getFieldIndex("itable"))));
+//                    var itablePtr = builder.createGetElementPointer(classInstance, List.of(new IRIntegerConstant(IRType.getIntType(), 0), new IRIntegerConstant(IRType.getIntType(), ((IRStructureType) ((IRPointerType) classInstance.getType()).base).structure.getFieldIndex("itable"))));
+                    // String classInstanceAddressRegister = allocateRegister();
 //                    addInstruction(new IRLoad(new IRPointerType(IRType.getVoidType()), arguments.getFirst(), new IRVirtualRegister(classInstanceAddressRegister)));
 //                    ClassSymbol symbol = ((LCClassDeclaration) Objects.requireNonNull(this.ast.getObjectDeclaration(SystemTypes.Class_Type.name))).symbol;
 //                    MethodSymbol methodSymbol2 = null;
@@ -1318,6 +1336,7 @@ public final class IRGenerator extends LCAstVisitor {
 //                    String addressRegister = allocateVirtualRegister();
 //                    addInstruction(new IRLoad(new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(temp), new IRVirtualRegister(addressRegister)));
 //                    address = new IRVirtualRegister(addressRegister);
+                    voidPtr = null;
                 }
                 case EnumSymbol enumSymbol -> {
                     voidPtr = null;

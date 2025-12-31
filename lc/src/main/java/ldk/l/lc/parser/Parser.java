@@ -549,6 +549,7 @@ public final class Parser {
             t = this.peek();
             switch (t.code()) {
                 case Tokens.Keyword.Method -> {
+                    modifier.flags |= LCFlags.PUBLIC;
                     LCMethodDeclaration lcMethodDeclaration;
                     if (LCFlags.hasDefault(modifier.flags)) {
                         lcMethodDeclaration = this.parseMethodDeclaration(MethodKind.Method, modifier.flags);
@@ -603,7 +604,7 @@ public final class Parser {
                             // TODO dump error
                         }
 
-                        ArrayList<LCTypeReferenceExpression> throwsExceptions = new ArrayList<>();
+                        List<LCTypeReferenceExpression> throwsExceptions = new ArrayList<>();
                         if (this.peek().code() == Tokens.Keyword.Throws) {
                             this.tokenIndex++;
                             Token t3;
@@ -641,7 +642,7 @@ public final class Parser {
                         Position pos = new Position(t_beginPos.beginPos(), endPos.endPos(), t_beginPos.beginLine(), endPos.endLine(), t_beginPos.beginCol(), endPos.endCol());
                         lcMethodDeclaration.init(null, pos, t_isErrorNode);
 
-                        if (!LCFlags.hasExtern(modifier.flags)) modifier.flags |= LCFlags.ABSTRACT;
+                        modifier.flags |= LCFlags.ABSTRACT;
                     }
                     lcMethodDeclaration.setModifier(modifier);
                     statements.add(lcMethodDeclaration);
