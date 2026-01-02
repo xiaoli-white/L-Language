@@ -1232,6 +1232,27 @@ public final class IRGenerator extends LCAstVisitor {
         return null;
     }
 
+    @Override
+    public Object visitInstanceof(LCInstanceof lcInstanceof, Object additional) {
+        this.visit(lcInstanceof.expression, null);
+        IRValue operand = (IRValue) stack.pop();
+        var classInstancePtr = builder.createGetElementPointer(operand, List.of(new IRIntegerConstant(IRType.getUnsignedLongType(), 0), new IRIntegerConstant(IRType.getUnsignedLongType(), 0)));
+        var classInstance = builder.createLoad(classInstancePtr);
+        IRGlobalVariableReference typeClassInstance = new IRGlobalVariableReference(module.globals.get("<class_instance " + lcInstanceof.typeExpression.theType.toTypeString() + ">"));
+        ClassSymbol classSymbol = ((LCClassDeclaration) Objects.requireNonNull(this.ast.getObjectDeclaration(SystemTypes.Class_Type.name))).symbol;
+        MethodSymbol methodSymbol = null;
+        for (MethodSymbol method : classSymbol.methods) {
+            if (method.name.equals("isSubClassOf")) {
+                methodSymbol = method;
+                break;
+            }
+        }
+        retain(classInstance, SystemTypes.Class_Type);
+        retain(typeClassInstance, SystemTypes.Class_Type);
+        callMethod(Objects.requireNonNull(methodSymbol), List.of(classInstance, typeClassInstance));
+        return null;
+    }
+
     private void newArray(ArrayType arrayType, IRValue length) {
         IRType elementType = parseType(module, arrayType.base);
         IRIntegerConstant typeSize = new IRIntegerConstant(IRType.getUnsignedLongType(), elementType.getLength());
