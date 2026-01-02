@@ -152,6 +152,18 @@ public final class IRGenerator extends LCAstVisitor {
         basicBlockCount = 0;
         registerCount = 0;
         super.visitSourceCodeFile(lcSourceCodeFile, additional);
+        if (ast.mainSourceFile == lcSourceCodeFile) {
+            IRFunction initFunc = new IRFunction(List.of(), IRType.getVoidType(), "__init__", List.of(), false, List.of(), new IRControlFlowGraph());
+            module.putFunction(initFunc);
+            currentFunction = initFunc;
+            List<IRFunction> staticInitFunctions = module.functions.values().stream().filter(f -> f.name.endsWith(".<__static_init__>()V")).toList();
+            createBasicBlock();
+            for (IRFunction f : staticInitFunctions) {
+                builder.createInvoke(f, List.of());
+            }
+            builder.createReturn();
+        }
+
         System.out.println("module(after):");
         irDumper.visitModule(module, "");
         return null;

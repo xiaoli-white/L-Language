@@ -11,6 +11,7 @@ import java.io.File;
 import java.util.*;
 
 public final class LCAst extends LCAstNode {
+    public LCSourceFile mainSourceFile = null;
     public LCObjectDeclaration mainObjectDeclaration = null;
     public MethodSymbol mainMethod = null;
     public final List<LCSourceFile> sourceFiles = new ArrayList<>();
