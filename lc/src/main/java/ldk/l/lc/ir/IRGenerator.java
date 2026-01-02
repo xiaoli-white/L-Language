@@ -1206,28 +1206,28 @@ public final class IRGenerator extends LCAstVisitor {
         } else {
             var classInstancePtr = builder.createGetElementPointer(operand, List.of(new IRIntegerConstant(IRType.getUnsignedLongType(), 0), new IRIntegerConstant(IRType.getUnsignedLongType(), 0)));
             var classInstance = builder.createLoad(classInstancePtr);
-            // TODO check sub class
-//            String classInstanceName = String.format("<class_instance %s>", lcTypeCast.typeExpression.theType.toTypeString());
-//            ClassSymbol classSymbol = ((LCClassDeclaration) Objects.requireNonNull(this.ast.getObjectDeclaration(SystemTypes.Class_Type.name))).symbol;
-//            MethodSymbol methodSymbol = null;
-//            for (MethodSymbol method : classSymbol.methods) {
-//                if (method.name.equals("isSubClassOf")) {
-//                    methodSymbol = method;
-//                    break;
-//                }
-//            }
-//            String resultRegister = allocateVirtualRegister();
-//            IRMacro methodAddress = new IRMacro("function_address", new String[]{Objects.requireNonNull(methodSymbol).getFullName()});
-//            addInstruction(new IRInvoke(IRType.getBooleanType(), methodAddress, new IRType[]{new IRPointerType(IRType.getVoidType()), new IRPointerType(IRType.getVoidType())}, new IROperand[]{new IRVirtualRegister(operandClassInstanceAddressRegister), new IRMacro("global_data_address", new String[]{classInstanceName})}, new IRVirtualRegister(resultRegister)));
-//            IRConditionalJump irConditionalJump = new IRConditionalJump(IRType.getBooleanType(), IRCondition.IfTrue, new IRVirtualRegister(resultRegister), null);
-//            addInstruction(irConditionalJump);
-//            createBasicBlock();
-//            // TODO throw exception
-//
-//            var end = createBasicBlock();
-//            irConditionalJump.target = end.name;
-//
-//            operandStack.push(operand);
+            IRGlobalVariableReference typeClassInstance = new IRGlobalVariableReference(module.globals.get("<class_instance " + lcTypeCast.typeExpression.theType.toTypeString() + ">"));
+            ClassSymbol classSymbol = ((LCClassDeclaration) Objects.requireNonNull(this.ast.getObjectDeclaration(SystemTypes.Class_Type.name))).symbol;
+            MethodSymbol methodSymbol = null;
+            for (MethodSymbol method : classSymbol.methods) {
+                if (method.name.equals("isSubClassOf")) {
+                    methodSymbol = method;
+                    break;
+                }
+            }
+            retain(classInstance, SystemTypes.Class_Type);
+            retain(typeClassInstance, SystemTypes.Class_Type);
+            callMethod(Objects.requireNonNull(methodSymbol), List.of(classInstance, typeClassInstance));
+            IRValue result = (IRValue) stack.pop();
+            var bb = builder.getInsertPoint();
+            createBasicBlock();
+            // TODO throw exception
+            var end = createBasicBlock();
+            builder.setInsertPoint(bb);
+            builder.createJumpIfTrue(result, end);
+            builder.setInsertPoint(end);
+            var ret = builder.createPointerToPointer(operand, (IRPointerType) parseType(module, lcTypeCast.typeExpression.theType));
+            stack.push(ret);
         }
         return null;
     }
