@@ -1523,41 +1523,21 @@ public final class IRGenerator extends LCAstVisitor {
         if (!SystemTypes.isPrimitiveType(arrayType.base)) {
             var lengthPtr = builder.createGetElementPointer(array, List.of(new IRIntegerConstant(IRType.getIntType(), 0), new IRIntegerConstant(IRType.getIntType(), ((IRStructureType) ((IRPointerType) array.getType()).base).structure.getFieldIndex("length"))));
             var length = builder.createLoad(lengthPtr);
-//            String temp2 = allocateVirtualRegister();
-//            addInstruction(new IRCalculate(IRCalculate.Operator.ADD, parseType(arrayType), array, new IRConstant(constant16Index), new IRVirtualRegister(temp2)));
-//            addInstruction(new IRStore(new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(addressRegister), new IRVirtualRegister(temp2)));
-//
-//            String countRegister = allocateVirtualRegister();
-//            addInstruction(new IRStackAllocate(new IRConstant(constant8Index), new IRVirtualRegister(countRegister)));
-//            int constant0Index = module.constantPool.put(new IRConstantPool.Entry(IRType.getUnsignedLongType(), 0));
-//            addInstruction(new IRStore(IRType.getUnsignedLongType(), new IRVirtualRegister(countRegister), new IRConstant(constant0Index)));
-//
-//            IRBasicBlock conditionBlock = createBasicBlock();
-//            String temp3 = allocateVirtualRegister();
-//            addInstruction(new IRLoad(IRType.getUnsignedLongType(), new IRVirtualRegister(countRegister), new IRVirtualRegister(temp3)));
-//            IRConditionalJump irConditionalJump = new IRConditionalJump(IRType.getUnsignedLongType(), IRCondition.GreaterEqual, new IRVirtualRegister(temp3), new IRVirtualRegister(lengthRegister), null);
-//            addInstruction(irConditionalJump);
-//            createBasicBlock();
-//
-//            String temp4 = allocateVirtualRegister();
-//            addInstruction(new IRLoad(new IRPointerType(new IRPointerType(IRType.getVoidType())), new IRVirtualRegister(addressRegister), new IRVirtualRegister(temp4)));
-//            String elementRegister = allocateVirtualRegister();
-//            addInstruction(new IRLoad(new IRPointerType(IRType.getVoidType()), new IRVirtualRegister(temp4), new IRVirtualRegister(elementRegister)));
-//            release(new IRVirtualRegister(elementRegister), arrayType.base);
-//
-//            String temp5 = allocateVirtualRegister();
-//            addInstruction(new IRLoad(IRType.getUnsignedLongType(), new IRVirtualRegister(addressRegister), new IRVirtualRegister(temp5)));
-//            String temp6 = allocateVirtualRegister();
-//            addInstruction(new IRCalculate(IRCalculate.Operator.ADD, IRType.getUnsignedLongType(), new IRVirtualRegister(temp5), new IRConstant(constantTypeSizeIndex), new IRVirtualRegister(temp6)));
-//            addInstruction(new IRStore(IRType.getUnsignedLongType(), new IRVirtualRegister(addressRegister), new IRVirtualRegister(temp6)));
-//            String temp7 = allocateVirtualRegister();
-//            addInstruction(new IRLoad(IRType.getUnsignedLongType(), new IRVirtualRegister(countRegister), new IRVirtualRegister(temp7)));
-//            String temp8 = allocateVirtualRegister();
-//            addInstruction(new IRIncrease(IRType.getUnsignedLongType(), new IRVirtualRegister(temp7), new IRVirtualRegister(temp8)));
-//            addInstruction(new IRStore(IRType.getUnsignedLongType(), new IRVirtualRegister(countRegister), new IRVirtualRegister(temp8)));
-//            addInstruction(new IRGoto(conditionBlock.name));
-//            IRBasicBlock end = createBasicBlock();
-//            irConditionalJump.target = end.name;
+            var tmp = builder.createStackAlloc(IRType.getUnsignedLongType());
+            builder.createStore(tmp, new IRIntegerConstant(IRType.getUnsignedLongType(), 0));
+            IRValue dataPtr = builder.createGetElementPointer(array, List.of(new IRIntegerConstant(IRType.getUnsignedLongType(), 0), new IRIntegerConstant(IRType.getUnsignedLongType(), ((IRStructureType) ((IRPointerType) array.getType()).base).structure.getFieldIndex("data"))));
+            var condition = createBasicBlock();
+            var i = builder.createLoad(tmp);
+            createBasicBlock();
+            IRValue valuePtr = builder.createGetElementPointer(dataPtr, List.of(new IRIntegerConstant(IRType.getUnsignedLongType(), 0), i));
+            IRValue element = builder.createLoad(valuePtr);
+            deleteSomething(element, arrayType.base);
+            builder.createInc(tmp);
+            builder.createGoto(condition);
+            var end = createBasicBlock();
+            builder.setInsertPoint(condition);
+            builder.createJumpIfGreaterEqual(i, length, end);
+            builder.setInsertPoint(end);
         }
 
         builder.createInvoke(module.functions.get("free"), List.of(array));
